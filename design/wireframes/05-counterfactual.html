@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giả lập kịch bản — Wireframe</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] },
+    colors: { brand: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',900:'#1e3a8a' } }
+  } } }
+</script>
+<style>html,body{height:100%;} ::-webkit-scrollbar{width:8px;height:8px;} ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px;}</style>
+</head>
+<body class="font-sans text-slate-800 bg-slate-100">
+
+<div class="flex h-screen overflow-hidden">
+
+  <aside class="w-64 shrink-0 bg-slate-900 text-slate-200 flex flex-col">
+    <div class="px-5 py-5 border-b border-slate-800">
+      <a href="index.html" class="text-xs text-slate-400 hover:text-white">◀ Danh sách wireframe</a>
+      <h1 class="mt-2 font-bold text-white leading-tight text-sm">Explainable<br>Scheduling Agent</h1>
+      <p class="text-[11px] text-slate-500 mt-1">Nhà máy bánh xe — demo nội bộ</p>
+    </div>
+    <nav class="flex-1 py-4 space-y-1 px-3 text-sm">
+      <a href="01-order-entry.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">📥 Đơn hàng &amp; Tồn kho</a>
+      <a href="02-aggregate-gantt.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">🗓️ Kế hoạch tổng hợp</a>
+      <a href="03-detailed-gantt.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">⏱️ Lịch chi tiết</a>
+      <a href="04-explain-panel.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">💡 Vì sao?</a>
+      <a href="05-counterfactual.html" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-600 text-white font-medium">🔀 Giả lập kịch bản</a>
+      <a href="06-kpi-dashboard.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">📊 Dashboard KPI</a>
+    </nav>
+    <div class="px-4 py-4 border-t border-slate-800 text-[11px] text-slate-500">
+      Run gần nhất: <span class="text-slate-300">#run-2026-09-17-02</span><br>
+      Quản đốc: <span class="text-slate-300">Nguyễn Văn A</span>
+    </div>
+  </aside>
+
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <header class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shrink-0">
+      <div>
+        <p class="text-xs text-slate-400">Explanation — Counterfactual</p>
+        <h2 class="font-bold text-slate-900">Giả lập kịch bản gián đoạn</h2>
+      </div>
+      <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold px-3 py-1.5 border border-amber-200">⚠ WIREFRAME</span>
+    </header>
+    <div class="bg-amber-50 text-amber-900 text-xs px-6 py-2 border-b border-amber-200 shrink-0">
+      Wireframe tĩnh minh hoạ giao diện — không phải code sản xuất. Kết quả diff mô phỏng theo logic <code>explain_rush_order()</code> trong <code>poc/scheduling_poc_inventory.py</code> (so sánh <code>before</code>/<code>after</code> khi giải lại CP-SAT).
+    </div>
+
+    <main class="flex-1 overflow-y-auto p-6">
+      <div class="relative max-w-5xl">
+
+        <input type="radio" name="cftab" id="tab-rush" class="hidden peer/rush" checked>
+        <label for="tab-rush" class="inline-block mr-2 mb-5 px-4 py-2 rounded-lg cursor-pointer text-sm font-semibold bg-white text-slate-500 border border-slate-200 peer-checked/rush:bg-brand-600 peer-checked/rush:text-white peer-checked/rush:border-brand-600">🚨 Đơn hàng gấp chen ngang</label>
+        <input type="radio" name="cftab" id="tab-brk" class="hidden peer/brk">
+        <label for="tab-brk" class="inline-block mb-5 px-4 py-2 rounded-lg cursor-pointer text-sm font-semibold bg-white text-slate-500 border border-slate-200 peer-checked/brk:bg-brand-600 peer-checked/brk:text-white peer-checked/brk:border-brand-600">🔧 Máy hỏng</label>
+
+        <!-- ===================== PANEL: RUSH ORDER ===================== -->
+        <div class="hidden peer-checked/rush:block space-y-6">
+
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+            <h3 class="font-bold text-slate-900 mb-1">Kịch bản: đơn hàng cần giao gấp</h3>
+            <p class="text-xs text-slate-400 mb-4">Chọn 1 đơn hàng hiện có và đặt hạn giao mới sớm hơn — hệ thống giải lại lịch (CP-SAT) và so sánh với lịch gốc.</p>
+            <form class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+              <div class="sm:col-span-1">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Đơn hàng cần gấp</label>
+                <select class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+                  <option>ORD-2026-041 — A, qty 40, hạn N2</option>
+                  <option>ORD-2026-042 — A, qty 35, hạn N5</option>
+                  <option selected>ORD-2026-046 — B, qty 40, hạn N10</option>
+                  <option>ORD-2026-048 — C, qty 35, hạn N8</option>
+                </select>
+              </div>
+              <div class="sm:col-span-1">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Hạn giao mới</label>
+                <select class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+                  <option>Ngày 4 — 17/09/2026</option>
+                  <option selected>Ngày 5 — 18/09/2026 (gấp 5 ngày)</option>
+                  <option>Ngày 6 — 21/09/2026</option>
+                </select>
+              </div>
+              <div class="sm:col-span-1">
+                <button type="button" class="w-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm">⚙ Giải lại lịch (CP-SAT)</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs text-slate-400">
+            <span class="h-px flex-1 bg-slate-200"></span>
+            <span class="font-semibold text-slate-500 uppercase tracking-wide">Kết quả sau khi giải lại</span>
+            <span class="h-px flex-1 bg-slate-200"></span>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white rounded-xl border border-slate-200 p-4">
+              <p class="text-xs text-slate-400">Tổng chi phí</p>
+              <p class="text-lg font-extrabold text-slate-900 mt-1">182 → <span class="text-rose-600">205</span></p>
+              <p class="text-xs text-rose-500 font-medium mt-0.5">+23 (+12.6%)</p>
+            </div>
+            <div class="bg-white rounded-xl border border-slate-200 p-4">
+              <p class="text-xs text-slate-400">Chi phí trễ hạn</p>
+              <p class="text-lg font-extrabold text-emerald-600 mt-1">0 → 0</p>
+              <p class="text-xs text-slate-400 mt-0.5">Không có đơn trễ</p>
+            </div>
+            <div class="bg-white rounded-xl border border-slate-200 p-4">
+              <p class="text-xs text-slate-400">Makespan</p>
+              <p class="text-lg font-extrabold text-slate-900 mt-1">10 → 10 ngày</p>
+              <p class="text-xs text-slate-400 mt-0.5">Không đổi</p>
+            </div>
+            <div class="bg-white rounded-xl border border-slate-200 p-4">
+              <p class="text-xs text-slate-400">Đơn bị ảnh hưởng</p>
+              <p class="text-lg font-extrabold text-amber-600 mt-1">2 <span class="text-sm font-medium text-slate-400">/ 9</span></p>
+              <p class="text-xs text-slate-400 mt-0.5">Đẩy lùi nhẹ, vẫn đúng hạn</p>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100">
+              <h3 class="font-bold text-slate-900">So sánh hoàn thành — trước / sau khi giải lại</h3>
+              <p class="text-xs text-slate-400 mt-0.5">ORD-2026-046 (B): hạn giao đổi Ngày 10 → Ngày 5</p>
+            </div>
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+                <tr>
+                  <th class="text-left font-semibold px-5 py-2.5">Mã đơn</th>
+                  <th class="text-left font-semibold px-5 py-2.5">Loại</th>
+                  <th class="text-center font-semibold px-5 py-2.5">Hoàn thành (trước)</th>
+                  <th class="text-center font-semibold px-5 py-2.5">Hoàn thành (sau)</th>
+                  <th class="text-center font-semibold px-5 py-2.5">Lệch</th>
+                  <th class="text-left font-semibold px-5 py-2.5">Ghi chú</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr class="bg-brand-50/60">
+                  <td class="px-5 py-2.5 font-semibold text-slate-800">ORD-2026-046 ★</td>
+                  <td class="px-5 py-2.5">B</td>
+                  <td class="px-5 py-2.5 text-center">Ngày 9</td>
+                  <td class="px-5 py-2.5 text-center font-semibold text-emerald-600">Ngày 5</td>
+                  <td class="px-5 py-2.5 text-center font-semibold text-emerald-600">−4</td>
+                  <td class="px-5 py-2.5 text-slate-500">Đơn gấp — được ưu tiên đưa lên sớm, đúng hạn mới</td>
+                </tr>
+                <tr>
+                  <td class="px-5 py-2.5 font-medium text-slate-700">ORD-2026-045</td>
+                  <td class="px-5 py-2.5">B</td>
+                  <td class="px-5 py-2.5 text-center">Ngày 7</td>
+                  <td class="px-5 py-2.5 text-center font-semibold text-rose-600">Ngày 8</td>
+                  <td class="px-5 py-2.5 text-center font-semibold text-rose-600">+1</td>
+                  <td class="px-5 py-2.5 text-slate-500">Bị đẩy lùi 1 ngày — nhường Cast1/CNC1 cho đơn gấp, vẫn trong hạn</td>
+                </tr>
+                <tr>
+                  <td class="px-5 py-2.5 font-medium text-slate-700">ORD-2026-042</td>
+                  <td class="px-5 py-2.5">A</td>
+                  <td class="px-5 py-2.5 text-center">Ngày 5</td>
+                  <td class="px-5 py-2.5 text-center font-semibold text-rose-600">Ngày 6</td>
+                  <td class="px-5 py-2.5 text-center font-semibold text-rose-600">+1</td>
+                  <td class="px-5 py-2.5 text-slate-500">Ảnh hưởng gián tiếp qua đổi khuôn trên Cast1</td>
+                </tr>
+                <tr class="text-slate-400">
+                  <td class="px-5 py-2.5">ORD-2026-041 / 043 / 044 / 047 / 048 / 049</td>
+                  <td class="px-5 py-2.5">A / B / C</td>
+                  <td class="px-5 py-2.5 text-center" colspan="2">Không đổi</td>
+                  <td class="px-5 py-2.5 text-center">0</td>
+                  <td class="px-5 py-2.5">Không dùng chung máy/khuôn với đơn gấp</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ===================== PANEL: MACHINE BREAKDOWN ===================== -->
+        <div class="hidden peer-checked/brk:block space-y-6">
+
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+            <h3 class="font-bold text-slate-900 mb-1">Kịch bản: máy hỏng đột xuất</h3>
+            <p class="text-xs text-slate-400 mb-4">Chọn máy và khung giờ ngừng hoạt động — hệ thống giải lại lịch cho phần còn lại của horizon.</p>
+            <form class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Máy bị hỏng</label>
+                <select class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+                  <option>Cast1 (Đúc)</option>
+                  <option>Cast2 (Đúc)</option>
+                  <option selected>CNC1 (Gia công CNC)</option>
+                  <option>CNC2 (Gia công CNC)</option>
+                  <option>Paint1 (Sơn)</option>
+                  <option>QC1 (Kiểm tra CL)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Từ</label>
+                <input type="text" value="Ngày 3 · 09:00" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Đến</label>
+                <input type="text" value="Ngày 3 · 17:00" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500">
+              </div>
+              <div>
+                <button type="button" class="w-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm">⚙ Giải lại lịch (CP-SAT)</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="rounded-lg border border-rose-200 bg-rose-50 text-rose-800 text-sm px-4 py-3">
+            ⚠ <strong>CNC1 ngừng hoạt động 8h</strong> (09:00–17:00, Ngày 3). CNC2 <strong>không đủ điều kiện</strong> xử lý loại B (<code>machine_eligibility</code>) ⇒ toàn bộ việc gia công loại B trong khung giờ này không có máy thay thế.
+          </div>
+
+          <div class="flex items-center gap-2 text-xs text-slate-400">
+            <span class="h-px flex-1 bg-slate-200"></span>
+            <span class="font-semibold text-slate-500 uppercase tracking-wide">Kết quả sau khi giải lại</span>
+            <span class="h-px flex-1 bg-slate-200"></span>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white rounded-xl border border-slate-200 p-4">
+              <p class="text-xs text-slate-400">Tổng chi phí</p>
+              <p class="text-lg font-extrabold text-slate-900 mt-1">150 → <span class="text-rose-600">1,040</span></p>
+              <p class="text-xs text-rose-500 font-medium mt-0.5">+890 (+593%)</p>
+            </div>
+            <div class="bg-white rounded-xl border border-slate-200 p-4">
+              <p class="text-xs text-slate-400">Chi phí trễ hạn</p>
+              <p class="text-lg font-extrabold text-rose-600 mt-1">0 → 900</p>
+              <p class="text-xs text-rose-500 font-medium mt-0.5">1 đơn trễ hạn</p>
+            </div>
+            <div class="bg-white rounded-xl border border-slate-200 p-4">
+              <p class="text-xs text-slate-400">Makespan</p>
+              <p class="text-lg font-extrabold text-slate-900 mt-1">10 → 11 ngày</p>
+              <p class="text-xs text-rose-500 font-medium mt-0.5">+1 ngày</p>
+            </div>
+            <div class="bg-white rounded-xl border border-slate-200 p-4">
+              <p class="text-xs text-slate-400">Đơn bị ảnh hưởng</p>
+              <p class="text-lg font-extrabold text-amber-600 mt-1">2 <span class="text-sm font-medium text-slate-400">/ 9</span></p>
+              <p class="text-xs text-slate-400 mt-0.5">Cả 2 đều loại B</p>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100">
+              <h3 class="font-bold text-slate-900">So sánh hoàn thành — trước / sau khi giải lại</h3>
+              <p class="text-xs text-slate-400 mt-0.5">CNC1 ngừng hoạt động 09:00–17:00 Ngày 3</p>
+            </div>
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+                <tr>
+                  <th class="text-left font-semibold px-5 py-2.5">Mã đơn</th>
+                  <th class="text-left font-semibold px-5 py-2.5">Loại</th>
+                  <th class="text-center font-semibold px-5 py-2.5">Hoàn thành (trước)</th>
+                  <th class="text-center font-semibold px-5 py-2.5">Hoàn thành (sau)</th>
+                  <th class="text-center font-semibold px-5 py-2.5">Lệch</th>
+                  <th class="text-left font-semibold px-5 py-2.5">Ghi chú</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr class="bg-rose-50/60">
+                  <td class="px-5 py-2.5 font-semibold text-slate-800">ORD-2026-045</td>
+                  <td class="px-5 py-2.5">B</td>
+                  <td class="px-5 py-2.5 text-center">Ngày 7</td>
+                  <td class="px-5 py-2.5 text-center font-semibold text-rose-600">Ngày 8</td>
+                  <td class="px-5 py-2.5 text-center font-semibold text-rose-600">+1 (TRỄ HẠN)</td>
+                  <td class="px-5 py-2.5 text-slate-500">Hạn N7 — không kịp bù sản lượng B do CNC1 hỏng và CNC2 không đủ điều kiện</td>
+                </tr>
+                <tr>
+                  <td class="px-5 py-2.5 font-medium text-slate-700">ORD-2026-046</td>
+                  <td class="px-5 py-2.5">B</td>
+                  <td class="px-5 py-2.5 text-center">Ngày 9</td>
+                  <td class="px-5 py-2.5 text-center font-semibold text-amber-600">Ngày 10</td>
+                  <td class="px-5 py-2.5 text-center font-semibold text-amber-600">+1</td>
+                  <td class="px-5 py-2.5 text-slate-500">Vẫn đúng hạn (N10) nhưng không còn dư thời gian đệm</td>
+                </tr>
+                <tr class="text-slate-400">
+                  <td class="px-5 py-2.5">ORD-2026-041 / 042 / 043 / 044 / 047 / 048 / 049</td>
+                  <td class="px-5 py-2.5">A / C</td>
+                  <td class="px-5 py-2.5 text-center" colspan="2">Không đổi</td>
+                  <td class="px-5 py-2.5 text-center">0</td>
+                  <td class="px-5 py-2.5">Không phụ thuộc CNC1 trong khung giờ hỏng</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="rounded-lg border border-brand-200 bg-brand-50 p-3 text-sm text-brand-900">
+            💡 <strong>Gợi ý:</strong> nếu bổ sung khả năng xử lý loại B cho CNC2 (đầu tư đồ gá) sẽ loại bỏ hoàn toàn rủi ro trễ hạn khi CNC1 gặp sự cố — xem thêm <a href="04-explain-panel.html" class="underline font-semibold">Panel "Vì sao?"</a>.
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+</body>
+</html>
