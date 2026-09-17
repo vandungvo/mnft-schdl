@@ -73,3 +73,14 @@ docker compose up --build
 
 - Backend: http://localhost:8000 (docs tại `/docs`)
 - Frontend: http://localhost:3000
+
+**Lưu ý xác thực end-to-end**: môi trường soạn code đêm nay không có Docker daemon khả dụng
+(`dockerd` không chạy được trong sandbox) nên **không** chạy được `docker compose up` trực tiếp
+ở đây. Đã xác thực thay thế bằng cách chạy 2 service độc lập (`uvicorn` cho backend,
+`npm run dev` cho frontend, cùng cấu hình `NEXT_PUBLIC_API_BASE_URL` như compose) và lái một
+trình duyệt Chromium thật (Playwright) qua đúng golden path: tạo đơn hàng → tạo tồn kho → chạy
+Aggregate Planning (CP-SAT trả `OPTIMAL`) → xem bảng 30 dòng kết quả → xem giải thích bottleneck
+— không có lỗi console/page nào phát sinh ngoài các cảnh báo HMR/dev-server không liên quan.
+`docker compose config` cũng đã chạy để xác nhận `docker-compose.yml` hợp lệ cú pháp (lệnh này
+không cần daemon). Cần người có Docker daemon xác nhận lại `docker compose up --build` thật trước
+khi coi mục tiêu tuần 1 là "đã kiểm chứng đầy đủ".
