@@ -1,0 +1,563 @@
+<title>Đài Điều Độ Bánh Xe</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#F4F5F7; --surface:#FFFFFF; --surface-alt:#E9EBEF; --surface-sunken:#DEE1E6; --border:#D3D7DD;
+  --text-primary:#1B2027; --text-secondary:#545C67; --text-muted:#8A919B;
+  --accent:#B4560D; --accent-soft:#F2DCC4;
+  --type-a:#3B7DD8; --type-b:#0E9488; --type-c:#8B5CF6;
+  --good:#1E8E5A; --good-soft:#DCEFE4; --warn:#B45309; --warn-soft:#F5E3CC; --crit:#DC2626; --crit-soft:#FBDCDC;
+  --shadow: 0 1px 2px rgba(20,24,30,.06), 0 4px 12px rgba(20,24,30,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#12151A; --surface:#1A1E24; --surface-alt:#21262D; --surface-sunken:#282F37; --border:#333A42;
+    --text-primary:#E6E9ED; --text-secondary:#A3ABB5; --text-muted:#6B7280;
+    --accent:#FFA94D; --accent-soft:#4A3018;
+    --type-a:#4A85DE; --type-b:#17A896; --type-c:#9B78E8;
+    --good:#34C77B; --good-soft:#173226; --warn:#F0A93A; --warn-soft:#3A2A10; --crit:#F87171; --crit-soft:#3A1616;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12151A; --surface:#1A1E24; --surface-alt:#21262D; --surface-sunken:#282F37; --border:#333A42;
+  --text-primary:#E6E9ED; --text-secondary:#A3ABB5; --text-muted:#6B7280;
+  --accent:#FFA94D; --accent-soft:#4A3018;
+  --type-a:#4A85DE; --type-b:#17A896; --type-c:#9B78E8;
+  --good:#34C77B; --good-soft:#173226; --warn:#F0A93A; --warn-soft:#3A2A10; --crit:#F87171; --crit-soft:#3A1616;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--text-primary);
+  font-family:"Public Sans", system-ui, -apple-system, sans-serif;
+  padding-inline:20px; padding-block:28px 60px;
+  font-variant-numeric: tabular-nums;
+}
+.wrap{max-width:980px; margin:0 auto; display:flex; flex-direction:column; gap:36px;}
+
+/* ---------- Masthead ---------- */
+.masthead{display:flex; flex-direction:column; gap:8px;}
+.eyebrow{
+  font-family:"IBM Plex Mono", monospace; font-size:.72rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--accent); font-weight:600;
+}
+h1{
+  font-family:"Big Shoulders Display", sans-serif; font-weight:800; text-transform:uppercase;
+  font-size:clamp(2rem, 5vw, 3.1rem); line-height:.95; margin:0; letter-spacing:.01em; text-wrap:balance;
+}
+.subtitle{color:var(--text-secondary); font-size:1rem; max-width:64ch; line-height:1.5;}
+.meta-line{
+  font-family:"IBM Plex Mono", monospace; font-size:.78rem; color:var(--text-muted);
+  display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:2px;
+}
+.meta-line span{white-space:nowrap;}
+
+/* ---------- KPI strip ---------- */
+.kpi-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px;}
+.kpi{
+  background:var(--surface); border:1px solid var(--border); border-radius:10px;
+  padding:14px 16px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:4px;
+}
+.kpi-label{font-size:.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.07em; font-weight:600;}
+.kpi-value{font-family:"IBM Plex Mono", monospace; font-size:1.7rem; font-weight:600; line-height:1;}
+.kpi-sub{font-size:.78rem; color:var(--text-secondary);}
+.pill{
+  display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:99px;
+  font-size:.72rem; font-weight:600; width:fit-content; font-family:"IBM Plex Mono",monospace;
+}
+.pill.good{background:var(--good-soft); color:var(--good);}
+.pill.crit{background:var(--crit-soft); color:var(--crit);}
+.pill.warn{background:var(--warn-soft); color:var(--warn);}
+.pill::before{content:""; width:6px; height:6px; border-radius:50%; background:currentColor;}
+
+/* ---------- Section headers ---------- */
+.section-head{display:flex; flex-direction:column; gap:4px; margin-bottom:14px;}
+.section-tag{
+  font-family:"IBM Plex Mono", monospace; font-size:.7rem; color:var(--text-muted); text-transform:uppercase;
+  letter-spacing:.1em;
+}
+h2{
+  font-family:"Big Shoulders Display", sans-serif; font-weight:700; text-transform:uppercase;
+  font-size:clamp(1.5rem,3.4vw,2rem); margin:0; letter-spacing:.01em;
+}
+.section-desc{color:var(--text-secondary); font-size:.92rem; max-width:70ch; line-height:1.5;}
+
+/* ---------- Type panels (aggregate) ---------- */
+.type-panels{display:flex; flex-direction:column; gap:16px;}
+.panel{
+  background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 20px 14px;
+  box-shadow:var(--shadow);
+}
+.panel-top{display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:6px;}
+.panel-title{display:flex; align-items:center; gap:9px;}
+.swatch{width:13px; height:13px; border-radius:4px; flex:none;}
+.panel-title b{font-size:1.05rem; font-weight:700;}
+.panel-title span{color:var(--text-muted); font-size:.82rem;}
+.legend-line{display:flex; gap:16px; flex-wrap:wrap; font-size:.76rem; color:var(--text-secondary); margin:8px 0 2px;}
+.legend-line .item{display:flex; align-items:center; gap:6px;}
+.legend-line svg{flex:none;}
+.chart-block + .chart-block{margin-top:2px;}
+.chart-scroll{overflow-x:auto;}
+svg text{font-family:"IBM Plex Mono", monospace;}
+.axis-label{fill:var(--text-muted); font-size:9.5px;}
+.value-label{fill:var(--text-secondary); font-size:9.5px; font-weight:600;}
+
+/* ---------- Gantt ---------- */
+.gantt-card{
+  background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px 20px; box-shadow:var(--shadow);
+}
+.gantt-legend{display:flex; gap:18px; flex-wrap:wrap; font-size:.78rem; color:var(--text-secondary); margin-bottom:14px;}
+.gantt-legend .item{display:flex; align-items:center; gap:7px;}
+.gantt-legend .sw{width:14px; height:14px; border-radius:3px; flex:none;}
+
+/* ---------- Findings ---------- */
+.findings{display:flex; flex-direction:column; gap:10px;}
+.finding{
+  background:var(--surface); border:1px solid var(--border); border-left:4px solid var(--crit); border-radius:8px;
+  padding:12px 16px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:3px;
+}
+.finding .f-head{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.finding .f-head b{font-size:.98rem;}
+.finding .f-detail{color:var(--text-secondary); font-size:.86rem; line-height:1.5;}
+.callout{
+  background:var(--warn-soft); border:1px solid var(--warn); border-radius:10px; padding:14px 18px;
+  color:var(--text-primary); font-size:.9rem; line-height:1.6;
+}
+.callout b{color:var(--warn);}
+
+/* ---------- Table toggle ---------- */
+details{margin-top:14px;}
+summary{
+  cursor:pointer; font-size:.82rem; color:var(--accent); font-weight:600; font-family:"IBM Plex Mono",monospace;
+  list-style:none; display:inline-flex; align-items:center; gap:6px;
+}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"▸"; transition:transform .15s;}
+details[open] summary::before{transform:rotate(90deg);}
+.data-table{width:100%; border-collapse:collapse; font-size:.8rem; margin-top:10px;}
+.data-table th, .data-table td{padding:5px 8px; text-align:right; border-bottom:1px solid var(--border); font-family:"IBM Plex Mono",monospace;}
+.data-table th:first-child, .data-table td:first-child{text-align:left;}
+.data-table thead th{color:var(--text-muted); font-weight:600; text-transform:uppercase; font-size:.68rem; letter-spacing:.04em;}
+.data-table tbody tr:hover{background:var(--surface-alt);}
+.table-scroll{overflow-x:auto;}
+
+footer{color:var(--text-muted); font-size:.78rem; line-height:1.6; border-top:1px solid var(--border); padding-top:16px;}
+footer code{font-family:"IBM Plex Mono",monospace; background:var(--surface-alt); padding:1px 5px; border-radius:4px;}
+</style>
+
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="eyebrow">Điều Độ Sản Xuất — Nhà Máy Bánh Xe</div>
+    <h1>Đài Điều Độ 2 Tuần</h1>
+    <p class="subtitle">Tầng 1 quyết định mỗi ngày sản xuất bao nhiêu, dựa trên ngưỡng tồn kho an toàn. Tầng 2 xếp cụ thể vào từng máy và đối chiếu xem kế hoạch đó có thực sự chạy được trong 1 ca hay không.</p>
+    <div class="meta-line" id="metaLine"></div>
+  </div>
+
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <!-- ================= AGGREGATE ================= -->
+  <section>
+    <div class="section-head">
+      <span class="section-tag">Tầng 1 · Aggregate Planning</span>
+      <h2>Kế hoạch tổng hợp theo ngày</h2>
+      <p class="section-desc" id="aggregateDesc">Tồn kho bán thành phẩm (WIP, sau Đúc) và thành phẩm (FG, sau CNC) mỗi loại, so với ngưỡng an toàn (nét đứt) và mục tiêu cuối kỳ ở Ngày 10. Bên dưới là sản lượng Đúc/CNC quyết định mỗi ngày.</p>
+    </div>
+    <div class="type-panels" id="typePanels"></div>
+  </section>
+
+  <!-- ================= DETAILED ================= -->
+  <section>
+    <div class="section-head">
+      <span class="section-tag">Tầng 2 · Detailed Scheduling — nối ca</span>
+      <h2>Lịch chi tiết, lô được nối liền qua ranh giới ca</h2>
+      <p class="section-desc">Mỗi ngày vẫn có 3 ca (vạch đứng mảnh đánh dấu ranh giới), nhưng lô sản phẩm được phép chạy <em>xuyên qua</em> ranh giới ca (bàn giao ca giữa chừng — đúng thực tế vận hành 3 ca liên tục) thay vì bị bẻ gãy thành 3 khối tách biệt. Vùng gạch chéo mờ ở cuối là ca <b>chưa kích hoạt</b> (không gọi công nhân). Số ca cần gọi cho mỗi máy = số ca lịch làm việc thực sự chạm tới, do solver tự tính.</p>
+    </div>
+    <div class="gantt-card">
+      <div class="gantt-legend" id="ganttLegend"></div>
+      <div class="chart-scroll" id="ganttHolder"></div>
+    </div>
+  </section>
+
+  <!-- ================= FINDINGS ================= -->
+  <section>
+    <div class="section-head">
+      <span class="section-tag">Đối chiếu khả thi</span>
+      <h2>Tầng 1 "trên giấy" vs Tầng 2 thực tế</h2>
+    </div>
+    <div class="findings" id="findingsList"></div>
+    <div class="callout" style="margin-top:14px" id="calloutBox"></div>
+  </section>
+
+  <footer>
+    Dữ liệu minh hoạ (synthetic), sinh trực tiếp từ mô hình CP-SAT (OR-Tools) trong <code>production_planning_2weeks.py</code> (Tầng 1) và <code>detailed_shift_continuous.py</code> (Tầng 2) — không chỉnh tay. Trang này được <code>export_shift_continuous_data.py</code> ghi thẳng vào, chạy lại script đó là số liệu tự cập nhật. Kiểm tra tính hợp lệ vật lý của lịch bằng <code>verify_schedule.py</code>. Xem <code>TECHNICAL_SPEC.md</code> để biết kiến trúc ứng dụng đầy đủ.
+  </footer>
+
+</div>
+
+<script>
+const DATA = {"types": ["A", "B", "C"], "days": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "n_shifts_max": 3, "wip_min": {"A": 20, "B": 15, "C": 10}, "fg_min": {"A": 30, "B": 25, "C": 15}, "wip_target_end": {"A": 40, "B": 30, "C": 20}, "fg_target_end": {"A": 60, "B": 50, "C": 30}, "safety_lead_days": 5, "shift_budget": {"cast": 34, "cnc": 27}, "lot_max": 20, "aggregate": {"status": "OPTIMAL", "cost_backlog": 0, "cost_safety": 0, "cost_hold": 2371, "cost_setup": 240, "cost_end_shortfall": 0, "plan": {"A|1": {"cast": 16, "cnc": 0, "wip": 41, "fg": 35, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "A|2": {"cast": 15, "cnc": 35, "wip": 21, "fg": 30, "backlog": 0, "shipped": 40, "wip_short": 0, "fg_short": 0}, "A|3": {"cast": 29, "cnc": 15, "wip": 35, "fg": 45, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "A|4": {"cast": 35, "cnc": 35, "wip": 35, "fg": 30, "backlog": 0, "shipped": 50, "wip_short": 0, "fg_short": 0}, "A|5": {"cast": 20, "cnc": 35, "wip": 20, "fg": 30, "backlog": 0, "shipped": 35, "wip_short": 0, "fg_short": 0}, "A|6": {"cast": 0, "cnc": 0, "wip": 20, "fg": 30, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "A|7": {"cast": 0, "cnc": 0, "wip": 20, "fg": 30, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "A|8": {"cast": 0, "cnc": 0, "wip": 20, "fg": 30, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "A|9": {"cast": 15, "cnc": 0, "wip": 35, "fg": 30, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "A|10": {"cast": 35, "cnc": 30, "wip": 40, "fg": 60, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "B|1": {"cast": 15, "cnc": 0, "wip": 35, "fg": 28, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "B|2": {"cast": 37, "cnc": 32, "wip": 40, "fg": 30, "backlog": 0, "shipped": 30, "wip_short": 0, "fg_short": 0}, "B|3": {"cast": 16, "cnc": 40, "wip": 16, "fg": 25, "backlog": 0, "shipped": 45, "wip_short": 0, "fg_short": 0}, "B|4": {"cast": 24, "cnc": 15, "wip": 25, "fg": 40, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "B|5": {"cast": 15, "cnc": 25, "wip": 15, "fg": 25, "backlog": 0, "shipped": 40, "wip_short": 0, "fg_short": 0}, "B|6": {"cast": 0, "cnc": 0, "wip": 15, "fg": 25, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "B|7": {"cast": 0, "cnc": 0, "wip": 15, "fg": 25, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "B|8": {"cast": 0, "cnc": 0, "wip": 15, "fg": 25, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "B|9": {"cast": 15, "cnc": 0, "wip": 30, "fg": 25, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "B|10": {"cast": 25, "cnc": 25, "wip": 30, "fg": 50, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "C|1": {"cast": 14, "cnc": 0, "wip": 26, "fg": 18, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "C|2": {"cast": 14, "cnc": 11, "wip": 29, "fg": 29, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "C|3": {"cast": 23, "cnc": 21, "wip": 31, "fg": 15, "backlog": 0, "shipped": 35, "wip_short": 0, "fg_short": 0}, "C|4": {"cast": 14, "cnc": 25, "wip": 20, "fg": 15, "backlog": 0, "shipped": 25, "wip_short": 0, "fg_short": 0}, "C|5": {"cast": 10, "cnc": 20, "wip": 10, "fg": 15, "backlog": 0, "shipped": 20, "wip_short": 0, "fg_short": 0}, "C|6": {"cast": 0, "cnc": 0, "wip": 10, "fg": 15, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "C|7": {"cast": 0, "cnc": 0, "wip": 10, "fg": 15, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "C|8": {"cast": 0, "cnc": 0, "wip": 10, "fg": 15, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "C|9": {"cast": 12, "cnc": 0, "wip": 22, "fg": 15, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}, "C|10": {"cast": 13, "cnc": 15, "wip": 20, "fg": 30, "backlog": 0, "shipped": 0, "wip_short": 0, "fg_short": 0}}}, "machines": {"cast": ["Cast1", "Cast2"], "cnc": ["CNC1", "CNC2"]}, "detailed_cont": {"1": {"Cast1": {"stage": "cast", "lots": [{"job": "A-cast-0", "type": "A", "start": 0, "end": 32}, {"job": "C-cast-0", "type": "C", "start": 35, "end": 91}], "work": 88, "end": 91, "budget": 34, "n_shifts": 3, "idle": 14}, "Cast2": {"stage": "cast", "lots": [{"job": "B-cast-0", "type": "B", "start": 0, "end": 45}], "work": 45, "end": 45, "budget": 34, "n_shifts": 2, "idle": 23}, "CNC1": {"stage": "cnc", "lots": [], "work": 0, "end": 0, "budget": 27, "n_shifts": 0, "idle": 0}, "CNC2": {"stage": "cnc", "lots": [], "work": 0, "end": 0, "budget": 27, "n_shifts": 0, "idle": 0}}, "2": {"Cast1": {"stage": "cast", "lots": [{"job": "B-cast-1", "type": "B", "start": 0, "end": 42}, {"job": "C-cast-0", "type": "C", "start": 44, "end": 100}], "work": 98, "end": 100, "budget": 34, "n_shifts": 3, "idle": 4}, "Cast2": {"stage": "cast", "lots": [{"job": "B-cast-0", "type": "B", "start": 0, "end": 42}, {"job": "B-cast-2", "type": "B", "start": 42, "end": 69}, {"job": "A-cast-0", "type": "A", "start": 71, "end": 101}], "work": 99, "end": 101, "budget": 34, "n_shifts": 3, "idle": 3}, "CNC1": {"stage": "cnc", "lots": [{"job": "B-cnc-0", "type": "B", "start": 0, "end": 32}, {"job": "B-cnc-1", "type": "B", "start": 32, "end": 64}, {"job": "A-cnc-1", "type": "A", "start": 65, "end": 81}], "work": 80, "end": 81, "budget": 27, "n_shifts": 3, "idle": 1}, "CNC2": {"stage": "cnc", "lots": [{"job": "A-cnc-0", "type": "A", "start": 0, "end": 19}, {"job": "C-cnc-0", "type": "C", "start": 21, "end": 54}], "work": 52, "end": 54, "budget": 27, "n_shifts": 2, "idle": 2}}, "3": {"Cast1": {"stage": "cast", "lots": [{"job": "A-cast-2", "type": "A", "start": 0, "end": 10}, {"job": "C-cast-1", "type": "C", "start": 13, "end": 57}, {"job": "C-cast-0", "type": "C", "start": 57, "end": 105}], "work": 102, "end": 105, "budget": 34, "n_shifts": 4, "idle": 34}, "Cast2": {"stage": "cast", "lots": [{"job": "A-cast-0", "type": "A", "start": 0, "end": 38}, {"job": "A-cast-1", "type": "A", "start": 38, "end": 48}, {"job": "B-cast-0", "type": "B", "start": 50, "end": 98}], "work": 96, "end": 98, "budget": 34, "n_shifts": 3, "idle": 6}, "CNC1": {"stage": "cnc", "lots": [{"job": "B-cnc-1", "type": "B", "start": 0, "end": 40}, {"job": "B-cnc-0", "type": "B", "start": 40, "end": 80}], "work": 80, "end": 80, "budget": 27, "n_shifts": 3, "idle": 1}, "CNC2": {"stage": "cnc", "lots": [{"job": "C-cnc-1", "type": "C", "start": 0, "end": 12}, {"job": "C-cnc-0", "type": "C", "start": 12, "end": 63}, {"job": "A-cnc-0", "type": "A", "start": 65, "end": 80}], "work": 78, "end": 80, "budget": 27, "n_shifts": 3, "idle": 3}}, "4": {"Cast1": {"stage": "cast", "lots": [{"job": "C-cast-0", "type": "C", "start": 0, "end": 56}, {"job": "B-cast-0", "type": "B", "start": 58, "end": 100}], "work": 98, "end": 100, "budget": 34, "n_shifts": 3, "idle": 4}, "Cast2": {"stage": "cast", "lots": [{"job": "A-cast-1", "type": "A", "start": 0, "end": 34}, {"job": "A-cast-0", "type": "A", "start": 34, "end": 70}, {"job": "B-cast-1", "type": "B", "start": 72, "end": 102}], "work": 100, "end": 102, "budget": 34, "n_shifts": 3, "idle": 2}, "CNC1": {"stage": "cnc", "lots": [{"job": "A-cnc-0", "type": "A", "start": 0, "end": 18}, {"job": "C-cnc-1", "type": "C", "start": 20, "end": 35}, {"job": "B-cnc-0", "type": "B", "start": 36, "end": 66}], "work": 63, "end": 66, "budget": 27, "n_shifts": 3, "idle": 18}, "CNC2": {"stage": "cnc", "lots": [{"job": "A-cnc-1", "type": "A", "start": 0, "end": 17}, {"job": "C-cnc-0", "type": "C", "start": 19, "end": 79}], "work": 77, "end": 79, "budget": 27, "n_shifts": 3, "idle": 4}}, "5": {"Cast1": {"stage": "cast", "lots": [{"job": "C-cast-0", "type": "C", "start": 0, "end": 40}, {"job": "A-cast-0", "type": "A", "start": 43, "end": 83}, {"job": "B-cast-1", "type": "B", "start": 85, "end": 100}], "work": 95, "end": 100, "budget": 34, "n_shifts": 3, "idle": 7}, "Cast2": {"stage": "cast", "lots": [{"job": "B-cast-0", "type": "B", "start": 0, "end": 30}], "work": 30, "end": 30, "budget": 34, "n_shifts": 1, "idle": 4}, "CNC1": {"stage": "cnc", "lots": [{"job": "A-cnc-0", "type": "A", "start": 0, "end": 20}, {"job": "B-cnc-0", "type": "B", "start": 21, "end": 61}, {"job": "B-cnc-1", "type": "B", "start": 61, "end": 71}], "work": 70, "end": 71, "budget": 27, "n_shifts": 3, "idle": 11}, "CNC2": {"stage": "cnc", "lots": [{"job": "A-cnc-1", "type": "A", "start": 0, "end": 15}, {"job": "C-cnc-0", "type": "C", "start": 17, "end": 77}], "work": 75, "end": 77, "budget": 27, "n_shifts": 3, "idle": 6}}, "6": {"Cast1": {"stage": "cast", "lots": [], "work": 0, "end": 0, "budget": 34, "n_shifts": 0, "idle": 0}, "Cast2": {"stage": "cast", "lots": [], "work": 0, "end": 0, "budget": 34, "n_shifts": 0, "idle": 0}, "CNC1": {"stage": "cnc", "lots": [], "work": 0, "end": 0, "budget": 27, "n_shifts": 0, "idle": 0}, "CNC2": {"stage": "cnc", "lots": [], "work": 0, "end": 0, "budget": 27, "n_shifts": 0, "idle": 0}}, "7": {"Cast1": {"stage": "cast", "lots": [], "work": 0, "end": 0, "budget": 34, "n_shifts": 0, "idle": 0}, "Cast2": {"stage": "cast", "lots": [], "work": 0, "end": 0, "budget": 34, "n_shifts": 0, "idle": 0}, "CNC1": {"stage": "cnc", "lots": [], "work": 0, "end": 0, "budget": 27, "n_shifts": 0, "idle": 0}, "CNC2": {"stage": "cnc", "lots": [], "work": 0, "end": 0, "budget": 27, "n_shifts": 0, "idle": 0}}, "8": {"Cast1": {"stage": "cast", "lots": [], "work": 0, "end": 0, "budget": 34, "n_shifts": 0, "idle": 0}, "Cast2": {"stage": "cast", "lots": [], "work": 0, "end": 0, "budget": 34, "n_shifts": 0, "idle": 0}, "CNC1": {"stage": "cnc", "lots": [], "work": 0, "end": 0, "budget": 27, "n_shifts": 0, "idle": 0}, "CNC2": {"stage": "cnc", "lots": [], "work": 0, "end": 0, "budget": 27, "n_shifts": 0, "idle": 0}}, "9": {"Cast1": {"stage": "cast", "lots": [{"job": "B-cast-0", "type": "B", "start": 0, "end": 45}, {"job": "C-cast-0", "type": "C", "start": 47, "end": 95}], "work": 93, "end": 95, "budget": 34, "n_shifts": 3, "idle": 9}, "Cast2": {"stage": "cast", "lots": [{"job": "A-cast-0", "type": "A", "start": 0, "end": 30}], "work": 30, "end": 30, "budget": 34, "n_shifts": 1, "idle": 4}, "CNC1": {"stage": "cnc", "lots": [], "work": 0, "end": 0, "budget": 27, "n_shifts": 0, "idle": 0}, "CNC2": {"stage": "cnc", "lots": [], "work": 0, "end": 0, "budget": 27, "n_shifts": 0, "idle": 0}}, "10": {"Cast1": {"stage": "cast", "lots": [{"job": "C-cast-0", "type": "C", "start": 0, "end": 52}, {"job": "B-cast-1", "type": "B", "start": 54, "end": 69}, {"job": "A-cast-1", "type": "A", "start": 71, "end": 101}], "work": 97, "end": 101, "budget": 34, "n_shifts": 3, "idle": 5}, "Cast2": {"stage": "cast", "lots": [{"job": "A-cast-0", "type": "A", "start": 0, "end": 40}, {"job": "B-cast-0", "type": "B", "start": 42, "end": 102}], "work": 100, "end": 102, "budget": 34, "n_shifts": 3, "idle": 2}, "CNC1": {"stage": "cnc", "lots": [{"job": "B-cnc-1", "type": "B", "start": 0, "end": 24}, {"job": "B-cnc-0", "type": "B", "start": 24, "end": 50}, {"job": "A-cnc-0", "type": "A", "start": 51, "end": 66}, {"job": "A-cnc-1", "type": "A", "start": 66, "end": 81}], "work": 80, "end": 81, "budget": 27, "n_shifts": 3, "idle": 1}, "CNC2": {"stage": "cnc", "lots": [{"job": "C-cnc-0", "type": "C", "start": 0, "end": 45}], "work": 45, "end": 45, "budget": 27, "n_shifts": 2, "idle": 9}}}, "overloads": [{"day": 3, "machine": "Cast1", "stage": "cast", "need": 105, "budget": 102, "over": 3}], "shift_usage": {"on": 66, "total": 120}, "total_idle": 177, "benchmarks": {"lb_shifts_given_plan": 64, "lb_idle_given_plan": 109, "lb_shifts_global": 61, "lb_idle_global": 21, "gap_shifts": 2, "total_work": {"cast": 1171, "cnc": 700}}};
+
+const TYPE_NAME = {A:"Loại A (Front wheel)", B:"Loại B (Rear wheel)", C:"Loại C"};
+const TYPE_VAR = {A:"--type-a", B:"--type-b", C:"--type-c"};
+const svgns = "http://www.w3.org/2000/svg";
+const esc = s => String(s);
+
+function niceMax(v){ if(v<=0) return 10; const mag = Math.pow(10, Math.floor(Math.log10(v))); const n = Math.ceil(v/mag*2)/2 * mag; return n; }
+
+/* ================= KPI strip ================= */
+function renderKPI(){
+  const a = DATA.aggregate;
+  const total = a.cost_backlog + a.cost_safety + a.cost_hold + a.cost_setup + a.cost_end_shortfall;
+  const nOver = DATA.overloads.length;
+  const bm = DATA.benchmarks;
+  const nShifts = DATA.n_shifts_max, nSlots = DATA.shift_usage.total;
+
+  // Trạng thái Tầng 1 đọc TỪ dữ liệu, không viết cứng: trước đây dòng này
+  // ghi cứng "không thủng ngưỡng an toàn" trong khi cost_safety = 410.
+  const breachUnits = a.cost_safety / 10;   // COST_SAFETY_BREACH_PER_UNIT_DAY
+  const lateUnits   = a.cost_backlog / 20;  // COST_BACKLOG_PER_UNIT_DAY
+  const flags = [];
+  flags.push(lateUnits > 0 ? `trễ giao ${lateUnits} đv·ngày` : "không trễ giao");
+  flags.push(breachUnits > 0 ? `thủng ngưỡng an toàn ${breachUnits} đv·ngày` : "không thủng ngưỡng an toàn");
+  const healthy = lateUnits === 0 && breachUnits === 0;
+
+  const el = document.getElementById("kpiRow");
+  el.innerHTML = `
+    <div class="kpi">
+      <div class="kpi-label">Trạng thái Tầng 1</div>
+      <div class="pill ${healthy ? "good" : "warn"}">${a.status}</div>
+      <div class="kpi-sub">${flags.join(" · ")}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Tổng chi phí kế hoạch</div>
+      <div class="kpi-value">${total.toLocaleString("vi-VN")}</div>
+      <div class="kpi-sub">Tồn kho ${a.cost_hold} · Setup ${a.cost_setup} · An toàn ${a.cost_safety} · Trễ ${a.cost_backlog} · Cuối kỳ ${a.cost_end_shortfall}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Tăng ca (vượt cả ${nShifts} ca)</div>
+      ${nOver === 0
+        ? `<div class="pill good">0 lần</div><div class="kpi-sub">Không máy nào cần quá ${nShifts} ca trong một ngày</div>`
+        : `<div class="kpi-value" style="color:var(--crit)">${nOver}</div><div class="kpi-sub">lần máy cần quá ${nShifts} ca cộng lại</div>`}
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Ca được kích hoạt</div>
+      <div class="kpi-value">${DATA.shift_usage.on}<span style="font-size:1rem;color:var(--text-muted)">/${nSlots}</span></div>
+      <div class="kpi-sub">${(100*DATA.shift_usage.on/nSlots).toFixed(1)}% — còn lại máy nghỉ, không gọi công nhân</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Tổng thời gian rảnh trong ca</div>
+      <div class="kpi-value">${DATA.total_idle}</div>
+      <div class="kpi-sub">Đơn vị thời gian · cận dưới với kế hoạch Tầng 1 hiện tại: ${bm.lb_idle_given_plan}</div>
+    </div>`;
+  document.getElementById("metaLine").innerHTML =
+    `<span>10 ngày × 3 ca</span><span>·</span><span>3 loại sản phẩm</span><span>·</span>` +
+    `<span>2 máy Đúc + 2 máy CNC</span><span>·</span><span>Đệm giao hàng ${DATA.safety_lead_days} ngày</span>`;
+  document.getElementById("aggregateDesc").innerHTML =
+    `Tồn kho bán thành phẩm (WIP, sau Đúc) và thành phẩm (FG, sau CNC) mỗi loại, so với ngưỡng an toàn (nét đứt) và ` +
+    `mục tiêu cuối kỳ ở Ngày ${DATA.days[DATA.days.length-1]}. Mỗi đơn hàng được lên kế hoạch hoàn thành ` +
+    `<b>sớm hơn ${DATA.safety_lead_days} ngày</b> so với hạn giao thật (lead-time buffer) — tạo vùng đệm an toàn mà ` +
+    `không cần nâng ngưỡng tồn kho tối thiểu. Đơn nào có hạn sớm hơn cả ${DATA.safety_lead_days} ngày đầu kỳ thì giữ ` +
+    `nguyên hạn thật (không dồn hết về Ngày 1 — dồn như vậy tạo ra một cú sốc nhu cầu giả tạo mà không ngày nào phía ` +
+    `trước để chuẩn bị). CNC mỗi ngày chỉ được dùng phôi <b>đã đúc xong từ ngày trước</b>, nên lịch chi tiết bên dưới ` +
+    `luôn khả thi về mặt vật liệu. Bên dưới là sản lượng Đúc/CNC quyết định mỗi ngày.`;
+}
+
+/* ================= Aggregate: inventory line chart ================= */
+function inventoryChartSVG(type){
+  const W=640,H=200,M={l:38,r:14,t:14,b:22};
+  const plotW=W-M.l-M.r, plotH=H-M.t-M.b;
+  const days=DATA.days;
+  const rows=days.map(d=>DATA.aggregate.plan[`${type}|${d}`]);
+  const wipMin=DATA.wip_min[type], fgMin=DATA.fg_min[type];
+  const wipTgt=DATA.wip_target_end[type], fgTgt=DATA.fg_target_end[type];
+  const maxV = niceMax(Math.max(...rows.map(r=>Math.max(r.wip,r.fg)), fgTgt, wipTgt) * 1.12);
+  const xPos = i => M.l + (i/(days.length-1))*plotW;
+  const yPos = v => M.t + plotH - (v/maxV)*plotH;
+  const cvar = `var(${TYPE_VAR[type]})`;
+
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Ton kho ${type}">`;
+  // gridlines + y ticks
+  const ticks=4;
+  for(let k=0;k<=ticks;k++){
+    const v = maxV*k/ticks, y=yPos(v);
+    s+=`<line x1="${M.l}" y1="${y}" x2="${W-M.r}" y2="${y}" stroke="var(--border)" stroke-width="1"/>`;
+    s+=`<text x="${M.l-6}" y="${y+3}" text-anchor="end" class="axis-label">${Math.round(v)}</text>`;
+  }
+  // safety stock refs
+  [["WIP min",wipMin],["FG min",fgMin]].forEach(([lbl,v])=>{
+    const y=yPos(v);
+    s+=`<line x1="${M.l}" y1="${y}" x2="${W-M.r}" y2="${y}" stroke="var(--warn)" stroke-width="1.1" stroke-dasharray="2 3" opacity=".8"/>`;
+    s+=`<text x="${W-M.r}" y="${y-3}" text-anchor="end" fill="var(--warn)" class="axis-label">${lbl} ${v}</text>`;
+  });
+  // x ticks (day numbers)
+  days.forEach((d,i)=>{
+    s+=`<text x="${xPos(i)}" y="${H-6}" text-anchor="middle" class="axis-label">${d}</text>`;
+  });
+  // lines
+  function poly(key,dash,width){
+    const pts = rows.map((r,i)=>`${xPos(i)},${yPos(r[key])}`).join(" ");
+    return `<polyline points="${pts}" fill="none" stroke="${cvar}" stroke-width="${width}" ${dash?`stroke-dasharray="${dash}"`:""} stroke-linejoin="round" stroke-linecap="round"/>`;
+  }
+  s += poly("wip","5 4",2);
+  s += poly("fg","",2.6);
+  // markers with title tooltip
+  rows.forEach((r,i)=>{
+    s+=`<circle cx="${xPos(i)}" cy="${yPos(r.wip)}" r="2.6" fill="var(--surface)" stroke="${cvar}" stroke-width="1.6"><title>Ngày ${days[i]} · WIP=${r.wip}</title></circle>`;
+    s+=`<circle cx="${xPos(i)}" cy="${yPos(r.fg)}" r="3" fill="${cvar}"><title>Ngày ${days[i]} · FG=${r.fg}</title></circle>`;
+  });
+  // end target markers at day10
+  const xEnd = xPos(days.length-1);
+  [["wip",wipTgt],["fg",fgTgt]].forEach(([key,tgt])=>{
+    const actual = rows[rows.length-1][key];
+    const ok = actual>=tgt;
+    const y=yPos(tgt);
+    s+=`<rect x="${xEnd-4}" y="${y-4}" width="8" height="8" transform="rotate(45 ${xEnd} ${y})" fill="${ok?"var(--good)":"var(--crit)"}" stroke="var(--surface)" stroke-width="1"><title>Mục tiêu cuối kỳ ${key.toUpperCase()}=${tgt}, thực tế=${actual}</title></rect>`;
+  });
+  // end labels
+  s+=`<text x="${xEnd+8}" y="${yPos(rows[rows.length-1].fg)+3}" fill="${cvar}" font-weight="600" class="value-label">FG</text>`;
+  s+=`<text x="${xEnd+8}" y="${yPos(rows[rows.length-1].wip)+3}" fill="${cvar}" opacity=".75" class="value-label">WIP</text>`;
+  s += `</svg>`;
+  return s;
+}
+
+/* ================= Aggregate: daily production bars ================= */
+function barsChartSVG(type){
+  const W=640,H=100,M={l:38,r:14,t:10,b:22};
+  const plotW=W-M.l-M.r, plotH=H-M.t-M.b;
+  const days=DATA.days;
+  const rows=days.map(d=>DATA.aggregate.plan[`${type}|${d}`]);
+  const maxV = niceMax(Math.max(1,...rows.map(r=>Math.max(r.cast,r.cnc)))*1.25);
+  const xPos = i => M.l + (i/(days.length-1))*plotW;
+  const yPos = v => M.t + plotH - (v/maxV)*plotH;
+  const cvar = `var(${TYPE_VAR[type]})`;
+  const bw=8, gap=2;
+
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="San luong ${type}">`;
+  s+=`<line x1="${M.l}" y1="${M.t+plotH}" x2="${W-M.r}" y2="${M.t+plotH}" stroke="var(--border)"/>`;
+  rows.forEach((r,i)=>{
+    const cx=xPos(i);
+    if(r.cast>0){
+      const h=plotH-(yPos(r.cast)-M.t);
+      s+=`<rect x="${cx-gap/2-bw}" y="${yPos(r.cast)}" width="${bw}" height="${h}" rx="1.5" fill="${cvar}"><title>Ngày ${days[i]} · Đúc=${r.cast}</title></rect>`;
+      s+=`<text x="${cx-gap/2-bw/2}" y="${yPos(r.cast)-3}" text-anchor="middle" class="axis-label">${r.cast}</text>`;
+    }
+    if(r.cnc>0){
+      const h=plotH-(yPos(r.cnc)-M.t);
+      s+=`<rect x="${cx+gap/2}" y="${yPos(r.cnc)}" width="${bw}" height="${h}" rx="1.5" fill="${cvar}" opacity=".45"><title>Ngày ${days[i]} · CNC=${r.cnc}</title></rect>`;
+      s+=`<text x="${cx+gap/2+bw/2}" y="${yPos(r.cnc)-3}" text-anchor="middle" class="axis-label">${r.cnc}</text>`;
+    }
+    s+=`<text x="${cx}" y="${H-6}" text-anchor="middle" class="axis-label">${days[i]}</text>`;
+  });
+  s+=`</svg>`;
+  return s;
+}
+
+function renderTypePanels(){
+  const holder = document.getElementById("typePanels");
+  DATA.types.forEach(type=>{
+    const cvar = `var(${TYPE_VAR[type]})`;
+    const div = document.createElement("div");
+    div.className="panel";
+    div.innerHTML = `
+      <div class="panel-top">
+        <div class="panel-title"><span class="swatch" style="background:${cvar}"></span><b>${TYPE_NAME[type]}</b>
+          <span>an toàn: WIP≥${DATA.wip_min[type]}, FG≥${DATA.fg_min[type]} · mục tiêu cuối kỳ: WIP=${DATA.wip_target_end[type]}, FG=${DATA.fg_target_end[type]}</span></div>
+      </div>
+      <div class="legend-line">
+        <span class="item"><svg width="20" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="${cvar}" stroke-width="2.6"/></svg> FG (thành phẩm)</span>
+        <span class="item"><svg width="20" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="${cvar}" stroke-width="2" stroke-dasharray="5 4"/></svg> WIP (bán thành phẩm)</span>
+        <span class="item"><svg width="20" height="10"><line x1="0" y1="5" x2="20" y2="5" stroke="var(--warn)" stroke-width="1.1" stroke-dasharray="2 3"/></svg> Ngưỡng an toàn</span>
+        <span class="item"><svg width="10" height="10"><rect width="8" height="8" transform="rotate(45 5 5)" fill="var(--good)"/></svg> Đạt mục tiêu cuối kỳ</span>
+      </div>
+      <div class="chart-block chart-scroll" style="min-width:520px">${inventoryChartSVG(type)}</div>
+      <div class="chart-block chart-scroll" style="min-width:520px">${barsChartSVG(type)}</div>
+    `;
+    holder.appendChild(div);
+  });
+
+  // table fallback
+  const details = document.createElement("details");
+  let rowsHtml="";
+  DATA.types.forEach(type=>{
+    DATA.days.forEach(d=>{
+      const r = DATA.aggregate.plan[`${type}|${d}`];
+      rowsHtml += `<tr><td>${TYPE_NAME[type]}</td><td>${d}</td><td>${r.cast}</td><td>${r.cnc}</td><td>${r.wip}</td><td>${r.fg}</td><td>${r.shipped}</td><td>${r.backlog}</td></tr>`;
+    });
+  });
+  details.innerHTML = `<summary>Xem dạng bảng (30 dòng)</summary>
+    <div class="table-scroll"><table class="data-table">
+      <thead><tr><th>Loại</th><th>Ngày</th><th>Đúc</th><th>CNC</th><th>WIP</th><th>FG</th><th>Giao</th><th>Backlog</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table></div>`;
+  document.getElementById("typePanels").after(details);
+}
+
+/* ================= Gantt (Tier 2, theo CA) ================= */
+function renderGantt(){
+  const shiftW=25, dayGap=10, rowH=26, rowGap=6, labelW=84, groupGap=14, topPad=8, botPad=34;
+  const machines = [["Cast1","cast"],["Cast2","cast"],["CNC1","cnc"],["CNC2","cnc"]];
+  const days = DATA.days, nShiftsMax = DATA.n_shifts_max;
+  const dayBlockW = nShiftsMax*shiftW;
+  const chartW = labelW + days.length*(dayBlockW+dayGap) + 20;
+  const chartH = topPad + machines.length*rowH + 3*rowGap + groupGap + botPad;
+
+  function dayX(di){ return labelW + di*(dayBlockW+dayGap); }
+
+  let s = `<svg viewBox="0 0 ${chartW} ${chartH}" width="${chartW}" style="max-width:none">`;
+  s += `<defs>
+    <pattern id="hatch" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="var(--crit-soft)"/>
+      <line x1="0" y1="0" x2="0" y2="6" stroke="var(--crit)" stroke-width="2.4"/>
+    </pattern>
+    <pattern id="hatch-off" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="var(--surface)"/>
+      <line x1="0" y1="0" x2="0" y2="6" stroke="var(--border)" stroke-width="1.6"/>
+    </pattern>
+  </defs>`;
+
+  let y = topPad;
+  let prevStage = null;
+  machines.forEach(([m,stage])=>{
+    if(prevStage && stage!==prevStage) y += groupGap;
+    prevStage = stage;
+    const rowY = y;
+    s += `<text x="0" y="${rowY+rowH/2+3}" class="axis-label" font-weight="600">${stage==="cast"?"Đúc":"CNC"} · ${m}</text>`;
+
+    days.forEach((d,di)=>{
+      const cellX = dayX(di);
+      const info = DATA.detailed_cont[String(d)][m];
+      const budget = info.budget;
+      const activatedW = Math.min(info.n_shifts, nShiftsMax)*shiftW;
+      // vung DA kich hoat (co the co idle ben trong)
+      s += `<rect x="${cellX}" y="${rowY}" width="${activatedW}" height="${rowH}" rx="3" fill="var(--surface-alt)"/>`;
+      // vung CHUA kich hoat (khong goi cong nhan)
+      if(activatedW < dayBlockW){
+        s += `<rect x="${cellX+activatedW}" y="${rowY}" width="${dayBlockW-activatedW}" height="${rowH}" rx="3" fill="url(#hatch-off)"><title>Chưa kích hoạt (không gọi công nhân)</title></rect>`;
+      }
+      // cac lo, chay lien tuc xuyen ranh gioi ca
+      info.lots.forEach(lot=>{
+        const cvar = `var(${TYPE_VAR[lot.type]})`;
+        const normEnd = Math.min(lot.end, nShiftsMax*budget);
+        const x0 = cellX + (lot.start/budget)*shiftW;
+        const w0 = Math.max(0,(normEnd-lot.start)/budget*shiftW);
+        s += `<rect x="${x0+0.3}" y="${rowY+1}" width="${Math.max(0,w0-0.6)}" height="${rowH-2}" fill="${cvar}"><title>${lot.job} (${lot.start}-${lot.end})</title></rect>`;
+        if(lot.end > nShiftsMax*budget){
+          const over = lot.end - nShiftsMax*budget;
+          const wOver = Math.max(2,(over/budget)*shiftW);
+          s += `<rect x="${cellX+dayBlockW+0.3}" y="${rowY+1}" width="${wOver}" height="${rowH-2}" fill="url(#hatch)"><title>${lot.job}: tăng ca ${over} đơn vị</title></rect>`;
+        }
+      });
+      // vach mo danh dau ranh gioi CA (khong phai ranh gioi cung nhu truoc)
+      for(let k=1;k<nShiftsMax;k++){
+        const bx = cellX + k*shiftW;
+        s += `<line x1="${bx}" y1="${rowY}" x2="${bx}" y2="${rowY+rowH}" stroke="var(--border)" stroke-width="1" stroke-dasharray="1.5 2" opacity=".6"/>`;
+      }
+      // vach phan cach giua cac NGAY (dam hon)
+      if(di>0) s += `<line x1="${cellX-dayGap/2}" y1="${rowY-1}" x2="${cellX-dayGap/2}" y2="${rowY+rowH+1}" stroke="var(--border)" stroke-width="1.4"/>`;
+    });
+    y += rowH + rowGap;
+  });
+
+  // nhan ngay + nhan ca (Ca1/Ca2/Ca3 duoi cung)
+  const shiftLabels = ["Ca1","Ca2","Ca3"];
+  days.forEach((d,di)=>{
+    s += `<text x="${dayX(di)+dayBlockW/2}" y="${y-rowGap+14}" text-anchor="middle" class="axis-label" font-weight="600">Ngày ${d}</text>`;
+    for(let k=0;k<nShiftsMax;k++){
+      s += `<text x="${dayX(di)+k*shiftW+shiftW/2}" y="${y-rowGap+26}" text-anchor="middle" class="axis-label" font-size="7.5px">${shiftLabels[k]}</text>`;
+    }
+  });
+
+  s += `</svg>`;
+  document.getElementById("ganttHolder").innerHTML = s;
+
+  document.getElementById("ganttLegend").innerHTML = DATA.types.map(t=>
+    `<span class="item"><span class="sw" style="background:var(${TYPE_VAR[t]})"></span>Loại ${t}</span>`
+  ).join("") + `<span class="item"><span class="sw" style="background:var(--surface-alt); border:1px solid var(--border)"></span>Ca đã kích hoạt (có thể còn idle)</span>`
+    + `<span class="item"><span class="sw" style="background:var(--surface); border:1.5px dashed var(--border)"></span>Chưa kích hoạt</span>`
+    + `<span class="item"><span class="sw" style="background:var(--crit-soft); border:1.5px solid var(--crit)"></span>Tăng ca</span>`;
+}
+
+/* ================= Findings ================= */
+function renderFindings(){
+  const el = document.getElementById("findingsList");
+  const bm = DATA.benchmarks;
+  if(DATA.overloads.length === 0){
+    // Chẩn đoán nguồn gốc thời gian rảnh, tính TỪ dữ liệu:
+    //  - phần Tầng 2 còn có thể vắt thêm  = total_idle − cận dưới với kế hoạch hiện tại
+    //  - phần do Tầng 1 chia lô theo ngày = cận dưới hiện tại − cận dưới toàn kỳ
+    //  - phần không thể tránh (lẻ toàn kỳ) = cận dưới toàn kỳ
+    const fromTier2 = DATA.total_idle - bm.lb_idle_given_plan;
+    const fromTier1 = bm.lb_idle_given_plan - bm.lb_idle_global;
+    const irreducible = bm.lb_idle_global;
+    el.innerHTML = `
+      <div class="finding" style="border-left-color:var(--good)">
+        <div class="f-head"><b>Không máy nào cần quá ${DATA.n_shifts_max} ca</b><span class="pill good">0 lần tăng ca</span></div>
+        <div class="f-detail">Nhờ cho phép lô chạy xuyên ranh giới ca (bàn giao ca giữa chừng), mọi ngày đều xếp gọn
+          trong ${DATA.n_shifts_max} ca của từng máy. Tổng cộng chỉ cần kích hoạt <b>${DATA.shift_usage.on}/${DATA.shift_usage.total}</b> ca.</div>
+      </div>
+      <div class="finding" style="border-left-color:var(--warn)">
+        <div class="f-head"><b>${DATA.total_idle} đơn vị thời gian rảnh đến từ đâu?</b><span class="pill warn">phân rã</span></div>
+        <div class="f-detail">
+          <b>${irreducible} đơn vị</b> — lẻ không thể tránh: tổng khối lượng cả 2 tuần vốn không chia hết cho ngân sách 1 ca.<br>
+          <b>${fromTier1} đơn vị</b> — do <em>Tầng 1</em> chia khối lượng theo NGÀY mà không biết ngân sách 1 ca là bao nhiêu
+          (${DATA.shift_budget.cast} Đúc / ${DATA.shift_budget.cnc} CNC), nên ngày nào cũng lẻ ra phần dư phải mở thêm một ca.<br>
+          <b>${fromTier2} đơn vị</b> — phần còn lại ở <em>Tầng 2</em> (chủ yếu do thời gian changeover, vốn không tính vào cận dưới lý thuyết).
+        </div>
+      </div>`;
+    const gapNote = bm.gap_shifts === 0
+      ? `Tầng 2 dùng đúng bằng cận dưới lý thuyết <code>ceil(khối lượng / ngân sách ca)</code> ở mọi ngày`
+      : `Tầng 2 chỉ dùng nhiều hơn cận dưới lý thuyết <code>ceil(khối lượng / ngân sách ca)</code>
+         đúng ${bm.gap_shifts} ca trên toàn kỳ — và phần chênh đó là do thời gian changeover, thứ mà
+         cận dưới không tính đến`;
+    document.getElementById("calloutBox").innerHTML =
+      `<b>Đòn bẩy thật nằm ở Tầng 1, không phải ở đầu tư thiết bị.</b>
+      ${gapNote} — tức là <em>ràng buộc máy nào làm được loại nào hiện KHÔNG phải nút thắt</em>: cấp thêm khuôn
+      loại C cho Cast2 hay đồ gá loại B cho CNC2 cũng gần như không giảm được ca nào. Phần lãng phí lớn nhất
+      (${fromTier1} đơn vị) sinh ra vì Tầng 1 quyết định sản lượng theo ngày mà hoàn toàn "mù" về ngân sách ca.
+      Nếu đưa một biến đại diện số ca vào hàm mục tiêu Tầng 1, cận dưới toàn kỳ cho thấy có thể xuống tới
+      ${bm.lb_shifts_global} ca / ${irreducible} đơn vị rảnh (hiện tại: ${DATA.shift_usage.on} ca / ${DATA.total_idle} đơn vị).`;
+    return;
+  }
+  // Có tăng ca: liệt kê từng điểm, rồi vẫn giữ phần phân rã thời gian rảnh
+  // (đó mới là phát hiện chính của trang này, không được mất khi có sự cố).
+  const totalOver = DATA.overloads.reduce((s,o)=>s+o.over,0);
+  const fromTier2 = DATA.total_idle - bm.lb_idle_given_plan;
+  const fromTier1 = bm.lb_idle_given_plan - bm.lb_idle_global;
+  const irreducible = bm.lb_idle_global;
+
+  el.innerHTML = DATA.overloads.map(o=>`
+    <div class="finding">
+      <div class="f-head"><b>Ngày ${o.day} · ${o.machine}</b><span class="pill crit">tăng ca ${o.over} đơn vị</span></div>
+      <div class="f-detail">Cần ${o.need} đơn vị thời gian nhưng cả ${DATA.n_shifts_max} ca của máy chỉ có ${o.budget}.
+        Máy này là máy <em>duy nhất</em> làm được một trong các loại xếp vào ngày đó, nên phần dư không thể
+        chuyển sang máy còn lại.</div>
+    </div>`).join("") + `
+    <div class="finding" style="border-left-color:var(--warn)">
+      <div class="f-head"><b>${DATA.total_idle} đơn vị thời gian rảnh đến từ đâu?</b><span class="pill warn">phân rã</span></div>
+      <div class="f-detail">
+        <b>${irreducible} đơn vị</b> — lẻ không thể tránh: tổng khối lượng cả 2 tuần vốn không chia hết cho ngân sách 1 ca.<br>
+        <b>${fromTier1} đơn vị</b> — do <em>Tầng 1</em> chia khối lượng theo NGÀY mà không biết ngân sách 1 ca là bao nhiêu
+        (${DATA.shift_budget.cast} Đúc / ${DATA.shift_budget.cnc} CNC).<br>
+        <b>${fromTier2} đơn vị</b> — phần còn lại ở <em>Tầng 2</em> (chủ yếu do thời gian changeover).
+      </div>
+    </div>`;
+
+  document.getElementById("calloutBox").innerHTML =
+    `<b>${DATA.overloads.length} điểm phải tăng ca, tổng ${totalOver} đơn vị thời gian.</b>
+    Đây là chỗ machine eligibility <em>thật sự</em> là nút thắt: loại C chỉ Cast1 đúc được và loại B chỉ CNC1 gia công
+    được, nên khi một ngày dồn nhiều loại đó, phần dư không có máy nào khác gánh hộ — kể cả khi đã nối ca liên tục,
+    không lãng phí một ranh giới ca nào. Ba cách xử lý, theo thứ tự rẻ dần về đầu tư: dời bớt sản lượng ngày đó sang
+    ngày lân cận ở Tầng 1; chấp nhận tăng ca ${totalOver} đơn vị; hoặc đầu tư khuôn loại C cho Cast2 / đồ gá loại B
+    cho CNC2. Lưu ý đây là vấn đề khác với ${DATA.total_idle} đơn vị thời gian rảnh ở trên — phần đó chủ yếu do Tầng 1
+    chia lô theo ngày, và đầu tư thiết bị gần như không giúp gì.`;
+}
+
+renderKPI();
+renderTypePanels();
+renderGantt();
+renderFindings();
+</script>

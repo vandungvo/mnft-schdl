@@ -1,0 +1,202 @@
+{
+ "2 tang LEAD=4": {
+  "score": {
+   "backlog": 0,
+   "safety": 50,
+   "hold": 2402,
+   "end_shortfall": 0,
+   "shift": 14000,
+   "batch": 1620,
+   "TOTAL": 18072,
+   "_overtime_units": 0,
+   "_n_lots": 54,
+   "_backlog_units": 0,
+   "_safety_units": 5,
+   "_end_short_units": 0
+  },
+  "shifts": 70,
+  "idle": 292,
+  "overloads": [],
+  "overtime_units": 0,
+  "elapsed": 82.83682250976562,
+  "status": "OPTIMAL"
+ },
+ "2 tang LEAD=5": {
+  "score": {
+   "backlog": 0,
+   "safety": 0,
+   "hold": 2371,
+   "end_shortfall": 0,
+   "shift": 13200,
+   "batch": 1680,
+   "TOTAL": 17251,
+   "_overtime_units": 3,
+   "_n_lots": 56,
+   "_backlog_units": 0,
+   "_safety_units": 0,
+   "_end_short_units": 0
+  },
+  "shifts": 66,
+  "idle": 177,
+  "overloads": [
+   {
+    "day": 3,
+    "machine": "Cast1",
+    "stage": "cast",
+    "need": 105,
+    "budget": 102,
+    "over": 3
+   }
+  ],
+  "overtime_units": 3,
+  "elapsed": 67.07208108901978,
+  "status": "OPTIMAL"
+ },
+ "Gop dich vu bang (8 worker)": {
+  "score": {
+   "backlog": 0,
+   "safety": 0,
+   "hold": 2590,
+   "end_shortfall": 0,
+   "shift": 12600,
+   "batch": 1410,
+   "TOTAL": 16600,
+   "_overtime_units": 0,
+   "_n_lots": 47,
+   "_backlog_units": 0,
+   "_safety_units": 0,
+   "_end_short_units": 0
+  },
+  "shifts": 63,
+  "idle": 82,
+  "overloads": [],
+  "overtime_units": 0,
+  "elapsed": 1154.8276615142822,
+  "status": "FEASIBLE (gap 4.2%)"
+ },
+ "Gop dich vu bang (1 worker)": {
+  "score": {
+   "backlog": 0,
+   "safety": 0,
+   "hold": 2738,
+   "end_shortfall": 0,
+   "shift": 14800,
+   "batch": 1440,
+   "TOTAL": 18978,
+   "_overtime_units": 249,
+   "_n_lots": 48,
+   "_backlog_units": 0,
+   "_safety_units": 0,
+   "_end_short_units": 0
+  },
+  "shifts": 74,
+  "idle": 421,
+  "overloads": [
+   {
+    "day": 1,
+    "machine": "Cast1",
+    "stage": "cast",
+    "need": 109,
+    "budget": 102,
+    "over": 7
+   },
+   {
+    "day": 2,
+    "machine": "Cast2",
+    "stage": "cast",
+    "need": 153,
+    "budget": 102,
+    "over": 51
+   },
+   {
+    "day": 3,
+    "machine": "CNC1",
+    "stage": "cnc",
+    "need": 82,
+    "budget": 81,
+    "over": 1
+   },
+   {
+    "day": 5,
+    "machine": "Cast1",
+    "stage": "cast",
+    "need": 113,
+    "budget": 102,
+    "over": 11
+   },
+   {
+    "day": 5,
+    "machine": "Cast2",
+    "stage": "cast",
+    "need": 117,
+    "budget": 102,
+    "over": 15
+   },
+   {
+    "day": 8,
+    "machine": "Cast1",
+    "stage": "cast",
+    "need": 115,
+    "budget": 102,
+    "over": 13
+   },
+   {
+    "day": 9,
+    "machine": "Cast1",
+    "stage": "cast",
+    "need": 168,
+    "budget": 102,
+    "over": 66
+   },
+   {
+    "day": 10,
+    "machine": "Cast1",
+    "stage": "cast",
+    "need": 155,
+    "budget": 102,
+    "over": 53
+   },
+   {
+    "day": 10,
+    "machine": "CNC1",
+    "stage": "cnc",
+    "need": 95,
+    "budget": 81,
+    "over": 14
+   },
+   {
+    "day": 10,
+    "machine": "CNC2",
+    "stage": "cnc",
+    "need": 99,
+    "budget": 81,
+    "over": 18
+   }
+  ],
+  "overtime_units": 249,
+  "elapsed": 400.0194284915924,
+  "status": "FEASIBLE (gap 99.4%)"
+ },
+ "Gop tu do danh doi (8 wk)": {
+  "score": {
+   "backlog": 880,
+   "safety": 1790,
+   "hold": 1779,
+   "end_shortfall": 935,
+   "shift": 5600,
+   "batch": 780,
+   "TOTAL": 11764,
+   "_overtime_units": 0,
+   "_n_lots": 26,
+   "_backlog_units": 44,
+   "_safety_units": 179,
+   "_end_short_units": 187
+  },
+  "shifts": 28,
+  "idle": 17,
+  "overloads": [],
+  "overtime_units": 0,
+  "elapsed": 400.16725492477417,
+  "status": "FEASIBLE (gap 5.0%)"
+ }
+}
