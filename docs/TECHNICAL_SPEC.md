@@ -1,7 +1,7 @@
 # Technical Specification — Explainable Scheduling Agent
 
 **Đồ án:** CO5103 — Võ Văn Dũng | **Học kỳ:** HK261 (2026–2027) | **GVHD:** PGS.TS Võ Thị Ngọc Châu
-**Trạng thái:** Draft v2.2 — cập nhật theo `docs/Report_so_bo_Do_an_CO5103_VoVanDung.md` (báo cáo sơ bộ), dựa trên các prototype đã kiểm chứng (`scheduling_poc*.py`, `production_planning_2weeks.py`, `detailed_day_schedule.py`). **Thay đổi so với v2:** Frontend = **Next.js (App Router + TypeScript)**; DB dev = **SQLite**; Docker Compose 2 service. **Thay đổi so với v2.1:** Lộ trình mục 8 đã bổ sung đầy đủ màn hình CRUD dữ liệu chủ (máy, sản phẩm, changeover, khuôn, ca) vào tuần 5–6 + counterfactual máy hỏng vào tuần 9 để khớp ràng buộc mục 1.1.
+**Trạng thái:** Draft v2.4 — cập nhật theo `docs/Report_so_bo_Do_an_CO5103_VoVanDung.md` (báo cáo sơ bộ), dựa trên các prototype đã kiểm chứng (`scheduling_poc*.py`, `production_planning_2weeks.py`, `detailed_day_schedule.py`). **Thay đổi so với v2:** Frontend = Next.js; DB dev = SQLite; Docker 2 service. **v2.1–v2.2:** UI đầy đủ + CRUD master data. **v2.3:** Phân module Master Data / Planning / Scheduling / Explanation. **v2.4:** Làm rõ horizon — **Planning = tháng/quý**, **Scheduling = 2 tuần** (chi tiết).
 
 **Giả định khi lập tài liệu này** (chỉnh lại nếu sai): đồ án cá nhân (solo), còn khoảng **12–14 tuần** trong học kỳ, mục tiêu cuối là một ứng dụng demo chạy local (không cần hạ tầng cloud production).
 
@@ -13,7 +13,7 @@
 
 **Bối cảnh:** thay thế cách lập lịch thủ công bằng Excel rời rạc (dữ liệu phân mảnh giữa các bộ phận, mang tính "hộp đen", khó điều chỉnh khi có đơn gấp, phụ thuộc kinh nghiệm cá nhân) bằng một **ứng dụng web nội bộ** cho quản đốc/ban lãnh đạo.
 
-Đóng gói 2 tầng lập lịch đã kiểm chứng (Aggregate Planning → Detailed Scheduling) cùng lớp giải thích thành luồng: nhập đơn hàng + tồn kho → xem kế hoạch sản xuất → hỏi "vì sao" → giả lập tình huống (đơn gấp, máy hỏng).
+Đóng gói 2 tầng lập lịch đã kiểm chứng (**Production Planning** theo tháng/quý → **Production Scheduling** chi tiết horizon 2 tuần) cùng lớp giải thích thành luồng: nhập đơn hàng + tồn kho → xem kế hoạch sản xuất → hỏi "vì sao" → giả lập tình huống (đơn gấp, máy hỏng).
 
 Tác nhân cần đạt 4 khả năng (theo phát biểu bài toán trong báo cáo sơ bộ):
 
@@ -38,8 +38,8 @@ Không mục tiêu: multi-tenant, scale lớn, real-time streaming — đây là
 | Ca làm việc + định mức chi phí nhân công theo ca | Quản lý ca làm việc (CRUD `shifts`) | **Đã đưa vào tuần 5–6** |
 | Đơn hàng (mã sản phẩm, số lượng, hạn giao) | Form nhập đơn hàng | Đã có — tuần 5–6 |
 | Tồn kho đầu kỳ + ngưỡng an toàn theo sản phẩm | Form nhập tồn kho | Đã có — tuần 5–6 |
-| Lập kế hoạch sản xuất theo quý/tháng → giai đoạn 2 tuần | Màn hình kế hoạch tổng hợp (aggregate) | Đã có — tuần 5–6 |
-| Lập lịch chi tiết cho dây chuyền đúc→CNC→sơn→QC | Gantt tầng 2 (detailed) | Đã có — tuần 7 |
+| Lập kế hoạch sản xuất theo **tháng / quý** (aggregate) | Màn hình kế hoạch tổng hợp (aggregate) | Đã có — tuần 5–6 |
+| Lập lịch chi tiết horizon **2 tuần** (đúc→CNC→sơn→QC) | Gantt tầng 2 (detailed) | Đã có — tuần 7 |
 | Giải thích quyết định (đường găng, độ nhạy, hiệu suất máy) | Panel "Vì sao?" | Đã có — tuần 8 |
 | Phản ứng với đơn hàng gấp chen ngang | Form counterfactual — kịch bản đơn gấp | Đã có — tuần 9 |
 | Phản ứng với **máy hỏng** (sự kiện gián đoạn thứ 2 nêu ở mục 1.2 báo cáo) | Form counterfactual — kịch bản máy hỏng (chọn máy + khung giờ ngưng hoạt động) | **Đã đưa vào tuần 9** |
@@ -128,8 +128,25 @@ So sánh kết quả của tác nhân với:
 
 **Số service = 2 service ứng dụng + 1 datastore** (MVP):
 1. **Frontend** — Next.js (App Router, TypeScript), không có logic nghiệp vụ nặng, chỉ gọi API và hiển thị.
-2. **Backend API** — 1 process FastAPI duy nhất, chứa cả 3 "engine" (aggregate/detailed/explanation) như các **module Python nội bộ**, không tách microservice — vì solve time (~1–30s) đủ ngắn để chạy đồng bộ (synchronous) trong 1 request, không cần queue/worker riêng.
+2. **Backend API** — 1 process FastAPI duy nhất, chứa các **module Python nội bộ**, không tách microservice — vì solve time (~1–30s) đủ ngắn để chạy đồng bộ (synchronous) trong 1 request, không cần queue/worker riêng.
 3. **Database** — SQLite file cho dev (không cần server), PostgreSQL cho production nếu cần. Lưu cấu hình (đơn hàng, máy, tồn kho, khuôn, ca làm việc) và lịch sử các lần chạy (audit trail cho lớp giải thích).
+
+### 3.1. Phân module nghiệp vụ (bắt buộc)
+
+Hệ thống **phải** được chia rõ thành các module độc lập về trách nhiệm (không gộp logic vào một file lớn). Mỗi module có thư mục/package riêng trong backend và (khi cần) nhóm trang UI riêng trên frontend:
+
+| Module | Trách nhiệm | Backend path (gợi ý) | Frontend (gợi ý) |
+|---|---|---|---|
+| **Master Data** | CRUD dữ liệu chủ: máy, eligibility, sản phẩm & thời gian xử lý, ma trận chuyển đổi, khuôn, ca làm việc, đơn hàng, tồn kho | `app/modules/master_data/` (models, schemas, routers, services) | `/master/*` (máy, sản phẩm, changeover, khuôn, ca, orders, inventory) |
+| **Production Planning** | Tầng 1 — Aggregate Planning theo **tháng / quý** (sản lượng, ca, tồn kho an toàn) | `app/modules/planning/` + `app/engine/aggregate_planning.py` | `/planning/aggregate` |
+| **Production Scheduling** | Tầng 2 — Detailed Scheduling horizon **2 tuần** (Gantt đúc→CNC→sơn→QC theo ngày/ca) | `app/modules/scheduling/` + `app/engine/detailed_scheduling.py` | `/scheduling/detailed` + Gantt |
+| **Explanation** | Critical path, bottleneck, sensitivity, utilization, counterfactual | `app/modules/explanation/` + `app/engine/explanation.py` | Panel "Vì sao?", form what-if |
+| **KPI / Report** | Tóm tắt tardiness, holding, utilization | `app/modules/kpi/` | Dashboard KPI |
+
+**Quy tắc:**
+- Engine CP-SAT chỉ nằm trong `app/engine/` và được gọi bởi service layer của module tương ứng — **không** import engine trực tiếp từ router.
+- Master Data không chứa logic lập lịch; Planning/Scheduling chỉ đọc master data qua service, không ghi đè bảng master.
+- Explanation đọc `schedule_run_results` (đã lưu) trước; chỉ solve lại khi counterfactual / sensitivity.
 
 > **Stretch goal (chỉ làm nếu dư thời gian ở tuần 10+):** tách engine solve thành **service thứ 3** (worker chạy bằng Celery + Redis) nếu cần chạy nhiều kịch bản what-if song song hoặc solve time vượt quá ngưỡng chấp nhận được cho 1 request HTTP (>30s). Không làm ngay từ đầu — thêm phức tạp hạ tầng không cần thiết cho MVP.
 
@@ -156,14 +173,14 @@ So sánh kết quả của tác nhân với:
 
 ## 5. Mapping code hiện có → module backend
 
-| File prototype hiện tại | Trở thành module trong backend |
-|---|---|
-| `scheduling_poc_multi.py` + `detailed_day_schedule.py` | `app/engine/detailed_scheduling.py` |
-| `production_planning_2weeks.py` | `app/engine/aggregate_planning.py` |
-| Các hàm `trace_critical_path`, `explain_machine_gaps`, `bottleneck_summary`, `explain_rush_order` (trong `scheduling_poc_inventory.py`) | `app/engine/explanation.py` (bổ sung thêm hàm `sensitivity_analysis` — nới lỏng từng ràng buộc rồi giải lại, theo mục 2.3) |
-| Dữ liệu hard-code (`JOBS`, `MACHINES`, `ELIGIBLE`, `ORDERS`...) | Chuyển thành bảng DB (`orders`, `machines`, `machine_eligibility`, `changeover_matrix`, `molds`, `shifts`) — nhập qua UI thay vì sửa code |
+| File prototype hiện tại | Engine (CP-SAT) | Module bao quanh (service + router) |
+|---|---|---|
+| `scheduling_poc_multi.py` + `detailed_day_schedule.py` | `app/engine/detailed_scheduling.py` | **Production Scheduling** — `app/modules/scheduling/` |
+| `production_planning_2weeks.py` (prototype; nghiệp vụ thực tế = planning **tháng/quý**) | `app/engine/aggregate_planning.py` | **Production Planning** — `app/modules/planning/` |
+| Các hàm `trace_critical_path`, `explain_machine_gaps`, `bottleneck_summary`, `explain_rush_order` (trong `scheduling_poc_inventory.py`) | `app/engine/explanation.py` (+ `sensitivity_analysis`) | **Explanation** — `app/modules/explanation/` |
+| Dữ liệu hard-code (`JOBS`, `MACHINES`, `ELIGIBLE`, `ORDERS`...) | — | **Master Data** — `app/modules/master_data/` (bảng DB + CRUD API + UI) |
 
-Việc này **không viết lại thuật toán** — chỉ tách phần dữ liệu hard-code ra khỏi logic solve, và bọc mỗi hàm `build_and_solve()` thành 1 hàm service nhận input từ DB, trả JSON cho API.
+Việc này **không viết lại thuật toán** — chỉ tách phần dữ liệu hard-code ra khỏi logic solve, và bọc mỗi hàm `build_and_solve()` thành 1 hàm service trong module tương ứng, nhận input từ DB, trả JSON cho API. Router chỉ gọi service, service gọi engine.
 
 ---
 
@@ -195,10 +212,10 @@ POST   /molds                         Khai báo khuôn (máy, sản phẩm, tu�
 POST   /shifts                        Khai báo ca làm việc + chi phí nhân công
 POST   /inventory/snapshot            Nhập tồn kho đầu kỳ
 
-POST   /planning/aggregate/run        Chạy Tầng 1 (2 tuần) -> lưu schedule_run, trả plan theo ngày
+POST   /planning/aggregate/run        Chạy Tầng 1 (tháng/quý) -> lưu schedule_run, trả plan sản lượng theo kỳ
 GET    /planning/aggregate/{run_id}   Lấy lại kết quả 1 lần chạy
 
-POST   /scheduling/detailed/run       Chạy Tầng 2 cho 1 ngày cụ thể (đọc từ 1 aggregate run)
+POST   /scheduling/detailed/run       Chạy Tầng 2 horizon 2 tuần / 1 ngày (đọc từ 1 aggregate run)
 GET    /scheduling/detailed/{run_id}  Lấy lại Gantt chi tiết
 
 GET    /explain/critical-path         params: run_id, job -> chuỗi nguyên nhân
@@ -275,4 +292,4 @@ Bộ sinh dữ liệu cần điều chỉnh được tham số (số máy, số 
 
 ---
 
-*Tài liệu này là bản nháp v2.2 (Next.js + SQLite + lộ trình UI đầy đủ theo mục 1.1), cập nhật lại khi phạm vi thay đổi theo phản hồi của GVHD.*
+*Tài liệu này là bản nháp v2.4 (Next.js + SQLite + UI đầy đủ + phân module + horizon Planning tháng/quý, Scheduling 2 tuần), cập nhật lại khi phạm vi thay đổi theo phản hồi của GVHD.*
