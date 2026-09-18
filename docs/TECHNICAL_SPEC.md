@@ -1,7 +1,7 @@
 # Technical Specification — Explainable Scheduling Agent
 
 **Đồ án:** CO5103 — Võ Văn Dũng | **Học kỳ:** HK261 (2026–2027) | **GVHD:** PGS.TS Võ Thị Ngọc Châu
-**Trạng thái:** Draft v2.4 — cập nhật theo `docs/Report_so_bo_Do_an_CO5103_VoVanDung.md` (báo cáo sơ bộ), dựa trên các prototype đã kiểm chứng (`scheduling_poc*.py`, `production_planning_2weeks.py`, `detailed_day_schedule.py`). **Thay đổi so với v2:** Frontend = Next.js; DB dev = SQLite; Docker 2 service. **v2.1–v2.2:** UI đầy đủ + CRUD master data. **v2.3:** Phân module Master Data / Planning / Scheduling / Explanation. **v2.4:** Làm rõ horizon — **Planning = tháng/quý**, **Scheduling = 2 tuần** (chi tiết).
+**Trạng thái:** Draft v2.5 — cập nhật theo `docs/Report_so_bo_Do_an_CO5103_VoVanDung.md` (báo cáo sơ bộ), dựa trên các prototype đã kiểm chứng (`scheduling_poc*.py`, `production_planning_2weeks.py`, `detailed_day_schedule.py`). **Thay đổi so với v2:** Frontend = Next.js; DB dev = SQLite; Docker 2 service. **v2.1–v2.2:** UI đầy đủ + CRUD master data. **v2.3:** Phân module Master Data / Planning / Scheduling / Explanation. **v2.4:** Làm rõ horizon — **Planning = tháng/quý**, **Scheduling = 2 tuần** (chi tiết). **v2.5:** Bổ sung tài liệu tham khảo gần đây (2020–2025) + benchmark FJSP thứ 3 (Deliktaş et al., 2024) theo phản hồi GVHD sau báo cáo sơ bộ — xem `docs/lit_review_draft.md` cho chi tiết nghiên cứu gốc. **v2.6:** Bổ sung tài liệu tham khảo số 12–19, lấp các khoảng trống trích dẫn còn lại (mô hình hoá FJSP, rolling horizon, đường găng/độ nhạy, lập kế hoạch phân cấp, khung XAI cho OR, rà soát tiếng Việt) — xem `docs/lit_review_draft_2.md`.
 
 **Giả định khi lập tài liệu này** (chỉnh lại nếu sai): đồ án cá nhân (solo), còn khoảng **12–14 tuần** trong học kỳ, mục tiêu cuối là một ứng dụng demo chạy local (không cần hạ tầng cloud production).
 
@@ -13,7 +13,7 @@
 
 **Bối cảnh:** thay thế cách lập lịch thủ công bằng Excel rời rạc (dữ liệu phân mảnh giữa các bộ phận, mang tính "hộp đen", khó điều chỉnh khi có đơn gấp, phụ thuộc kinh nghiệm cá nhân) bằng một **ứng dụng web nội bộ** cho quản đốc/ban lãnh đạo.
 
-Đóng gói 2 tầng lập lịch đã kiểm chứng (**Production Planning** theo tháng/quý → **Production Scheduling** chi tiết horizon 2 tuần) cùng lớp giải thích thành luồng: nhập đơn hàng + tồn kho → xem kế hoạch sản xuất → hỏi "vì sao" → giả lập tình huống (đơn gấp, máy hỏng).
+Đóng gói 2 tầng lập lịch đã kiểm chứng (**Production Planning** theo tháng/quý → **Production Scheduling** chi tiết horizon 2 tuần) cùng lớp giải thích thành luồng: nhập đơn hàng + tồn kho → xem kế hoạch sản xuất → hỏi "vì sao" → giả lập tình huống (đơn gấp, máy hỏng). Kiến trúc phân tầng này không phải lựa chọn tuỳ ý — đây là mô hình **hierarchical production planning** kinh điển trong OR (quyết định tầng tổng hợp ràng buộc đầu vào cho quyết định chi tiết hơn), do Hax & Meal (1975, tài liệu tham khảo số 16) đặt nền móng từ 50 năm trước.
 
 Tác nhân cần đạt 4 khả năng (theo phát biểu bài toán trong báo cáo sơ bộ):
 
@@ -51,7 +51,7 @@ Bất kỳ màn hình nào ở trạng thái "Đã có" nhưng chưa thực sự
 
 ## 2. Mô hình hoá bài toán
 
-Vì chỉ một tập con máy được phép xử lý mỗi loại sản phẩm, bài toán được mô hình hoá dưới dạng **Flexible Job-Shop Scheduling Problem (FJSP)** với các ràng buộc bổ sung:
+Vì chỉ một tập con máy được phép xử lý mỗi loại sản phẩm, bài toán được mô hình hoá dưới dạng **Flexible Job-Shop Scheduling Problem (FJSP)** — theo phân loại của bài tổng quan FJSP toàn diện nhất hiện có (Dauzère-Pérès, Ding, Shen & Tamssaouet, 2024, tài liệu tham khảo số 12) — với các ràng buộc bổ sung:
 
 | Ràng buộc | Mô tả |
 |---|---|
@@ -72,7 +72,7 @@ Vì chỉ một tập con máy được phép xử lý mỗi loại sản phẩm
 - Mỗi công đoạn = 1 biến khoảng thời gian (start, duration, end); ràng buộc không chồng lấn đảm bảo máy không xử lý 2 công đoạn cùng lúc.
 - Lời giải có thể chứng minh tối ưu (hoặc biết khoảng cách với lời giải tối ưu) → dễ đánh giá, so sánh trong báo cáo.
 - CP-SAT không có "giá trị đối ngẫu" như LP, nhưng có thể suy ra ràng buộc nào đang giới hạn lời giải bằng cách nới lỏng từng ràng buộc rồi giải lại và so sánh mức cải thiện mục tiêu → nguyên liệu cho phân tích độ nhạy (mục 2.3).
-- Hạn chế: với bài toán động (đơn gấp chen ngang), giải lại từ đầu có thể tốn thời gian nếu quy mô lớn → cần chiến lược lập kế hoạch cuốn chiếu hoặc khởi tạo nóng (warm start) từ lời giải trước.
+- Hạn chế: với bài toán động (đơn gấp chen ngang), giải lại từ đầu có thể tốn thời gian nếu quy mô lớn → cần chiến lược lập kế hoạch cuốn chiếu hoặc khởi tạo nóng (warm start) từ lời giải trước — hướng cụ thể: dùng mô hình học máy để quyết định biến nào không cần giải lại giữa các chu kỳ rolling-horizon (Li, Ouyang, Ma & Wu, 2025, tài liệu tham khảo số 13), báo cáo tăng tốc tới 54% cho FJSP horizon dài.
 
 ### 2.2. Ràng buộc hiệu suất sử dụng máy
 
@@ -86,8 +86,8 @@ Yêu cầu nghiệp vụ: một khi máy đã bật (mở ca, có nhân công tr
 
 | Loại giải thích | Cách thực hiện |
 |---|---|
-| Phân tích độ nhạy | Nới lỏng từng ràng buộc, đo mức cải thiện tổng thời gian hoàn thành → xác định điểm nghẽn chính |
-| Đường găng (critical path) | Xác định chuỗi công đoạn quyết định tổng thời gian hoàn thành → trả lời "vì sao công việc X trễ" |
+| Phân tích độ nhạy | Nới lỏng từng ràng buộc, đo mức cải thiện tổng thời gian hoàn thành → xác định điểm nghẽn chính. Phương pháp gần trùng khớp nhất tìm được trong tài liệu: nới lỏng ràng buộc để xác định điểm nghẽn trong bài toán lập lịch có ràng buộc tài nguyên (Nedbálek & Novák, 2025 — ICORES, tài liệu tham khảo số 15) |
+| Đường găng (critical path) | Xác định chuỗi công đoạn quyết định tổng thời gian hoàn thành → trả lời "vì sao công việc X trễ". Phương pháp gốc: Kelley & Walker (1959), tài liệu tham khảo số 14 |
 | Phản thực (counterfactual) | "Nếu chèn đơn gấp Y, công việc nào bị đẩy lùi và trễ bao lâu" — thêm ràng buộc/đơn hàng giả định rồi giải lại, so sánh với lịch gốc |
 | Báo cáo hiệu suất sử dụng máy | Giải thích vì sao một máy đạt/không đạt hiệu suất mục tiêu trong ca, gợi ý gộp ca hoặc điều thêm đơn hàng |
 
@@ -97,6 +97,7 @@ So sánh kết quả của tác nhân với:
 
 - **(a) Lịch thủ công mô phỏng** theo quy tắc điều độ kinh nghiệm thường dùng trong ngành: FIFO, EDD (ưu tiên hạn giao gần nhất), SPT (ưu tiên thời gian xử lý ngắn nhất).
 - **(b) Bộ dữ liệu chuẩn công khai** cho bài toán lập lịch phân xưởng (Taillard, Lawrence — OR-Library) để kiểm chứng riêng phần lõi thuật toán (tối ưu makespan), tránh sai lệch do dùng dữ liệu tổng hợp tự sinh. Lưu ý các bộ chuẩn này **không** có ràng buộc đặc thù của đề tài (thời gian chuyển đổi, lô tối thiểu, bảo trì, hiệu suất máy) nên chỉ dùng để đối chứng phần lõi, không thay thế kiểm thử trên dữ liệu tổng hợp riêng.
+- **(c) Bộ benchmark FJSP công khai thứ 3** (Deliktaş, Özcan, Üstün & Torkul, 2024 — *Data in Brief*, 43 instance, xem tài liệu tham khảo số 10) — có sẵn **setup time phụ thuộc trình tự theo họ sản phẩm**, đúng loại ràng buộc mà (b) không có. Dùng để đối chứng riêng phần ràng buộc "ma trận chuyển đổi" của đề tài.
 
 ---
 
@@ -251,10 +252,15 @@ GET    /kpi/summary                   params: run_id -> tardiness cost, holding 
 
 ## 9. Nguồn dữ liệu
 
-Vì không tiếp cận được dữ liệu thật của nhà máy, đề tài sử dụng dữ liệu tổng hợp theo 2 nguồn tham chiếu:
+Vì không tiếp cận được dữ liệu thật của nhà máy, đề tài sử dụng dữ liệu tổng hợp theo 3 nguồn tham chiếu:
 
-1. **Ràng buộc nghiệp vụ thực tế** (rút ra từ hiểu biết về quy trình sản xuất bánh xe): số lượng máy theo công đoạn, thời gian chuyển đổi ước lượng, quy mô lô tối thiểu, chu kỳ bảo trì khuôn, tỷ lệ đơn hàng gấp phát sinh — dùng để tham số hoá bộ sinh dữ liệu tổng hợp sao cho phản ánh đúng đặc điểm ngành.
+1. **Ràng buộc nghiệp vụ thực tế** (rút ra từ hiểu biết về quy trình sản xuất bánh xe): số lượng máy theo công đoạn, thời gian chuyển đổi ước lượng, quy mô lô tối thiểu, chu kỳ bảo trì khuôn, tỷ lệ đơn hàng gấp phát sinh — dùng để tham số hoá bộ sinh dữ liệu tổng hợp sao cho phản ánh đúng đặc điểm ngành. Thời gian tác vụ + tiêu thụ năng lượng theo máy được đối chiếu với dữ liệu thực đo tại 1 dây chuyền sản xuất (Mota et al., 2020 — tài liệu tham khảo số 11, Zenodo, MIT license) để tránh tham số hoá hoàn toàn chủ quan.
 2. **Bộ dữ liệu chuẩn công khai** cho bài toán lập lịch phân xưởng (Taillard, Lawrence — OR-Library) — dùng để kiểm chứng phần lõi thuật toán và so sánh chất lượng lời giải với nghiên cứu khác trong lĩnh vực.
+3. **Bộ benchmark FJSP công khai thứ 3** (Deliktaş et al., 2024 — tài liệu tham khảo số 10) có setup time phụ thuộc trình tự theo họ sản phẩm — bổ sung cho (2) trên đúng ràng buộc mà Taillard/Lawrence không có (xem §2.4).
+
+**Đã kiểm tra thêm** data.gov, data.gov.vn và Kaggle theo phản hồi GVHD: data.gov/data.gov.vn không có dataset cấp máy/công đoạn/đơn hàng phù hợp (chỉ có chỉ số vĩ mô/năng lực sản xuất); vài dataset JSP tổng hợp trên Kaggle được ghi nhận nhưng chưa kiểm chứng đủ để dùng chính thức. Chi tiết quá trình rà soát ở `docs/lit_review_draft.md`.
+
+**Đã kiểm tra thêm tài liệu học thuật tiếng Việt** về lập lịch sản xuất/phân xưởng: không tìm thấy công trình tiếng Việt nào cùng bài toán (đa máy, ràng buộc chuyển đổi/bảo trì/hiệu suất máy). Có 1 luận án tiến sĩ cùng trường (Trang, 2021 — tài liệu tham khảo số 19, ĐH Bách Khoa – ĐHQG-HCM) nhưng giải bài toán khác (lập lịch cá nhân, 1 máy) — chỉ dùng làm bằng chứng cho tiền lệ nghiên cứu lập lịch chất lượng quốc tế tại trường, không phải công trình liên quan trực tiếp. Chi tiết ở `docs/lit_review_draft_2.md`.
 
 Bộ sinh dữ liệu cần điều chỉnh được tham số (số máy, số công việc, phân phối thời gian xử lý, tần suất đơn gấp) để tạo nhiều kịch bản kiểm thử, đánh giá độ ổn định của tác nhân.
 
@@ -278,7 +284,7 @@ Bộ sinh dữ liệu cần điều chỉnh được tham số (số máy, số 
 | Kết quả CP-SAT không tái lập được giữa các lần chạy (đã gặp ở `scheduling_poc_inventory.py`) | Cố định `random_seed` + `num_search_workers=1` cho các lần chạy dùng để demo/báo cáo |
 | Scope UI phình to, hết thời gian cho phần thuật toán/luận văn | Theo đúng thứ tự ưu tiên ở mục 8; không làm Tầng 3 nếu tuần 9 chưa xong Tầng 2 |
 | GVHD yêu cầu đổi hướng dữ liệu (dùng dữ liệu thật thay vì synthetic) | Data model đã tách khỏi code (mục 5–6) nên đổi nguồn dữ liệu không cần sửa engine |
-| Bài toán động (đơn gấp) giải lại từ đầu quá chậm khi quy mô lớn | Cân nhắc chiến lược lập kế hoạch cuốn chiếu hoặc khởi tạo nóng (warm start) từ lời giải trước (mục 2.1) |
+| Bài toán động (đơn gấp) giải lại từ đầu quá chậm khi quy mô lớn | Cân nhắc chiến lược lập kế hoạch cuốn chiếu hoặc khởi tạo nóng (warm start) từ lời giải trước (mục 2.1); hướng cụ thể đã có tiền lệ trong tài liệu: Li et al. (2025), tài liệu tham khảo số 13 |
 | Bộ benchmark công khai (Taillard/Lawrence) không có ràng buộc đặc thù đề tài | Chỉ dùng để đối chứng phần lõi thuật toán (mục 2.4), không thay thế kiểm thử trên dữ liệu tổng hợp riêng |
 
 ---
@@ -289,7 +295,22 @@ Bộ sinh dữ liệu cần điều chỉnh được tham số (số máy, số 
 2. Lawrence, S. (1984). *Resource constrained project scheduling: An experimental investigation of heuristic scheduling techniques*. GSIA, Carnegie Mellon University.
 3. Beasley, J. E. (1990). OR-Library: Distributing test problems by electronic mail. *Journal of the Operational Research Society*, 41(11), 1069–1072.
 4. Google OR-Tools — CP-SAT Solver. https://developers.google.com/optimization
+5. Wang, Y. C., & Chen, T. (2024). Adapted techniques of explainable artificial intelligence for explaining genetic algorithms on the example of job scheduling. *Expert Systems with Applications*, 237, 121369. https://doi.org/10.1016/j.eswa.2023.121369
+6. Wang, Y. C., & Chen, T. (2025). *Explainable and Customizable Job Sequencing and Scheduling: Advancing Production Control and Management with XAI*. Springer. https://link.springer.com/book/9783031853739
+7. Mehdiyev, N., Majlatow, M., & Fettke, P. (2024). Counterfactual Explanations in the Big Picture: An Approach for Process Prediction-Driven Job-Shop Scheduling Optimization. *Cognitive Computation*. https://doi.org/10.1007/s12559-024-10294-0
+8. Cheng, Y., Xie, Z., Xin, Y., Chen, K., & Zarei, R. (2024). Flexible Job Shop Scheduling Method for Optimizing Mold Resource Setup Time. *IEEE Access*, 12, 33486–33503. https://doi.org/10.1109/ACCESS.2024.3372396
+9. Lan, L., & Berkhout, J. (2025). PyJobShop: Solving scheduling problems with constraint programming in Python. *arXiv:2502.13483*. https://arxiv.org/abs/2502.13483
+10. Deliktaş, D., Özcan, E., Üstün, Ö., & Torkul, O. (2024). A benchmark dataset for multi-objective flexible job shop cell scheduling. *Data in Brief*, 52. https://www.sciencedirect.com/science/article/pii/S2352340923009770 (dataset: https://data.mendeley.com/datasets/rtzby7pv7m/1)
+11. Mota, B., Gomes, L., Faria, P., Ramos, C., & Vale, Z. (2020). Production line dataset for task scheduling and energy optimization – Schedule Optimization (v0.1) [Dataset]. Zenodo. https://doi.org/10.5281/zenodo.4106746
+12. Dauzère-Pérès, S., Ding, J., Shen, L., & Tamssaouet, K. (2024). The flexible job shop scheduling problem: A review. *European Journal of Operational Research*, 314(2), 409–432. https://doi.org/10.1016/j.ejor.2023.05.017
+13. Li, S., Ouyang, W., Ma, Y., & Wu, C. (2025). Learning-Guided Rolling Horizon Optimization for Long-Horizon Flexible Job-Shop Scheduling. *arXiv:2502.15791*. https://arxiv.org/abs/2502.15791
+14. Kelley, J. E., & Walker, M. R. (1959). Critical-path planning and scheduling. In *Papers presented at the December 1–3, 1959, eastern joint IRE-AIEE-ACM computer conference (IRE-AIEE-ACM '59, Eastern)*, ACM Press, 160–173. https://doi.org/10.1145/1460299.1460318
+15. Nedbálek, L., & Novák, A. (2025). Bottleneck Identification in Resource-Constrained Project Scheduling via Constraint Relaxation. In *Proceedings of the 14th International Conference on Operations Research and Enterprise Systems (ICORES 2025)*. https://arxiv.org/abs/2504.07495
+16. Hax, A. C., & Meal, H. C. (1975). Hierarchical integration of production planning and scheduling. In M. A. Geisler (Ed.), *Studies in Management Sciences, Vol. 1: Logistics* (pp. 53–69). North-Holland/American Elsevier.
+17. De Bock, K. W., Coussement, K., De Caigny, A., Słowiński, R., Baesens, B., Boute, R. N., Choi, T. M., Delen, D., Kraus, M., Lessmann, S., Maldonado, S., Martens, D., Óskarsdóttir, M., Vairetti, C., Verbeke, W., & Weber, R. (2024). Explainable AI for Operational Research: A defining framework, methods, applications, and a research agenda. *European Journal of Operational Research*, 317(2). https://doi.org/10.1016/j.ejor.2023.09.026
+18. Garn, W., & Amirghasemi, M. (2025). Transparency of combinatorial optimisations via machine learning and explainable AI. *Annals of Operations Research*, 354, 427–458. https://doi.org/10.1007/s10479-025-06684-8
+19. Trang, H. S. (2021). *Một số phương pháp tiếp cận cho bài toán lập lịch cá nhân* [Luận án Tiến sĩ]. Trường Đại học Bách Khoa – ĐHQG-HCM. https://grad.hcmut.edu.vn/hv/download/LATS/8140009/TOM_TAT_LATS_THSon.pdf
 
 ---
 
-*Tài liệu này là bản nháp v2.4 (Next.js + SQLite + UI đầy đủ + phân module + horizon Planning tháng/quý, Scheduling 2 tuần), cập nhật lại khi phạm vi thay đổi theo phản hồi của GVHD.*
+*Tài liệu này là bản nháp v2.6 (Next.js + SQLite + UI đầy đủ + phân module + horizon Planning tháng/quý, Scheduling 2 tuần + tài liệu tham khảo & benchmark bổ sung + bổ sung tài liệu nền tảng cho các mục chưa có trích dẫn: FJSP review, rolling horizon, critical path/sensitivity, hierarchical planning, XAI-for-OR, rà soát tiếng Việt), cập nhật lại khi phạm vi thay đổi theo phản hồi của GVHD.*
