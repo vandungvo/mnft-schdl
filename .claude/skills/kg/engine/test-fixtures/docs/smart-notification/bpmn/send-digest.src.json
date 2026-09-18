@@ -1,0 +1,5 @@
+{
+  "actors": ["Hệ thống thông báo"],
+  "branches": ["Có unread", "Không có unread"],
+  "errors": ["E-smart-notification-003", "Lưu cấu hình mute thất bại"]
+}

@@ -1,0 +1,426 @@
+<!--
+  TEMPLATE: prototype-html-template.html
+  Used by: .claude/skills/prototype-html/SKILL.md (Phase F/G — compose prototype)
+
+  Đây là HI-FI CLICKABLE PROTOTYPE (self-contained, 1 file, mở file://). Khác wireframe-html:
+  - App LIỀN MẠCH: 1 document, nhiều <section data-screen>, CHIA SẺ 1 store JS (KHÔNG iframe).
+  - State-driven: mọi màn render từ store.state; hành động thật đổi state thật; persist localStorage.
+  - Vỏ điều hướng NỔI (floating): FAB góc dưới-phải → panel TOC + sơ đồ luồng. KHÔNG sidebar cố định.
+  - 2 lớp tách bạch: VỎ (chrome) neutral B&W · APP (design tokens) có màu.
+
+  ── Placeholders skill thay ──
+  {{LANG}}        → "vi" / "en"
+  {{FEATURE}}     → feature slug
+  {{FEATURE_TITLE}} → tên hiển thị feature
+  {{DEVICE}}      → mobile | tablet | desktop (từ userflow primary_device / user chốt)
+  {{DEVICE_W}}    → 375 | 768 | (desktop: bỏ frame — xem CSS .proto-stage[data-device="desktop"])
+  {{DEVICE_H}}    → 812 (mobile) | 1024 (tablet) | — (desktop)
+  {{FLOW_COUNT}} · {{SCREEN_COUNT}}
+  {{RAW_PALETTE}} → khối biến --palette-* copy hex TỪ docs/design.md (raw, chỉ khai báo 1 lần)
+  {{THEME_SEMANTIC}} → 3 block :root(default) + [data-theme="light"] + [data-theme="dark"] map semantic token
+  {{APP_COMPONENT_CSS}} → CSS component của app (chỉ dùng semantic token var(--bg)/var(--ink)/... — KHÔNG hex rời)
+  {{ICON_SPRITE}} → <symbol> SVG stroke inline (KHÔNG emoji)
+  {{SCREENS}}     → các <section data-screen="{slug}" data-theme="light|dark"> — render từ store.state
+  {{TOC}}         → panel: mỗi flow 1 nhóm + link screen (data-goto). Mẫu cuối file.
+  {{FLOWMAP}}     → panel tab "Sơ đồ luồng": mỗi flow 1 .flowgroup chain node. Mẫu cuối file.
+  {{DEMO_DATA}}   → const DEMO = {...} (1 nguồn dữ liệu giả duy nhất, deterministic — KHÔNG Date.now/random)
+  {{DEFAULT_STATE}} → const DEFAULT_STATE = {...} hydrate TỪ DEMO
+  {{ENTRY_SCREENS}} → mảng slug các màn ENTRY (login/signup/forgot-password/...) — clear input khi quay lại. Màn nhận data/token TỪ màn trước cùng flow (verify-sent, reset-password) KHÔNG liệt kê ở đây.
+  {{APP_LOGIC}}   → hàm render/hành động app (render từ store.state, hành động đổi state + store.save()). Submit/async PHẢI có loading (disable nút + label "Đang..." + setTimeout deterministic trước khi ra kết quả) + định nghĩa clearFormInputs(slug) (reset input/checkbox trong section về rỗng, ẩn banner/error — KHÔNG đụng store.state).
+  {{DEFAULT_SCREEN}} → slug màn mặc định
+
+  ── Bất biến ──
+  - Self-contained, KHÔNG external JS/CSS (fonts CDN optional). Chạy file://.
+  - VỎ chrome KHÔNG đọc token app (--bg/--ink...) — dùng --chrome-*. body nền = chrome neutral.
+  - KHÔNG iframe (app share store). KHÔNG emoji (SVG sprite). KHÔNG bịa hex ngoài palette.
+  - reset: removeItem(STORE_KEY) — TUYỆT ĐỐI không clear(); confirm + reset RAM + xoá hash + reload.
+  - Mọi submit/async có loading state (disable + label "Đang...") — KHÔNG nhảy kết quả tức thời.
+  - showScreen() clear input DOM cho màn trong ENTRY_SCREENS TRƯỚC khi renderScreen() — dữ liệu trong store.state (context flow) KHÔNG bị đụng.
+  - Form field pristine → touched → submitted (SKILL nguyên tắc 7): KHÔNG hiện lỗi trước khi user blur/submit field đó. Input có canonical format (số thẻ, MM/YY...) PHẢI sanitize + format ngay trên input/paste, bất kể pristine hay touched — dùng helper FORM_HELPERS bên dưới, KHÔNG viết regex format rời cho từng field.
+-->
+<!DOCTYPE html>
+<html lang="{{LANG}}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{FEATURE_TITLE}} — Prototype</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ══════════ LỚP 1: VỎ CHROME (neutral B&W — KHÔNG token app) ══════════ */
+    :root {
+      --chrome-bg: #f4f4f4; --chrome-panel: #fff; --chrome-line: #ccc;
+      --chrome-ink: #000; --chrome-muted: #777;
+    }
+    html { font-size: 14px; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--chrome-bg);            /* nền quanh = chrome, KHÔNG token app */
+      color: var(--chrome-ink);
+      min-height: 100vh;
+    }
+    /* Khung app căn giữa toàn viewport — không sidebar chiếm cột */
+    .proto-stage {
+      min-height: 100vh; display: flex; align-items: flex-start;
+      justify-content: center; padding: 32px 16px;
+    }
+    /* device frame — mobile/tablet có khung, desktop full-width */
+    .proto-app {
+      width: min(var(--device-w, 375px), 100%);
+      height: min(var(--device-h, 812px), calc(100vh - 64px));
+      max-height: calc(100vw * (var(--device-h, 812) / var(--device-w, 375)));
+      background: var(--bg);                    /* nền app (semantic token) */
+      border-radius: 40px; overflow: hidden; position: relative;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.28); display: flex; flex-direction: column;
+    }
+    .proto-stage[data-device="desktop"] .proto-app {
+      width: min(1024px, 100%); height: auto; min-height: calc(100vh - 64px);
+      max-height: none; border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+    @media (max-width: 480px) {
+      .proto-stage { padding: 0; }
+      .proto-app { border-radius: 0; height: 100vh; max-height: 100vh; box-shadow: none; }
+    }
+
+    /* Floating nav: FAB + panel — position fixed, nổi trên app */
+    .proto-fab {
+      position: fixed; right: 20px; bottom: 20px; z-index: 900;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--chrome-ink); color: #fff; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    .proto-fab svg { width: 24px; height: 24px; stroke: #fff; fill: none; stroke-width: 1.6; }
+    .proto-panel {
+      position: fixed; right: 20px; bottom: 84px; z-index: 901;
+      width: 340px; max-width: calc(100vw - 40px); max-height: calc(100vh - 120px);
+      background: var(--chrome-panel); color: var(--chrome-ink);
+      border: 1px solid var(--chrome-ink); border-radius: 12px; overflow: hidden;
+      display: none; flex-direction: column; box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    }
+    .proto-panel.open { display: flex; }
+    .proto-panel-head {
+      display: flex; align-items: center; gap: 8px; padding: 12px 14px;
+      border-bottom: 1px solid var(--chrome-line);
+    }
+    .proto-panel-head .feat { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--chrome-muted); }
+    .proto-panel-head .close { margin-left: auto; background: none; border: none; font-size: 18px; cursor: pointer; color: var(--chrome-ink); }
+    .proto-tabs { display: flex; border-bottom: 1px solid var(--chrome-line); }
+    .proto-tab { flex: 1; padding: 9px; background: none; border: none; border-bottom: 2px solid transparent; font-size: 12px; cursor: pointer; color: var(--chrome-muted); font-family: inherit; }
+    .proto-tab.active { color: var(--chrome-ink); border-bottom-color: var(--chrome-ink); font-weight: 700; }
+    .proto-panel-body { overflow-y: auto; padding: 10px 0; }
+    .proto-pane { display: none; } .proto-pane.active { display: block; }
+
+    /* TOC pane */
+    .toc-section { padding: 10px 14px 4px; font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: var(--chrome-muted); }
+    .toc-link { display: block; padding: 6px 14px; font-size: 13px; color: var(--chrome-ink); text-decoration: none; border-left: 3px solid transparent; cursor: pointer; }
+    .toc-link:hover { background: #f4f4f4; }
+    .toc-link.active { border-left-color: #000; background: #f0f0f0; font-weight: 700; }
+    .toc-link.screen { padding-left: 30px; font-size: 12px; color: #444; }
+    .toc-link.screen::before { content: "› "; color: var(--chrome-muted); }
+
+    /* Flowmap pane (B&W, no mermaid) */
+    .flowmap { padding: 10px 14px; display: flex; flex-direction: column; gap: 16px; }
+    .flowgroup { border: 1px solid var(--chrome-line); border-radius: 8px; padding: 12px; }
+    .flowgroup h3 { font-size: 13px; margin-bottom: 8px; }
+    .chain { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+    .node { border: 1.5px solid #000; border-radius: 6px; padding: 6px 10px; font-size: 11px; background: #fff; cursor: pointer; text-decoration: none; color: #000; }
+    .node:hover { background: #f0f0f0; }
+    .node.edge { background: repeating-linear-gradient(45deg,#fff,#fff 4px,#f0f0f0 4px,#f0f0f0 8px); }
+    .node.error { background: #000; color: #fff; }
+    .arrow { color: var(--chrome-muted); font-size: 13px; }
+    .panel-reset { margin: 6px 14px 12px; padding: 8px; width: calc(100% - 28px); background: none; border: 1px solid var(--chrome-line); border-radius: 6px; cursor: pointer; font-size: 12px; color: var(--chrome-muted); font-family: inherit; }
+    .panel-reset:hover { border-color: #000; color: #000; }
+
+    /* Demo notice */
+    /* Góc dưới-TRÁI (FAB ở phải), sát mép, mờ — KHÔNG center để tránh đè nút dưới cùng của app */
+    .demo-notice { position: fixed; left: 12px; bottom: 12px; z-index: 700;
+      background: rgba(255,255,255,0.9); border: 1px solid var(--chrome-line); color: var(--chrome-muted);
+      font-size: 10px; padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+      pointer-events: none; opacity: 0.75; }
+
+    /* ══════════ LỚP 2: APP (design tokens — CHỈ lớp này có màu) ══════════ */
+    /* RAW PALETTE — copy hex từ docs/design.md, SỬA CHỈ ở đây */
+    :root {
+      {{RAW_PALETTE}}
+    }
+    /* SEMANTIC token — component CHỈ dùng cái này. 3 block bắt buộc (default+light+dark). */
+    {{THEME_SEMANTIC}}
+    /* mọi phần tử mang data-theme lấy nền/chữ từ semantic token */
+    [data-theme] { background-color: var(--bg); color: var(--ink); }
+
+    /* MODAL base (BẤT BIẾN) — reset '* { margin:0 }' ở trên XOÁ margin:auto mặc định
+       của <dialog> → dialog rơi về góc trái-trên. Bắt buộc set lại margin:auto để căn giữa. */
+    dialog { margin: auto; border: none; padding: 0; background: transparent; max-width: calc(100% - 40px); }
+    dialog::backdrop { background: rgba(0,0,0,0.5); }
+    /* .modal là nội dung bên trong dialog — style theo semantic token app */
+
+    /* Screens (1 document, show/hide) */
+    [data-screen] { display: none; flex-direction: column; height: 100%; overflow-y: auto; }
+    [data-screen].active { display: flex; }
+
+    /* App component CSS (chỉ semantic token) */
+    {{APP_COMPONENT_CSS}}
+  </style>
+</head>
+<body>
+  <!-- icon sprite (SVG stroke, KHÔNG emoji) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    {{ICON_SPRITE}}
+  </svg>
+
+  <!-- ════ APP (state-driven, 1 document) ════ -->
+  <div class="proto-stage" data-device="{{DEVICE}}" style="--device-w:{{DEVICE_W}}px; --device-h:{{DEVICE_H}}px;">
+    <div class="proto-app">
+      {{SCREENS}}
+    </div>
+  </div>
+
+  <!-- ════ VỎ điều hướng NỔI (floating, neutral) ════ -->
+  <button class="proto-fab" onclick="togglePanel()" title="Điều hướng">
+    <svg viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+  </button>
+  <div class="proto-panel" id="proto-panel">
+    <div class="proto-panel-head">
+      <div>
+        <div class="feat">{{FEATURE}}</div>
+        <strong>Điều hướng · {{FLOW_COUNT}} flow · {{SCREEN_COUNT}} màn</strong>
+      </div>
+      <button class="close" onclick="togglePanel(false)" aria-label="Đóng">✕</button>
+    </div>
+    <div class="proto-tabs">
+      <button class="proto-tab active" onclick="switchPane('toc', this)">Mục lục</button>
+      <button class="proto-tab" onclick="switchPane('flow', this)">Sơ đồ luồng</button>
+    </div>
+    <div class="proto-panel-body">
+      <div class="proto-pane active" id="pane-toc">
+        {{TOC}}
+      </div>
+      <div class="proto-pane" id="pane-flow">
+        <div class="flowmap">
+          {{FLOWMAP}}
+        </div>
+      </div>
+    </div>
+    <button class="panel-reset" onclick="resetPrototypeData()">↺ Reset dữ liệu demo</button>
+  </div>
+
+  <div class="demo-notice">Demo — dữ liệu lưu local browser, không gửi đâu</div>
+
+  <script>
+    // ════ CONSTANTS ════
+    const FEATURE = "{{FEATURE}}";
+    const STORE_KEY = "proto:{{FEATURE}}:v1";                 // proto:{feature}:v{N}
+    const SCREENS = [/* {{SCREEN_LIST}} */];
+    const DEFAULT_SCREEN = "{{DEFAULT_SCREEN}}";
+    const ENTRY_SCREENS = [/* {{ENTRY_SCREENS}} */];          // màn NHẬP MỚI mỗi lần ghé — clear input khi quay lại
+
+    // ════ DEMO DATA (1 nguồn duy nhất, deterministic) ════
+    {{DEMO_DATA}}
+
+    // ════ STATE STORE ════
+    {{DEFAULT_STATE}}
+    const store = {
+      state: null,
+      load(){
+        // dọn key cùng feature khác version (tránh rác + lệch schema)
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith("proto:{{FEATURE}}:") && k !== STORE_KEY) localStorage.removeItem(k);
+        });
+        try {
+          const r = localStorage.getItem(STORE_KEY);
+          // merge với default: state cũ thiếu key mới sẽ được bù → không TypeError trắng trang
+          this.state = r ? Object.assign(structuredClone(DEFAULT_STATE), JSON.parse(r)) : structuredClone(DEFAULT_STATE);
+        } catch { this.state = structuredClone(DEFAULT_STATE); }
+      },
+      save(){ localStorage.setItem(STORE_KEY, JSON.stringify(this.state)); },
+      update(patch){ Object.assign(this.state, patch); this.save(); },   // shallow — chỉ top-level
+    };
+    store.load();
+
+    // ════ NAVIGATION (show/hide section cùng document) ════
+    function goto(slug){ location.hash = slug; }
+    function showScreen(slug){
+      if (!slug || !SCREENS.includes(slug)) slug = DEFAULT_SCREEN;
+      document.querySelectorAll('[data-screen]').forEach(s => s.classList.remove('active'));
+      const t = document.querySelector('[data-screen="'+slug+'"]');
+      if (t) t.classList.add('active');
+      if (ENTRY_SCREENS.includes(slug)) clearFormInputs(slug); // màn entry: xoá input cũ TRƯỚC khi render — context flow (store.state) không bị đụng
+      renderScreen(slug);                                     // render TỪ store.state
+      // highlight TOC
+      document.querySelectorAll('.toc-link').forEach(a => a.classList.toggle('active', a.dataset.goto === slug));
+    }
+    window.addEventListener('hashchange', () => showScreen(location.hash.slice(1)));
+
+    // ════ ENTRY SCREEN CLEAR (input tự-nhập-lại mỗi lần ghé — KHÔNG đụng store.state) ════
+    // Đưa field về lại pristine: xoá value + gỡ marker touched/submitted + aria-invalid="false" (SKILL nguyên tắc 7).
+    function clearFormInputs(slug){
+      const section = document.querySelector('[data-screen="'+slug+'"]');
+      if (!section) return;
+      section.querySelectorAll('input[type="text"], input[type="email"], input[type="password"], textarea').forEach(el => { el.value = ''; delete el.dataset.touched; el.setAttribute('aria-invalid', 'false'); });
+      section.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(el => el.checked = false);
+      section.querySelectorAll('.banner').forEach(el => el.classList.remove('show'));
+      section.querySelectorAll('.err-inline').forEach(el => el.classList.remove('show'));
+      delete section.dataset.submitted;
+    }
+
+    // ════ FORM HELPERS dùng chung (SKILL nguyên tắc 7 — pristine/touched/submitted + format-trước-validate) ════
+    // digitsOnly: giữ lại chữ số, cắt tối đa `max` ký tự — dùng cho mọi input numeric (thẻ/hết hạn/CVC/OTP...).
+    function digitsOnly(value, max){
+      const d = (value || '').replace(/\D/g, '');
+      return max ? d.slice(0, max) : d;
+    }
+    // formatCardNumber: nhóm 4-4-4-4 cách nhau 1 khoảng trắng, tối đa 16 số.
+    function formatCardNumber(value){
+      return digitsOnly(value, 16).replace(/(.{4})/g, '$1 ').trim();
+    }
+    // formatCardExpiry: tối đa 4 số, tự chèn "/" sau 2 số đầu → MM/YY. KHÔNG tự sửa tháng sai — format trước, validate sau.
+    function formatCardExpiry(value){
+      const d = digitsOnly(value, 4);
+      return d.length > 2 ? d.slice(0, 2) + '/' + d.slice(2) : d;
+    }
+    // markFieldTouched: field rời khỏi pristine (gọi trên blur, hoặc toàn form khi submit).
+    function markFieldTouched(el){ el.dataset.touched = '1'; }
+    function isFieldTouched(el){ return el.dataset.touched === '1'; }
+    // setFieldError: đồng bộ .err-inline + aria-invalid/aria-describedby. `show=false` để tắt lỗi khi field đã hợp lệ.
+    function setFieldError(inputEl, errorEl, show){
+      if (errorEl) errorEl.classList.toggle('show', !!show);
+      inputEl.setAttribute('aria-invalid', show ? 'true' : 'false');
+      if (errorEl && errorEl.id) inputEl.setAttribute('aria-describedby', errorEl.id);
+    }
+    // bindFormattedField: gắn input(sanitize+format, không bật lỗi nếu còn pristine) + blur(mark touched, validate)
+    // formatter(value) -> chuỗi đã format. validator(formattedValue) -> true nếu hợp lệ. errorEl có thể null nếu field không cần báo lỗi riêng.
+    function bindFormattedField(inputEl, errorEl, formatter, validator){
+      inputEl.addEventListener('input', () => {
+        const formatted = formatter(inputEl.value);
+        if (formatted !== inputEl.value) inputEl.value = formatted;
+        if (isFieldTouched(inputEl)) setFieldError(inputEl, errorEl, !validator(formatted)); // đã touched → revalidate ngay, lỗi tắt liền khi sửa đúng
+      });
+      inputEl.addEventListener('blur', () => {
+        markFieldTouched(inputEl);
+        setFieldError(inputEl, errorEl, !validator(inputEl.value));
+      });
+    }
+
+    // ════ THEME đồng bộ cho modal/dialog top-layer ════
+    function openModal(el){
+      const cur = document.querySelector('[data-screen].active');
+      if (cur) el.setAttribute('data-theme', cur.getAttribute('data-theme') || 'light');
+      if (el.showModal) el.showModal(); else el.classList.add('open');
+    }
+
+    // ════ FLOATING PANEL ════
+    function togglePanel(force){
+      const p = document.getElementById('proto-panel');
+      const open = force === undefined ? !p.classList.contains('open') : force;
+      p.classList.toggle('open', open);
+    }
+    function switchPane(name, btn){
+      document.querySelectorAll('.proto-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('pane-toc').classList.toggle('active', name === 'toc');
+      document.getElementById('pane-flow').classList.toggle('active', name === 'flow');
+    }
+    // panel link/node click → chuyển màn + tự đóng panel
+    document.querySelectorAll('[data-goto]').forEach(a => a.addEventListener('click', e => {
+      e.preventDefault(); goto(a.dataset.goto); togglePanel(false);
+    }));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') togglePanel(false); });
+
+    // ════ RESET (an toàn) ════
+    function resetPrototypeData(){
+      if(!confirm('Xoá toàn bộ dữ liệu demo và làm mới? Không thể hoàn tác.')) return;
+      localStorage.removeItem(STORE_KEY);                     // CHỈ 1 key — không clear()
+      store.state = structuredClone(DEFAULT_STATE);           // reset RAM TRƯỚC (chặn beforeunload ghi đè)
+      history.replaceState(null, '', location.pathname + location.search); // xoá hash → tránh crash route
+      location.reload();
+    }
+
+    // ════ APP LOGIC (render từ store.state; hành động đổi state + store.save()) ════
+    {{APP_LOGIC}}
+
+    // ════ INIT ════
+    showScreen(location.hash.slice(1) || DEFAULT_SCREEN);
+  </script>
+</body>
+</html>
+
+<!--
+  ════════════════════════════════════════════════════════════════
+  MẪU {{TOC}} — mỗi flow 1 nhóm (thứ tự theo userflow Mục 3). data-goto = screen slug.
+  ════════════════════════════════════════════════════════════════
+  <div class="toc-section">Flow {i} · {tên flow}</div>
+  <a class="toc-link" data-goto="{screen-slug-1}">{tên màn 1}</a>
+  <a class="toc-link screen" data-goto="{screen-slug-2}">{tên màn 2}</a>
+
+  ── Nếu feature có BƯỚC NGOÀI MÀN HÌNH (bấm link email verify/reset, hết hạn, khóa tự mở, admin…) ──
+  Thêm 1 section CUỐI panel (KHÔNG nhét link giả vào <section data-screen> — xem SKILL nguyên tắc 4):
+  <div class="toc-section demo-trigger-head">Bước ngoài màn hình (mô phỏng)</div>
+  <p class="demo-trigger-note">Các bước xảy ra ngoài app thật (bấm link trong email, thời gian trôi). Kích hoạt tại đây thay cho hộp thư.</p>
+  <a class="toc-link demo-trigger" onclick="simVerify(true); togglePanel(false)">✉ Bấm link xác nhận (còn hạn) → thành công</a>
+  CSS đi kèm (lớp chrome, neutral): .toc-section.demo-trigger-head{margin-top:8px;border-top:1px dashed var(--chrome-line);padding-top:12px}
+  .demo-trigger-note{padding:0 14px 6px;font-size:10px;color:var(--chrome-muted);line-height:1.4}
+  .toc-link.demo-trigger{font-size:12px;color:var(--chrome-muted);font-style:italic}
+
+  ════════════════════════════════════════════════════════════════
+  MẪU {{FLOWMAP}} — mỗi flow 1 .flowgroup. Node class: happy(mặc định)/edge/error theo userflow Mục 3.
+  ════════════════════════════════════════════════════════════════
+  <div class="flowgroup">
+    <h3>Flow {i} — {tên flow}</h3>
+    <div class="chain">
+      <a class="node" data-goto="{slug-1}">{slug-1}</a>
+      <span class="arrow">→</span>
+      <a class="node error" data-goto="{slug-2}">{slug-2}</a>
+    </div>
+  </div>
+
+  ════════════════════════════════════════════════════════════════
+  MẪU submit/async CÓ LOADING STATE (mọi hàm doXxx() xử lý submit theo mẫu này — SKILL nguyên tắc 5)
+  ════════════════════════════════════════════════════════════════
+  function doLogin(){
+    const btn = $('login-submit');
+    const original = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Đang đăng nhập...';
+    setTimeout(() => {
+      // ... xử lý kết quả thật (so DEMO, update store, banner, goto) ...
+      btn.disabled = false; btn.textContent = original;   // khôi phục nếu KHÔNG chuyển màn (còn ở lại báo lỗi)
+    }, 600);                                                // deterministic, KHÔNG random
+  }
+  Nếu hành động THÀNH CÔNG và chuyển màn ngay, không cần khôi phục nút (màn cũ bị ẩn) — nhưng vẫn phải disable trong lúc chờ để tránh double-submit.
+
+  ════════════════════════════════════════════════════════════════
+  MẪU {{ENTRY_SCREENS}} + clearFormInputs (SKILL nguyên tắc 6) — khai báo trong {{APP_LOGIC}} hoặc khối const đầu script
+  ════════════════════════════════════════════════════════════════
+  Ví dụ feature login/signup/forgot-password, KHÔNG gồm verify-sent/reset-password (nhận data từ màn trước):
+    const ENTRY_SCREENS = ["login", "signup", "forgot-password"];
+  clearFormInputs(slug) đã có sẵn trong khung template (gọi tự động từ showScreen()) — KHÔNG cần viết lại trong {{APP_LOGIC}}, chỉ cần khai đúng {{ENTRY_SCREENS}}.
+
+  ════════════════════════════════════════════════════════════════
+  MẪU field pristine/touched/format (SKILL nguyên tắc 7) — dùng helper có sẵn trong khung template, KHÔNG viết regex rời
+  ════════════════════════════════════════════════════════════════
+  Field canonical-format (số thẻ) trong {{APP_LOGIC}}, ví dụ bind ngay sau khi HTML input đã có trong DOM:
+    bindFormattedField(
+      $('card-number'), $('card-number-error'),
+      formatCardNumber,                                    // format TRƯỚC — luôn chạy dù pristine hay touched
+      v => digitsOnly(v).length === 16                      // validator nhận giá trị ĐÃ format
+    );
+    bindFormattedField($('card-expiry'), $('card-expiry-error'), formatCardExpiry, v => /^(0[1-9]|1[0-2])\/\d{2}$/.test(v));
+    bindFormattedField($('card-cvc'), $('card-cvc-error'), v => digitsOnly(v, 4), v => /^\d{3,4}$/.test(v));
+  Khi submit, mark TOÀN BỘ field touched rồi validate lại — KHÔNG chỉ dựa vào touched cũ:
+    function validateCardForm(){
+      const fields = [
+        [$('card-number'), $('card-number-error'), v => digitsOnly(v).length === 16],
+        [$('card-expiry'), $('card-expiry-error'), v => /^(0[1-9]|1[0-2])\/\d{2}$/.test(v)],
+        [$('card-cvc'), $('card-cvc-error'), v => /^\d{3,4}$/.test(v)],
+      ];
+      let ok = true;
+      fields.forEach(([el, errEl, validator]) => {
+        markFieldTouched(el);
+        const valid = validator(el.value);
+        setFieldError(el, errEl, !valid);
+        if (!valid) ok = false;
+      });
+      return ok;
+    }
+  KHÔNG gọi setFieldError(...,true) hàng loạt lúc render màn — field mới hiện PHẢI ở pristine (KHÔNG lỗi) cho tới khi user blur/submit.
+-->

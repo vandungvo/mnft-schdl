@@ -1,0 +1,62 @@
+EXAMPLE — chuẩn ASCII wireframe (không emoji, viền thẳng cột, callout [n]).
+Mọi dòng viền trong khung có CÙNG bề rộng (đếm ký tự Latin/Việt = 1 cột).
+Icon nghiệp vụ = token chữ trong ngoặc, KHÔNG emoji.
+
+```text
+┌──────────────────────────────────────────────────┐
+│ < Quay lai >          Thanh toan                 │
+├──────────────────────────────────────────────────┤
+│                                                  │
+│ Tong don hang:      1,250,000 d                  │
+│ Phi giao dich:         15,000 d                  │
+│ ──────────────────────────────                   │
+│ Tong cong:          1,265,000 d                  │
+│                                                  │
+├──────────────────────────────────────────────────┤
+│                                                  │
+│ Chon phuong thuc thanh toan:                     │
+│                                                  │
+│ [1] (*)  Momo                                    │
+│          Thanh toan qua ung dung Momo            │
+│                                                  │
+│ [2] ( )  VNPay                                   │
+│          QR code hoac Internet Banking           │
+│                                                  │
+│ [3] ( )  The Visa / Mastercard                   │
+│          Nhap thong tin the                      │
+│                                                  │
+│ [4] ( )  COD (thanh toan khi nhan hang)          │
+│          Tra tien mat cho shipper                │
+│                                                  │
+├──────────────────────────────────────────────────┤
+│                                                  │
+│ [5] [x] Toi dong y voi < Dieu khoan >            │
+│                                                  │
+│ [6] [      Tiep tuc thanh toan      ]            │
+│                                                  │
+│ [7] < Huy va quay lai gio hang >                 │
+│                                                  │
+└──────────────────────────────────────────────────┘
+```
+
+Ghi chú viền: MỌI dòng viền có CÙNG bề rộng hiển thị (đây = 52 cột — đã đo bằng
+East-Asian-Width). Chữ Việt CÓ DẤU vẫn 1 cột/ký tự nên an toàn; ví dụ để plain cho
+dễ đối chiếu. Ký hiệu ambiguous/rộng-2-cột (→ ← ₫ và mọi emoji) đẩy ra prose ngoài
+khung hoặc thay bằng token chữ (`d`, `<...>`) — chèn vào khung sẽ làm lệch viền.
+
+### Screen description (5 cột — dùng chung với /wireframe-html, /prototype-html)
+
+| # | Items | Control type | Data type | Description |
+|---|-------|--------------|-----------|-------------|
+| 1 | Momo | Radio button | Check | • Chọn 1 trong nhóm phương thức. Tap cả dòng (radio + nhãn) để chọn.<br>• Mặc định chọn (*). |
+| 2 | VNPay | Radio button | Check | • QR code hoặc Internet Banking. |
+| 3 | Thẻ Visa/Mastercard | Radio button | Check | • Chọn → hiện form nhập thẻ ở màn kế. |
+| 4 | COD | Radio button | Check | • Trả tiền mặt cho shipper. |
+| 5 | Đồng ý điều khoản | Checkbox | Check | • **Bắt buộc**. CTA disabled tới khi tick + chọn ≥1 phương thức.<br>• Link < Điều khoản dịch vụ > mở modal. |
+| 6 | Tiếp tục thanh toán | Button | Click | • **Disabled** tới khi [5] tick + 1 phương thức chọn.<br>• Click → sang `payment-confirm` (breakdown phí, E-payment-007). |
+| 7 | Hủy và quay lại giỏ hàng | Link | Click | • Navigate về `cart`. |
+
+Notes:
+- States covered: default (chưa chọn), method selected (radio filled), agreement unchecked (CTA disabled).
+- Callout [n] trong khung trỏ đúng row bảng mô tả.
+- Linked screens: payment-confirm (next), cart (back).

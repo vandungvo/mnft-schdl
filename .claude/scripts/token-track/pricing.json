@@ -1,0 +1,49 @@
+{
+  "_comment": "Gia token USD per 1 TRIEU token. Nguon tham khao: Anthropic pricing + LiteLLM model_prices_and_context_window.json. Sua tay o day de override. Key match theo substring ten model (vd 'claude-opus-4-8' match 'opus'). Match theo thu tu cu the->chung; 'default' dung khi khong match.",
+  "currency": "USD",
+  "per_tokens": 1000000,
+  "models": {
+    "opus": {
+      "input": 15.0,
+      "output": 75.0,
+      "cache_write_5m": 18.75,
+      "cache_write_1h": 30.0,
+      "cache_read": 1.5
+    },
+    "sonnet": {
+      "input": 3.0,
+      "output": 15.0,
+      "cache_write_5m": 3.75,
+      "cache_write_1h": 6.0,
+      "cache_read": 0.3
+    },
+    "haiku": {
+      "input": 0.8,
+      "output": 4.0,
+      "cache_write_5m": 1.0,
+      "cache_write_1h": 1.6,
+      "cache_read": 0.08
+    },
+    "fable": {
+      "input": 3.0,
+      "output": 15.0,
+      "cache_write_5m": 3.75,
+      "cache_write_1h": 6.0,
+      "cache_read": 0.3
+    },
+    "default": {
+      "input": 3.0,
+      "output": 15.0,
+      "cache_write_5m": 3.75,
+      "cache_write_1h": 6.0,
+      "cache_read": 0.3
+    }
+  },
+  "_codex_comment": "Gia Codex/GPT (USD per 1M) — quota OpenAI RIENG, KHONG phai Anthropic. input = token input MOI (khong cache), cached_input = token doc lai cache (re), output = token sinh ra. Con so uoc luong, sua tay.",
+  "codex_models": {
+    "gpt-5.6": {"input": 1.25, "cached_input": 0.125, "output": 10.0},
+    "gpt-5.5": {"input": 1.25, "cached_input": 0.125, "output": 10.0},
+    "gpt-5": {"input": 1.25, "cached_input": 0.125, "output": 10.0},
+    "default": {"input": 1.25, "cached_input": 0.125, "output": 10.0}
+  }
+}

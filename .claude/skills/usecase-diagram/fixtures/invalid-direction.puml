@@ -1,0 +1,24 @@
+@startuml
+' FIXTURE: cú pháp ĐÚNG 100% nhưng include/extend SAI HƯỚNG.
+' Linter chỉ WARNING (không error) — hướng đúng cần nguồn nghiệp vụ, máy không tự phán.
+left to right direction
+
+actor "Khách" as Khach
+actor "CSKH" as Support
+
+rectangle "System: order" {
+  usecase "Hủy đơn" as UC_Huy
+  usecase "Hoàn tiền" as UC_Hoan
+  usecase "Đăng ký" as UC_Dk
+  usecase "Xác nhận email" as UC_Xn
+}
+
+Khach -- UC_Huy
+Support -- UC_Huy
+Khach -- UC_Dk
+
+' SAI HƯỚNG: Hoàn tiền là kẻ mở rộng có điều kiện ⇒ phải `UC_Hoan ..> UC_Huy`
+UC_Huy ..> UC_Hoan : <<extend>>
+' SAI HƯỚNG: Đăng ký là base ⇒ phải `UC_Dk ..> UC_Xn`
+UC_Xn ..> UC_Dk : <<include>>
+@enduml

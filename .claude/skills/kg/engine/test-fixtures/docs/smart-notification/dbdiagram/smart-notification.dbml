@@ -1,0 +1,47 @@
+// Schema smart-notification — nguồn: srs/smart-notification-erd.md
+
+Enum notification_status {
+  unread
+  read
+  archived
+}
+
+Enum channel_status {
+  active
+  muted
+}
+
+Enum digest_job_status {
+  pending
+  sent
+  failed
+}
+
+Table channel_preferences {
+  id uuid [pk]
+  channel_name varchar [not null, note: 'tên kênh (vd: Bài học mới, Nhắc học)']
+  status channel_status [default: 'active', note: 'active | muted']
+  muted_until timestamp [note: 'hạn tự bật lại, tối đa 30 ngày (BR-smart-notification-001)']
+  created_at timestamp [default: `now()`]
+}
+
+Table notifications {
+  id uuid [pk]
+  channel_id uuid [ref: > channel_preferences.id, note: 'kênh phát sinh thông báo']
+  title varchar [not null, note: 'tiêu đề thông báo']
+  summary text [note: 'tóm tắt nội dung']
+  status notification_status [default: 'unread', not null]
+  created_at timestamp [default: `now()`, note: 'thời điểm phát sinh']
+
+  Indexes {
+    (channel_id, created_at) [name: 'idx_notifications_channel_time']
+  }
+}
+
+Table digest_jobs {
+  id uuid [pk]
+  channel_id uuid [ref: > channel_preferences.id, note: 'kênh được gộp vào digest']
+  status digest_job_status [default: 'pending', not null]
+  scheduled_at timestamp [not null, note: 'thời điểm gửi theo múi giờ user']
+  retry_count int [default: 0, note: 'số lần retry đã thực hiện, tối đa 3 (E-smart-notification-003)']
+}

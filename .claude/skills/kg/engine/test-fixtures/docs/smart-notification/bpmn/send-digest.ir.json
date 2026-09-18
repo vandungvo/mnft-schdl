@@ -1,0 +1,19 @@
+{
+  "process": { "id": "Process_send_digest", "title": "Gửi email digest hằng ngày" },
+  "lanes": [
+    { "id": "Lane_system", "name": "Hệ thống thông báo" }
+  ],
+  "nodes": [
+    { "id": "Start_1",     "kind": "start",   "lane": "Lane_system", "name": "Job 07:00 giờ địa phương chạy" },
+    { "id": "GW_unread",   "kind": "gateway", "lane": "Lane_system", "name": "Có unread?" },
+    { "id": "Task_send",   "kind": "task",    "lane": "Lane_system", "name": "Gửi email digest" },
+    { "id": "End_skip",    "kind": "end",     "lane": "Lane_system", "name": "Bỏ qua ngày đó" },
+    { "id": "End_sent",    "kind": "end",     "lane": "Lane_system", "name": "Digest đã gửi" }
+  ],
+  "flows": [
+    { "id": "Flow_start",     "src": "Start_1",   "tgt": "GW_unread" },
+    { "id": "Flow_no_unread", "src": "GW_unread", "tgt": "End_skip",  "name": "Không có unread" },
+    { "id": "Flow_has_unread","src": "GW_unread", "tgt": "Task_send", "name": "Có unread" },
+    { "id": "Flow_sent",      "src": "Task_send", "tgt": "End_sent" }
+  ]
+}

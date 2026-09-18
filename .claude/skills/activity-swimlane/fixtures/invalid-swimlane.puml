@@ -1,0 +1,18 @@
+@startuml
+' FIXTURE: các lỗi LUỒNG render đẹp nhưng sai. Linter PHẢI fail — đừng "sửa" cho pass.
+|Khách|
+start
+:Gửi yêu cầu;
+|Hệ thống|
+if (Hợp lệ?) then
+  :Xử lý;
+  ' LỖI: nhánh này không có stop → loose end
+else (không)
+  :Báo lỗi;
+  stop
+endif
+' LỖI: if dưới đây thiếu endif
+if (Cần duyệt thêm?) then (có)
+  |Quản lý|
+  :Duyệt;
+@enduml

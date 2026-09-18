@@ -1,0 +1,26 @@
+@startuml
+|Khách|
+start
+:Gửi yêu cầu hoàn tiền;
+|Hệ thống|
+:Kiểm tra đơn hàng;
+if (Đơn còn trong hạn hoàn?) then (còn hạn)
+  |Nhân viên CSKH|
+  :Xem xét yêu cầu;
+  if (Chấp nhận?) then (đồng ý)
+    |Hệ thống|
+    :Hoàn tiền về ví;
+    |Khách|
+    :Nhận thông báo hoàn tiền;
+    stop
+  else (từ chối)
+    |Khách|
+    :Nhận lý do từ chối;
+    stop
+  endif
+else (quá hạn)
+  |Khách|
+  :Nhận thông báo quá hạn;
+  stop
+endif
+@enduml

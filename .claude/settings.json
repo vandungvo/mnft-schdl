@@ -1,0 +1,103 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(date:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(awk:*)",
+      "Bash(sed:*)",
+      "Bash(cat:*)",
+      "Bash(wc:*)",
+      "Bash(node:*)",
+      "Read(*)",
+      "Edit(docs/**)"
+    ],
+    "deny": [
+      "Edit(.git/**)"
+    ]
+  },
+  "env": {
+    "AUTO_CHANGELOG": "true"
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "python3 .claude/scripts/token-track/token-statusline.py"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/session-init.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/block-push.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/scripts/token-track/token-skill-hook.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .claude/scripts/token-track/token-turn-summary.py"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/auto-changelog.sh"
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/status-transition.sh"
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/post-edit-stale.sh"
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/kg-refresh.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/scripts/token-track/token-skill-hook.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

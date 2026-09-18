@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Test Checklist Preview</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <!-- Data loaded từ sibling file. Re-run /api-checklist để refresh data.js. -->
+  <script src="data.js"></script>
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --secondary-color: #eef2ff;
+      --text-color: #1f2937;
+      --border-color: #e5e7eb;
+      --hover-color: #eff6ff;
+      --dark-color: #1e293b;
+      --p1-color: #dc3545;
+      --p2-color: #fd7e14;
+      --p3-color: #f0ad4e;
+      --p4-color: #6c757d;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { margin: 0; padding: 20px; background-color: #f8fafc; color: var(--text-color); }
+    .container-fluid { max-width: 99%; margin: 0 auto; background: white; box-shadow: 0 3px 10px rgba(0,0,0,0.08); border-radius: 8px; padding: 20px; }
+    h1 { color: var(--dark-color); margin-top: 0; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); font-size: 23px; font-weight: 600; }
+    h2 { font-size: 16px; color: var(--dark-color); margin: 18px 0 8px; }
+    .meta { color: #6b7280; font-size: 13px; margin-bottom: 14px; }
+    .meta .pill { display:inline-block; background:var(--secondary-color); color:var(--primary-color); padding:2px 10px; border-radius:12px; font-weight:600; margin-right:6px; }
+    details.fixtures { background: var(--secondary-color); border-radius: 6px; padding: 10px 14px; margin-bottom: 15px; }
+    details.fixtures summary { cursor: pointer; font-weight: 600; color: var(--dark-color); }
+    details.fixtures table { margin-top: 10px; background:white; }
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; background: var(--secondary-color); padding: 14px; border-radius: 6px; margin-bottom: 14px; }
+    .toolbar input, .toolbar select { padding: 8px 11px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; }
+    .toolbar input[type="search"] { flex: 1; min-width: 200px; max-width: 320px; }
+    .toolbar select { min-width: 120px; background: white; }
+    .toolbar button { background: var(--primary-color); color: white; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-weight: 500; }
+    .toolbar button.export { background: #16a34a; }
+    .toolbar button:hover { opacity: 0.9; }
+    .stats { display: flex; gap: 18px; flex-wrap: wrap; background: var(--secondary-color); padding: 11px 15px; border-radius: 6px; margin-bottom: 14px; font-size: 14px; }
+    .stats .item { display: flex; gap: 7px; align-items: center; }
+    .stats .value { background: white; padding: 3px 10px; border-radius: 4px; color: var(--primary-color); font-weight: 600; border: 1px solid var(--border-color); }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 14px; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    th, td { padding: 9px 11px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 13.5px; vertical-align: top; }
+    th { background: var(--secondary-color); font-weight: 600; color: var(--dark-color); position: sticky; top: 0; z-index: 1; white-space: nowrap; }
+    tr:hover td { background: var(--hover-color); }
+    code { background:#f1f5f9; padding:1px 5px; border-radius:3px; font-size:12.5px; color:#0f172a; }
+    .badge-p { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; color: white; }
+    .badge-p1 { background: var(--p1-color); }
+    .badge-p2 { background: var(--p2-color); }
+    .badge-p3 { background: var(--p3-color); color:#333; }
+    .badge-p4 { background: var(--p4-color); }
+    .badge-auto-yes { background: #16a34a; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+    .badge-auto-no { background: #94a3b8; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+    .http { font-weight:600; }
+    .http-2 { color:#16a34a; } .http-4 { color:#dc3545; } .http-5 { color:#b91c1c; }
+    .api-own { color:#7c3aed; font-weight:600; } .api-3rd { color:#0891b2; font-weight:600; } .api-mixed { color:#c2410c; font-weight:600; }
+    .num-cell { width: 44px; color: #6b7280; }
+    .pagination { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 11px; border: 1px solid var(--border-color); border-radius: 6px; }
+    .pagination-controls { display: flex; gap: 5px; }
+    .pagination-controls button { background: white; color: var(--text-color); border: 1px solid var(--border-color); min-width: 34px; height: 34px; border-radius: 4px; cursor: pointer; }
+    .pagination-controls button.active { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+    .pagination-controls button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .empty { text-align: center; padding: 40px; color: #94a3b8; font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <h1 id="title">API Test Checklist Preview</h1>
+    <div class="meta" id="meta"></div>
+
+    <details class="fixtures" id="fixturesBox" open>
+      <summary>🧪 Fixtures (test data + env) — <span id="fixCount">0</span> dòng</summary>
+      <div class="table-wrap" style="margin:0;border:none;">
+        <table id="fixTable">
+          <thead><tr><th>Loại</th><th>Tên</th><th>Value</th><th>Ghi chú</th></tr></thead>
+          <tbody id="fixBody"></tbody>
+        </table>
+      </div>
+    </details>
+
+    <div class="toolbar">
+      <input type="search" id="search" placeholder="🔍 Tìm scenario / endpoint / trigger...">
+      <select id="filterApi"><option value="">Mọi API</option></select>
+      <select id="filterEndpoint"><option value="">Mọi endpoint</option></select>
+      <select id="filterDimension"><option value="">Mọi dimension</option></select>
+      <select id="filterHttp"><option value="">Mọi HTTP</option></select>
+      <select id="filterPriority">
+        <option value="">Mọi priority</option>
+        <option value="1">P1 — Critical</option>
+        <option value="2">P2 — High</option>
+        <option value="3">P3 — Medium</option>
+        <option value="4">P4 — Low</option>
+      </select>
+      <select id="filterConf"><option value="">Mọi confidence</option><option value="🟢">🟢 doc đủ</option><option value="🟡">🟡 cần xác nhận</option></select>
+      <select id="filterAuto"><option value="">Auto: All</option><option value="Yes">Auto: Yes</option><option value="No">Auto: No</option></select>
+      <select id="pageSize"><option value="25" selected>25 / page</option><option value="50">50 / page</option><option value="100">100 / page</option><option value="9999">Tất cả</option></select>
+      <button class="export" id="exportXlsx">📥 Export Excel</button>
+    </div>
+
+    <div class="stats">
+      <div class="item"><span>Tổng:</span><span class="value" id="statTotal">0</span></div>
+      <div class="item"><span>Hiển thị:</span><span class="value" id="statFiltered">0</span></div>
+      <div class="item"><span>Endpoint:</span><span class="value" id="statEndpoints">0</span></div>
+      <div class="item"><span>P1:</span><span class="value" id="statP1">0</span></div>
+      <div class="item"><span>P2:</span><span class="value" id="statP2">0</span></div>
+      <div class="item"><span>🟢/🟡:</span><span class="value" id="statConf">0/0</span></div>
+      <div class="item"><span>Auto Y/N:</span><span class="value" id="statAuto">0/0</span></div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="num-cell">#</th>
+            <th>API</th>
+            <th>Endpoint</th>
+            <th>Dimension</th>
+            <th>Scenario</th>
+            <th>Trigger</th>
+            <th>HTTP</th>
+            <th>Expected Result</th>
+            <th>Ref</th>
+            <th>P</th>
+            <th>Auto</th>
+            <th>Conf</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <div id="pageInfo">Page 1 / 1</div>
+      <div class="pagination-controls" id="pageControls"></div>
+    </div>
+  </div>
+
+  <script>
+    // Data loaded từ data.js (sibling file, regen bởi /api-checklist mỗi lần chạy)
+    const DATA = window.API_CHECKLIST || null;
+    if (!DATA) {
+      document.body.innerHTML = '<div style="padding:40px;text-align:center;color:#dc3545;"><h2>⚠️ Không load được data.js</h2><p>Chạy lại <code>/api-checklist &lt;feature&gt;</code> để regen data.js cạnh file HTML này.</p></div>';
+      throw new Error('API_CHECKLIST missing');
+    }
+
+    const FEATURE = DATA.feature || "(unknown)";
+    const UPDATED = DATA.updated || "(unknown)";
+    const API_TYPE = DATA.api_type || "—";
+    const FIXTURES = DATA.fixtures || [];
+    const ALL_ITEMS = DATA.items || [];
+
+    let filtered = [...ALL_ITEMS];
+    let currentPage = 1;
+    let pageSize = 25;
+
+    function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function uniqueSorted(arr) { return [...new Set(arr.filter(Boolean))].sort(); }
+    function httpClass(h) { const d = String(h).trim()[0]; return d === '2' ? 'http-2' : d === '4' ? 'http-4' : d === '5' ? 'http-5' : ''; }
+    function apiClass(a) { const k = String(a).split(':')[0]; return k === 'own' ? 'api-own' : k === '3rd' ? 'api-3rd' : 'api-mixed'; }
+
+    document.getElementById('title').textContent = `API Test Checklist — ${FEATURE}`;
+    document.getElementById('meta').innerHTML =
+      `<span class="pill">loại: ${escapeHtml(API_TYPE)}</span>` +
+      `Updated: ${escapeHtml(UPDATED)} • ${ALL_ITEMS.length} items • ${uniqueSorted(ALL_ITEMS.map(i=>i.endpoint)).length} endpoint`;
+
+    // Fixtures
+    document.getElementById('fixCount').textContent = FIXTURES.length;
+    document.getElementById('fixBody').innerHTML = FIXTURES.length
+      ? FIXTURES.map(f => `<tr><td>${escapeHtml(f.type)}</td><td><code>${escapeHtml(f.name)}</code></td><td>${escapeHtml(f.value || '—')}</td><td>${escapeHtml(f.note || '')}</td></tr>`).join('')
+      : `<tr><td colspan="4" class="empty">Chưa có fixtures.</td></tr>`;
+
+    // Populate filters
+    const fill = (id, vals) => vals.forEach(v => document.getElementById(id).insertAdjacentHTML('beforeend', `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`));
+    fill('filterApi', uniqueSorted(ALL_ITEMS.map(i => i.api)));
+    fill('filterEndpoint', uniqueSorted(ALL_ITEMS.map(i => i.endpoint)));
+    fill('filterDimension', uniqueSorted(ALL_ITEMS.map(i => i.dimension)));
+    fill('filterHttp', uniqueSorted(ALL_ITEMS.map(i => String(i.http))));
+
+    function applyFilters() {
+      const q = document.getElementById('search').value.toLowerCase().trim();
+      const fApi = document.getElementById('filterApi').value;
+      const fEp = document.getElementById('filterEndpoint').value;
+      const fDim = document.getElementById('filterDimension').value;
+      const fHttp = document.getElementById('filterHttp').value;
+      const fPrio = document.getElementById('filterPriority').value;
+      const fConf = document.getElementById('filterConf').value;
+      const fAuto = document.getElementById('filterAuto').value;
+
+      filtered = ALL_ITEMS.filter(it => {
+        if (fApi && it.api !== fApi) return false;
+        if (fEp && it.endpoint !== fEp) return false;
+        if (fDim && it.dimension !== fDim) return false;
+        if (fHttp && String(it.http) !== fHttp) return false;
+        if (fPrio && String(it.priority) !== fPrio) return false;
+        if (fConf && it.conf !== fConf) return false;
+        if (fAuto && it.auto !== fAuto) return false;
+        if (q) {
+          const hay = `${it.scenario} ${it.endpoint} ${it.trigger} ${it.dimension} ${it.expected} ${it.ref}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+      currentPage = 1;
+      render();
+    }
+
+    function render() {
+      const tbody = document.getElementById('tbody');
+      const start = (currentPage - 1) * pageSize;
+      const rows = filtered.slice(start, start + pageSize);
+      if (rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="12" class="empty">Không có item nào khớp filter.</td></tr>`;
+      } else {
+        tbody.innerHTML = rows.map(it => `
+          <tr>
+            <td class="num-cell">${it.num}</td>
+            <td class="${apiClass(it.api)}">${escapeHtml(it.api)}</td>
+            <td><code>${escapeHtml(it.endpoint)}</code></td>
+            <td>${escapeHtml(it.dimension)}</td>
+            <td>${escapeHtml(it.scenario)}</td>
+            <td>${it.trigger ? `<code>${escapeHtml(it.trigger)}</code>` : '—'}</td>
+            <td class="http ${httpClass(it.http)}">${escapeHtml(String(it.http))}</td>
+            <td>${escapeHtml(it.expected || '—')}</td>
+            <td>${escapeHtml(it.ref || '—')}</td>
+            <td><span class="badge-p badge-p${it.priority}">P${it.priority}</span></td>
+            <td><span class="badge-auto-${String(it.auto).toLowerCase()}">${escapeHtml(it.auto)}</span></td>
+            <td>${escapeHtml(it.conf || '')}</td>
+          </tr>
+        `).join('');
+      }
+      updateStats();
+      updatePagination();
+    }
+
+    function updateStats() {
+      document.getElementById('statTotal').textContent = ALL_ITEMS.length;
+      document.getElementById('statFiltered').textContent = filtered.length;
+      document.getElementById('statEndpoints').textContent = uniqueSorted(filtered.map(i => i.endpoint)).length;
+      document.getElementById('statP1').textContent = filtered.filter(i => i.priority === 1).length;
+      document.getElementById('statP2').textContent = filtered.filter(i => i.priority === 2).length;
+      const g = filtered.filter(i => i.conf === '🟢').length, y = filtered.filter(i => i.conf === '🟡').length;
+      document.getElementById('statConf').textContent = `${g}/${y}`;
+      const ay = filtered.filter(i => i.auto === 'Yes').length, an = filtered.filter(i => i.auto === 'No').length;
+      document.getElementById('statAuto').textContent = `${ay}/${an}`;
+    }
+
+    function updatePagination() {
+      const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+      if (currentPage > totalPages) currentPage = totalPages;
+      const ctrls = document.getElementById('pageControls');
+      ctrls.innerHTML = '';
+      const mk = (label, enabled, onClick, active) => {
+        const b = document.createElement('button');
+        b.innerHTML = label; b.disabled = !enabled;
+        if (active) b.classList.add('active');
+        if (onClick) b.onclick = onClick;
+        ctrls.appendChild(b);
+      };
+      mk('←', currentPage > 1, () => { currentPage--; render(); });
+      const maxShow = 5;
+      let start = Math.max(1, currentPage - 2);
+      let end = Math.min(totalPages, start + maxShow - 1);
+      if (end - start + 1 < maxShow) start = Math.max(1, end - maxShow + 1);
+      for (let i = start; i <= end; i++) mk(String(i), true, () => { currentPage = i; render(); }, i === currentPage);
+      mk('→', currentPage < totalPages, () => { currentPage++; render(); });
+      document.getElementById('pageInfo').textContent = `Page ${currentPage} / ${totalPages} • ${filtered.length} items`;
+    }
+
+    function exportXlsx() {
+      const rows = filtered.map(it => ({
+        '#': it.num, API: it.api, Endpoint: it.endpoint, Dimension: it.dimension,
+        Scenario: it.scenario, Trigger: it.trigger || '', HTTP: it.http,
+        'Expected Result': it.expected || '', Ref: it.ref || '', Priority: it.priority, Auto: it.auto, Conf: it.conf || '',
+      }));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'Checklist');
+      if (FIXTURES.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(FIXTURES), 'Fixtures');
+      XLSX.writeFile(wb, `api-checklist-${FEATURE}.xlsx`);
+    }
+
+    ['search','filterApi','filterEndpoint','filterDimension','filterHttp','filterPriority','filterConf','filterAuto'].forEach(id => {
+      document.getElementById(id).addEventListener('input', applyFilters);
+      document.getElementById(id).addEventListener('change', applyFilters);
+    });
+    document.getElementById('pageSize').addEventListener('change', e => { pageSize = parseInt(e.target.value); currentPage = 1; render(); });
+    document.getElementById('exportXlsx').addEventListener('click', exportXlsx);
+
+    render();
+  </script>
+</body>
+</html>

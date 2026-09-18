@@ -1,0 +1,12 @@
+/* Bề rộng bố cục theo KHỔ MÀN HÌNH người dùng đã chọn.
+   Chèn vào globals.css. Thẻ <Screen> đọc các biến này — nên đổi khổ chỉ sửa ở đây,
+   không phải đi sửa từng màn.
+
+   Con số lấy từ ba-conventions.md Mục 7: điện thoại 375 · máy tính bảng 768 · để bàn 1024.
+   {{DEVICE_COMMENT}} */
+
+:root {
+  --layout-form: {{LAYOUT_FORM}};
+  --layout-content: {{LAYOUT_CONTENT}};
+  --layout-wide: {{LAYOUT_WIDE}};
+}

@@ -1,0 +1,33 @@
+@startuml
+' FIXTURE: chứa đúng 6 lớp lỗi ĐÃ XẢY RA THẬT (authentication 2026-07-19 + food-delivery dist).
+' Linter PHẢI fail file này. Dùng làm test hồi quy — đừng "sửa" cho pass.
+left to right direction
+
+actor "Khách" as Khach
+actor "Cổng thanh toán" as Gateway
+actor "CSKH" as Support
+
+rectangle "System: order" {
+  usecase "Đặt món" as UC1
+  usecase "Thanh toán đơn" as UC2
+  usecase "Hủy đơn" as UC3
+  usecase "Hoàn tiền" as UC4
+  usecase "Xác nhận email" as UC5
+  usecase "Đăng ký" as UC6
+}
+
+' LỖI 1: association có mũi tên
+Khach --> UC1
+' LỖI 2: UC nối actor ngoài bằng nét đứt
+UC2 ..> Gateway
+' LỖI 3: include từ UC sang ACTOR
+UC4 ..> Gateway : <<include>>
+' LỖI 4: sai loại quan hệ + sai hướng (Đăng ký LUÔN cần xác nhận ⇒ include, base ở đuôi)
+UC5 ..> UC6 : <<extend>>
+' LỖI 5: extend sai hướng (Hoàn tiền là kẻ mở rộng, phải đứng ĐUÔI)
+UC3 ..> UC4 : <<extend>>
+' LỖI 6a: nhãn trần thiếu guillemet
+UC1 ..> UC2 : include
+' LỖI 6b: dependency nhãn tự do actor→UC (bịa, không có trong ngữ pháp)
+Support ..> UC3 : theo dõi hủy đơn
+@enduml
