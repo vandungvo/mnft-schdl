@@ -1,6 +1,6 @@
 # Bản nháp 2: Tài liệu tham khảo bổ sung theo chủ đề còn thiếu
 
-**Mục đích:** đợt rà soát đầu (`docs/lit_review_draft.md`, đã fold vào báo cáo chính thức, tài liệu #5–11) tập trung vào benchmark dữ liệu + XAI cho lập lịch nói chung. Đợt này rà soát tiếp **6 chủ đề mà `TECHNICAL_SPEC.md` mô tả phương pháp nhưng chưa có trích dẫn nào hỗ trợ** — hiệu suất sử dụng máy (§2.2), tái lập lịch phản ứng/rolling horizon (§2.1, §11), đường găng + độ nhạy (§2.3, hiện chưa có nguồn), lập kế hoạch 2 tầng (§1/§3, kiến trúc cốt lõi chưa có căn cứ phương pháp luận), khung XAI cho OR nói chung (khác GA-specific ở tài liệu #5/#6), và tài liệu học thuật tiếng Việt. Đây là **bản nháp để Dũng duyệt**, chưa đụng vào `Report_so_bo_Do_an_CO5103_VoVanDung.md`, `TECHNICAL_SPEC.md`, hay thư mục `references/`. Mọi trích dẫn đều lấy từ tìm kiếm thật (WebSearch/WebFetch), có DOI/URL kèm theo.
+**Mục đích:** đợt rà soát đầu (`report/lit_review_draft.md`, đã fold vào báo cáo chính thức, tài liệu #5–11) tập trung vào benchmark dữ liệu + XAI cho lập lịch nói chung. Đợt này rà soát tiếp **6 chủ đề mà `TECHNICAL_SPEC.md` mô tả phương pháp nhưng chưa có trích dẫn nào hỗ trợ** — hiệu suất sử dụng máy (§2.2), tái lập lịch phản ứng/rolling horizon (§2.1, §11), đường găng + độ nhạy (§2.3, hiện chưa có nguồn), lập kế hoạch 2 tầng (§1/§3, kiến trúc cốt lõi chưa có căn cứ phương pháp luận), khung XAI cho OR nói chung (khác GA-specific ở tài liệu #5/#6), và tài liệu học thuật tiếng Việt. Đây là **bản nháp để Dũng duyệt**, chưa đụng vào `Report_so_bo_Do_an_CO5103_VoVanDung.md`, `TECHNICAL_SPEC.md`, hay thư mục `references/`. Mọi trích dẫn đều lấy từ tìm kiếm thật (WebSearch/WebFetch), có DOI/URL kèm theo.
 
 ---
 
@@ -65,7 +65,7 @@ Kết quả **không hoàn toàn trống** như đợt rà soát dữ liệu m�
 
 ## 2. Danh sách tiếp nối số thứ tự
 
-*(tiếp số từ tài liệu tham khảo hiện có trong `docs/Report_so_bo_Do_an_CO5103_VoVanDung.md` / `docs/TECHNICAL_SPEC.md`, hiện đang dừng ở tài liệu số 11)*
+*(tiếp số từ tài liệu tham khảo hiện có trong `report/Report_so_bo_Do_an_CO5103_VoVanDung.md` / `report/TECHNICAL_SPEC.md`, hiện đang dừng ở tài liệu số 11)*
 
 12. Dauzère-Pérès, S., Ding, J., Shen, L., & Tamssaouet, K. (2024). The flexible job shop scheduling problem: A review. *European Journal of Operational Research*, 314(2), 409–432. https://doi.org/10.1016/j.ejor.2023.05.017
 

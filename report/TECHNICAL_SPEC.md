@@ -1,7 +1,7 @@
 # Technical Specification — Explainable Scheduling Agent
 
 **Đồ án:** CO5103 — Võ Văn Dũng | **Học kỳ:** HK261 (2026–2027) | **GVHD:** PGS.TS Võ Thị Ngọc Châu
-**Trạng thái:** Draft v2.5 — cập nhật theo `docs/Report_so_bo_Do_an_CO5103_VoVanDung.md` (báo cáo sơ bộ), dựa trên các prototype đã kiểm chứng (`scheduling_poc*.py`, `production_planning_2weeks.py`, `detailed_day_schedule.py`). **Thay đổi so với v2:** Frontend = Next.js; DB dev = SQLite; Docker 2 service. **v2.1–v2.2:** UI đầy đủ + CRUD master data. **v2.3:** Phân module Master Data / Planning / Scheduling / Explanation. **v2.4:** Làm rõ horizon — **Planning = tháng/quý**, **Scheduling = 2 tuần** (chi tiết). **v2.5:** Bổ sung tài liệu tham khảo gần đây (2020–2025) + benchmark FJSP thứ 3 (Deliktaş et al., 2024) theo phản hồi GVHD sau báo cáo sơ bộ — xem `docs/lit_review_draft.md` cho chi tiết nghiên cứu gốc. **v2.6:** Bổ sung tài liệu tham khảo số 12–19, lấp các khoảng trống trích dẫn còn lại (mô hình hoá FJSP, rolling horizon, đường găng/độ nhạy, lập kế hoạch phân cấp, khung XAI cho OR, rà soát tiếng Việt) — xem `docs/lit_review_draft_2.md`.
+**Trạng thái:** Draft v2.5 — cập nhật theo `report/Report_so_bo_Do_an_CO5103_VoVanDung.md` (báo cáo sơ bộ), dựa trên các prototype đã kiểm chứng (`scheduling_poc*.py`, `production_planning_2weeks.py`, `detailed_day_schedule.py`). **Thay đổi so với v2:** Frontend = Next.js; DB dev = SQLite; Docker 2 service. **v2.1–v2.2:** UI đầy đủ + CRUD master data. **v2.3:** Phân module Master Data / Planning / Scheduling / Explanation. **v2.4:** Làm rõ horizon — **Planning = tháng/quý**, **Scheduling = 2 tuần** (chi tiết). **v2.5:** Bổ sung tài liệu tham khảo gần đây (2020–2025) + benchmark FJSP thứ 3 (Deliktaş et al., 2024) theo phản hồi GVHD sau báo cáo sơ bộ — xem `report/lit_review_draft.md` cho chi tiết nghiên cứu gốc. **v2.6:** Bổ sung tài liệu tham khảo số 12–19, lấp các khoảng trống trích dẫn còn lại (mô hình hoá FJSP, rolling horizon, đường găng/độ nhạy, lập kế hoạch phân cấp, khung XAI cho OR, rà soát tiếng Việt) — xem `report/lit_review_draft_2.md`.
 
 **Giả định khi lập tài liệu này** (chỉnh lại nếu sai): đồ án cá nhân (solo), còn khoảng **12–14 tuần** trong học kỳ, mục tiêu cuối là một ứng dụng demo chạy local (không cần hạ tầng cloud production).
 
@@ -26,7 +26,7 @@ Không mục tiêu: multi-tenant, scale lớn, real-time streaming — đây là
 
 ### 1.1. Yêu cầu bao phủ UI
 
-**Ràng buộc bắt buộc:** UI phải cover đầy đủ mọi tính năng nằm trong phạm vi bài toán (mục 1.3 của `docs/Report_so_bo_Do_an_CO5103_VoVanDung.md`) — không chỉ các màn hình "trình diễn" (Gantt, giải thích) mà cả toàn bộ màn hình quản trị dữ liệu chủ cần thiết để vận hành hệ thống mà không cần sửa code/DB tay. Bảng dưới đây là nguồn tham chiếu duy nhất để kiểm tra thiếu sót — mỗi hạng mục trong phạm vi báo cáo phải có ít nhất 1 màn hình UI tương ứng trước khi coi là "hoàn thành":
+**Ràng buộc bắt buộc:** UI phải cover đầy đủ mọi tính năng nằm trong phạm vi bài toán (mục 1.3 của `report/Report_so_bo_Do_an_CO5103_VoVanDung.md`) — không chỉ các màn hình "trình diễn" (Gantt, giải thích) mà cả toàn bộ màn hình quản trị dữ liệu chủ cần thiết để vận hành hệ thống mà không cần sửa code/DB tay. Bảng dưới đây là nguồn tham chiếu duy nhất để kiểm tra thiếu sót — mỗi hạng mục trong phạm vi báo cáo phải có ít nhất 1 màn hình UI tương ứng trước khi coi là "hoàn thành":
 
 | Hạng mục trong phạm vi (báo cáo mục 1.3) | Màn hình UI bắt buộc | Trạng thái trong roadmap (mục 8) |
 |---|---|---|
@@ -258,9 +258,9 @@ Vì không tiếp cận được dữ liệu thật của nhà máy, đề tài 
 2. **Bộ dữ liệu chuẩn công khai** cho bài toán lập lịch phân xưởng (Taillard, Lawrence — OR-Library) — dùng để kiểm chứng phần lõi thuật toán và so sánh chất lượng lời giải với nghiên cứu khác trong lĩnh vực.
 3. **Bộ benchmark FJSP công khai thứ 3** (Deliktaş et al., 2024 — tài liệu tham khảo số 10) có setup time phụ thuộc trình tự theo họ sản phẩm — bổ sung cho (2) trên đúng ràng buộc mà Taillard/Lawrence không có (xem §2.4).
 
-**Đã kiểm tra thêm** data.gov, data.gov.vn và Kaggle theo phản hồi GVHD: data.gov/data.gov.vn không có dataset cấp máy/công đoạn/đơn hàng phù hợp (chỉ có chỉ số vĩ mô/năng lực sản xuất); vài dataset JSP tổng hợp trên Kaggle được ghi nhận nhưng chưa kiểm chứng đủ để dùng chính thức. Chi tiết quá trình rà soát ở `docs/lit_review_draft.md`.
+**Đã kiểm tra thêm** data.gov, data.gov.vn và Kaggle theo phản hồi GVHD: data.gov/data.gov.vn không có dataset cấp máy/công đoạn/đơn hàng phù hợp (chỉ có chỉ số vĩ mô/năng lực sản xuất); vài dataset JSP tổng hợp trên Kaggle được ghi nhận nhưng chưa kiểm chứng đủ để dùng chính thức. Chi tiết quá trình rà soát ở `report/lit_review_draft.md`.
 
-**Đã kiểm tra thêm tài liệu học thuật tiếng Việt** về lập lịch sản xuất/phân xưởng: không tìm thấy công trình tiếng Việt nào cùng bài toán (đa máy, ràng buộc chuyển đổi/bảo trì/hiệu suất máy). Có 1 luận án tiến sĩ cùng trường (Trang, 2021 — tài liệu tham khảo số 19, ĐH Bách Khoa – ĐHQG-HCM) nhưng giải bài toán khác (lập lịch cá nhân, 1 máy) — chỉ dùng làm bằng chứng cho tiền lệ nghiên cứu lập lịch chất lượng quốc tế tại trường, không phải công trình liên quan trực tiếp. Chi tiết ở `docs/lit_review_draft_2.md`.
+**Đã kiểm tra thêm tài liệu học thuật tiếng Việt** về lập lịch sản xuất/phân xưởng: không tìm thấy công trình tiếng Việt nào cùng bài toán (đa máy, ràng buộc chuyển đổi/bảo trì/hiệu suất máy). Có 1 luận án tiến sĩ cùng trường (Trang, 2021 — tài liệu tham khảo số 19, ĐH Bách Khoa – ĐHQG-HCM) nhưng giải bài toán khác (lập lịch cá nhân, 1 máy) — chỉ dùng làm bằng chứng cho tiền lệ nghiên cứu lập lịch chất lượng quốc tế tại trường, không phải công trình liên quan trực tiếp. Chi tiết ở `report/lit_review_draft_2.md`.
 
 Bộ sinh dữ liệu cần điều chỉnh được tham số (số máy, số công việc, phân phối thời gian xử lý, tần suất đơn gấp) để tạo nhiều kịch bản kiểm thử, đánh giá độ ổn định của tác nhân.
 

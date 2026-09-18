@@ -8,19 +8,18 @@ Repo này vừa được bổ sung bộ **BA-Kit** (skills/rules/agents/template
 
 | Path | Nội dung |
 |------|---------|
-| `docs/` | Tài liệu hiện có (phẳng) + tài liệu BA mới (per-feature, xem dưới) |
-| `docs/Report_so_bo_Do_an_CO5103_VoVanDung.md`, `docs/TECHNICAL_SPEC.md` | Báo cáo sơ bộ đã nộp + spec kỹ thuật sống (roadmap 13 tuần) — **nguồn sự thật hiện tại**, không di chuyển |
-| `docs/lit_review_draft*.md`, `references/` | Literature review + benchmark/reference đang mở rộng theo yêu cầu cô Châu |
+| `report/` | Báo cáo sơ bộ đã nộp (`Report_so_bo_Do_an_CO5103_VoVanDung.md` + `.pdf`), spec kỹ thuật sống `TECHNICAL_SPEC.md` (roadmap 13 tuần), `lit_review_draft*.md` — **nguồn sự thật hiện tại của đồ án**, tách riêng khỏi `docs/` để không lẫn với tài liệu BA-Kit sinh ra sau này |
+| `references/` | Benchmark/reference đang mở rộng theo yêu cầu cô Châu (ở gốc repo, ngang hàng `report/`) |
+| `docs/` | **Để trống, dùng cho tài liệu BA-Kit sinh ra từ đây trở đi** — mỗi feature 1 folder `docs/{feature-slug}/` khi chạy skill, xem `.claude/rules/feature-bootstrap.md` |
 | `docs/_shared/project-profile.md` | Bối cảnh dự án tích luỹ dần — skill nào thiếu info sẽ hỏi rồi ghi vào đây (đang là khung rỗng, chưa điền) |
 | `docs/_product/prd.md` | PRD cấp sản phẩm nếu muốn hình thức hoá scope tổng (đang là khung rỗng — chạy `/prd` để điền, không bắt buộc cho đồ án solo) |
-| `docs/{feature-slug}/` | Tạo mới khi chạy skill với 1 feature cụ thể (vd `docs/scheduling-core/srs/...`) — quy ước per-feature của BA-Kit, xem `.claude/rules/feature-bootstrap.md` |
-| `.claude/skills/` | 58 skill user-invocable (`/command`), mỗi skill 1 folder chứa `SKILL.md` |
+| `.claude/skills/` | 58 skill user-invocable (`/command`), mỗi skill 1 folder chứa `SKILL.md` — **coi là tham khảo/công cụ khi cần, không bắt buộc chạy** |
 | `.claude/agents/` | 13 agent persona review/research (gọi qua Task tool khi skill cần) |
 | `.claude/rules/` | Quy ước dùng chung: naming, status lifecycle, changelog, approval-gate, diagram-correctness... |
 | `.claude/scripts/`, `.claude/hooks/` | Engine verify diagram (mermaid/erd/bpmn), hook tự động changelog/status/staleness |
 | `_templates/` | Template các skill Write ra (ở gốc repo, ngang hàng `.claude/`) |
 
-**Docs phẳng hiện có KHÔNG bị đổi cấu trúc.** Feature mới (vd tách "scheduling-core", "explanation-layer" thành feature riêng) mới dùng `docs/{feature}/`.
+**`report/` là tài liệu chính thức của đồ án, không đụng vào trừ khi sửa nội dung báo cáo/spec.** `docs/` là không gian làm việc mới, sạch, cho bất kỳ tài liệu BA-Kit nào sinh ra sau này.
 
 ## Quy ước khi dùng skill
 
@@ -51,8 +50,8 @@ Chi tiết từng skill: đọc `SKILL.md` tương ứng trong `.claude/skills/<
 
 ## Gợi ý áp dụng cho 4 việc cô Châu yêu cầu
 
-1. **Thêm nguồn benchmark/reference** — không có skill riêng, làm thủ công trong `references/` như đang làm; `/cr` nếu cần sửa lại report/spec đã nộp có kiểm tác động.
-2. **Bảng đối sánh literature** — có thể dùng `/discover` hoặc viết thủ công trong `docs/lit_review_draft*.md`; nếu muốn hình thức hoá thành SRS-style so sánh, `/srs` hoặc `/usecase` không hợp — đây là việc viết academic, không phải BA spec.
+1. **Thêm nguồn benchmark/reference** — không có skill riêng, làm thủ công trong `references/` như đang làm; `/cr` nếu cần sửa lại `report/` đã nộp có kiểm tác động.
+2. **Bảng đối sánh literature** — có thể dùng `/discover` hoặc viết thủ công trong `report/lit_review_draft*.md`; nếu muốn hình thức hoá thành SRS-style so sánh, `/srs` hoặc `/usecase` không hợp — đây là việc viết academic, không phải BA spec.
 3. **Implement + evaluate model** (FIFO/EDD/SPT baseline, benchmark Taillard/Lawrence) — dùng `/test-checklist` rồi `/test-cases` để đặc tả kịch bản đánh giá, `/userstory` + `/ac` để đóng gói việc còn lại thành backlog rõ ràng.
 4. **Xuất báo cáo nộp cô Châu** — `/export` (cần cài `pandoc`) hoặc `/preview` (không cần cài gì, mở thẳng bằng browser).
 
