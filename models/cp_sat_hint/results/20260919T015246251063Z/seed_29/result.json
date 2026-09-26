@@ -1,0 +1,85 @@
+{
+  "method": "cp_sat_hint",
+  "seed": 29,
+  "run_id": "20260919T015246251063Z",
+  "input_sha256": "d1101b0c79be63b7293e7aeac0c4c6aff53ea6fbae130bf105ef375e282fa7d3",
+  "code_sha256": "d43eb5f8c19002dc5ad3c99a7813dfa1ea1155adaf62b4a7cca389f6c5396cfd",
+  "budget_seconds": 900.0,
+  "algorithm_seconds": 900.119019800004,
+  "environment": {
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "ortools": "9.15.6755",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 23 Model 104 Stepping 1, AuthenticAMD",
+    "workers": 1
+  },
+  "status": "FEASIBLE",
+  "build_seconds": 1.4013800999964587,
+  "solve_seconds": 898.5643629000001,
+  "history": [
+    {
+      "seconds": 0,
+      "objective": 68017,
+      "source": "EDD"
+    },
+    {
+      "seconds": 33.17317849999381,
+      "objective": 68017.0
+    },
+    {
+      "seconds": 99.18540409999696,
+      "objective": 68015.0
+    },
+    {
+      "seconds": 133.04976259999967,
+      "objective": 67998.0
+    },
+    {
+      "seconds": 387.57405019999715,
+      "objective": 67462.0
+    },
+    {
+      "seconds": 592.5554790999959,
+      "objective": 67453.0
+    }
+  ],
+  "bound": 22330.0,
+  "bound_scope": "full_static_model",
+  "response_stats": "CpSolverResponse summary:\nstatus: FEASIBLE\nobjective: 67453\nbest_bound: 22330\nintegers: 13509\nbooleans: 34453\nconflicts: 5170\nbranches: 4026767\npropagations: 197802729\ninteger_propagations: 168701618\nrestarts: 23\nlp_iterations: 2162041\nwalltime: 898.564\nusertime: 898.564\ndeterministic_time: 568.837\ngap_integral: 0\nsolution_fingerprint: 0xe84776956b432865\n",
+  "solver_objective": 67453.0,
+  "solver_status": "FEASIBLE",
+  "initial_hint_objective": 68017,
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "operations_checked": 192,
+    "scope": "static fixed-lot scenario; dedicated molds; contiguous prep/processing blocks"
+  },
+  "metrics": {
+    "makespan": 12529,
+    "weighted_tardiness": 2120,
+    "total_tardiness": 530,
+    "late_orders": 3,
+    "max_tardiness": 226,
+    "setup_minutes": 1192,
+    "maintenance_minutes": 675,
+    "maintenance_count": 15,
+    "idle_minutes": 16748,
+    "safety_shortfall": 140,
+    "activated_shifts": 82,
+    "productive_utilization": 0.4897203947368421,
+    "processing_minutes": 17865,
+    "available_minutes": 36480,
+    "produced_quantity": 3588,
+    "shipped_quantity": 3492,
+    "end_inventory": {
+      "F_SILVER": 42,
+      "F_BLACK": 42,
+      "R_SILVER": 42,
+      "R_BLACK": 42
+    },
+    "objective": 67453
+  },
+  "gap": 0.6689546795546528,
+  "total_seconds": 900.3314921000056
+}

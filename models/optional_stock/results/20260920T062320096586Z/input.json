@@ -1,0 +1,162 @@
+{
+  "name": "optional_stock_open_shift_demo",
+  "time_unit": "minute",
+  "currency": "VND",
+  "horizon": 480,
+  "stages": [
+    "cast",
+    "cnc",
+    "paint",
+    "qc"
+  ],
+  "machines": {
+    "cast": {
+      "id": "CAST_1",
+      "open_minutes": 480
+    },
+    "cnc": {
+      "id": "CNC_1",
+      "open_minutes": 480
+    },
+    "paint": {
+      "id": "PAINT_1",
+      "open_minutes": 480
+    },
+    "qc": {
+      "id": "QC_1",
+      "open_minutes": 480
+    }
+  },
+  "lots": [
+    {
+      "id": "REQ_1",
+      "kind": "required",
+      "order": "ORDER_1",
+      "product": "WHEEL",
+      "quantity": 40,
+      "release": 0,
+      "due": 300,
+      "priority": 2,
+      "processing": {
+        "cast": 60,
+        "cnc": 75,
+        "paint": 45,
+        "qc": 25
+      },
+      "setup": {
+        "cast": 10,
+        "cnc": 10,
+        "paint": 10,
+        "qc": 5
+      }
+    },
+    {
+      "id": "REQ_2",
+      "kind": "required",
+      "order": "ORDER_2",
+      "product": "WHEEL",
+      "quantity": 40,
+      "release": 0,
+      "due": 360,
+      "priority": 1,
+      "processing": {
+        "cast": 70,
+        "cnc": 65,
+        "paint": 40,
+        "qc": 25
+      },
+      "setup": {
+        "cast": 10,
+        "cnc": 10,
+        "paint": 10,
+        "qc": 5
+      }
+    },
+    {
+      "kind": "optional_stock",
+      "order": null,
+      "product": "WHEEL",
+      "quantity": 40,
+      "release": 0,
+      "processing": {
+        "cast": 50,
+        "cnc": 60,
+        "paint": 35,
+        "qc": 20
+      },
+      "setup": {
+        "cast": 10,
+        "cnc": 10,
+        "paint": 10,
+        "qc": 5
+      },
+      "id": "STOCK_1"
+    },
+    {
+      "kind": "optional_stock",
+      "order": null,
+      "product": "WHEEL",
+      "quantity": 40,
+      "release": 0,
+      "processing": {
+        "cast": 50,
+        "cnc": 60,
+        "paint": 35,
+        "qc": 20
+      },
+      "setup": {
+        "cast": 10,
+        "cnc": 10,
+        "paint": 10,
+        "qc": 5
+      },
+      "id": "STOCK_2"
+    },
+    {
+      "kind": "optional_stock",
+      "order": null,
+      "product": "WHEEL",
+      "quantity": 40,
+      "release": 0,
+      "processing": {
+        "cast": 50,
+        "cnc": 60,
+        "paint": 35,
+        "qc": 20
+      },
+      "setup": {
+        "cast": 10,
+        "cnc": 10,
+        "paint": 10,
+        "qc": 5
+      },
+      "id": "STOCK_3"
+    }
+  ],
+  "initial_inventory": 20,
+  "safety_stock": 20,
+  "max_inventory": 100,
+  "committed_demand": 80,
+  "cost_scenarios": {
+    "low_holding_cost": {
+      "idle_per_minute": 600,
+      "optional_production_per_unit": 1500,
+      "holding_per_unit": 300,
+      "surplus_risk_per_unit": 250,
+      "incremental_setup_per_minute": 500
+    },
+    "high_holding_cost": {
+      "idle_per_minute": 600,
+      "optional_production_per_unit": 1500,
+      "holding_per_unit": 4000,
+      "surplus_risk_per_unit": 250,
+      "incremental_setup_per_minute": 500
+    }
+  },
+  "scope": [
+    "One already-open 8-hour shift on one machine per stage.",
+    "Fixed lot sizes; optional lots use one presence decision each.",
+    "Fixed per-lot setup duration, not sequence-dependent setup.",
+    "No mold maintenance, downtime, overtime, or rescheduling in this controlled experiment."
+  ]
+}

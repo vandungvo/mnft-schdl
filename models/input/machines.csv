@@ -1,0 +1,8 @@
+﻿machine,stage,eligible_products,minutes_per_unit,fixed_minutes,mold,downtime
+CAST_F,cast,"[""F_SILVER"", ""F_BLACK""]","{""F_SILVER"": 1.05, ""F_BLACK"": 1.05}",5,"{""id"": ""MOLD_F"", ""cavities"": 2, ""limit_cycles"": 140, ""initial_cycles"": 95, ""maintenance_minutes"": 45, ""after_maintenance"": ""CLEAN""}",[]
+CAST_R,cast,"[""R_SILVER"", ""R_BLACK""]","{""R_SILVER"": 1.2, ""R_BLACK"": 1.2}",5,"{""id"": ""MOLD_R"", ""cavities"": 2, ""limit_cycles"": 140, ""initial_cycles"": 115, ""maintenance_minutes"": 45, ""after_maintenance"": ""CLEAN""}",[]
+CNC_1,cnc,"[""F_SILVER"", ""F_BLACK"", ""R_SILVER""]","{""F_SILVER"": 1.65, ""F_BLACK"": 1.65, ""R_SILVER"": 1.65}",8,,"[[3720, 3900]]"
+CNC_2,cnc,"[""F_SILVER"", ""F_BLACK"", ""R_SILVER"", ""R_BLACK""]","{""F_SILVER"": 1.85, ""F_BLACK"": 1.85, ""R_SILVER"": 1.85, ""R_BLACK"": 1.85}",8,,[]
+PAINT_1,paint,"[""F_SILVER"", ""F_BLACK"", ""R_SILVER"", ""R_BLACK""]","{""F_SILVER"": 0.7, ""F_BLACK"": 0.7, ""R_SILVER"": 0.7, ""R_BLACK"": 0.7}",30,,"[[10440, 10680]]"
+PAINT_2,paint,"[""F_SILVER"", ""F_BLACK"", ""R_SILVER"", ""R_BLACK""]","{""F_SILVER"": 0.85, ""F_BLACK"": 0.85, ""R_SILVER"": 0.85, ""R_BLACK"": 0.85}",30,,[]
+QC_1,qc,"[""F_SILVER"", ""F_BLACK"", ""R_SILVER"", ""R_BLACK""]","{""F_SILVER"": 0.65, ""F_BLACK"": 0.65, ""R_SILVER"": 0.65, ""R_BLACK"": 0.65}",8,,[]

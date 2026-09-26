@@ -7,7 +7,7 @@
 
 ## 1. Đề xuất bài toán cụ thể
 
-Tên đề tài đề xuất: Xây dựng tác nhân lập lịch sản xuất có khả năng giải thích, ứng dụng trong ngành sản xuất linh kiện, trường hợp nghiên cứu: sản xuất bánh xe.
+Tên đề tài đề xuất: Xây dựng tác nhân lập lịch sản xuất tạo ra lịch hợp lý, ứng dụng trong ngành sản xuất linh kiện, trường hợp nghiên cứu: sản xuất bánh xe.
 
 Lĩnh vực: Sản xuất
 
@@ -26,7 +26,7 @@ Tại nhiều nhà máy sản xuất linh kiện quy mô vừa và lớn (trư�
 Thiết kế một tác nhân lập lịch sản xuất có khả năng:
 
 1. Tự động sinh lịch sản xuất tối ưu hoặc gần tối ưu dựa trên đơn hàng và ràng buộc thực tế của nhà máy.
-2. Giải thích được lý do đằng sau mỗi quyết định lập lịch, thay vì chỉ đưa ra kết quả cuối cùng, để ban lãnh đạo có thể giám sát, tin tưởng và can thiệp khi cần.
+2. Tạo ra lịch sản xuất hợp lý — tuân thủ đầy đủ ràng buộc vật lý/nghiệp vụ của nhà máy, cân đối có căn cứ giữa các mục tiêu cạnh tranh (hạn giao, hiệu suất máy, tồn kho), để ban lãnh đạo có thể tin tưởng sử dụng mà không cần rà tay lại.
 3. Phản ứng linh hoạt với các sự kiện gián đoạn ngoài kế hoạch (đơn hàng gấp, máy hỏng) bằng cách giải lại lịch và so sánh với lịch gốc để thấy rõ tác động.
 4. Tối đa hoá hiệu suất sử dụng máy trong mỗi khung ca đã được kích hoạt, giảm thiểu lãng phí nhân công và năng lượng.
 
@@ -36,7 +36,7 @@ Thiết kế một tác nhân lập lịch sản xuất có khả năng:
 - Dữ liệu giao dịch: đơn hàng (mã sản phẩm, số lượng, hạn giao hàng), nguồn dữ liệu đầu vào cho ràng buộc hạn giao hàng cũng như cho phần lập kế hoạch và lập lịch bên dưới.
 - Lập kế hoạch sản xuất (theo quý/tháng): tổng hợp đơn hàng đổ về theo quý/tháng thành kế hoạch sản xuất theo từng giai đoạn ngắn hơn (2 tuần), làm đầu vào cho phần lập lịch sản xuất, đúng với quy trình thực tế (đơn hàng → lập kế hoạch → lập lịch) — mô hình **hierarchical production planning** kinh điển trong OR (Hax & Meal, 1975, tài liệu tham khảo số 16). Xử lý ở mức tổng hợp nhu cầu, không cần một mô hình tối ưu riêng như phần lập lịch.
 - Lập lịch sản xuất chi tiết cho một dây chuyền sản xuất đơn giản hoá (bánh sau / bánh trước), tập trung các công đoạn chính: đúc → gia công CNC → sơn → kiểm tra chất lượng.
-- Phần giải thích quyết định đi kèm mỗi lịch được sinh ra.
+- Phần diễn giải quyết định (phụ trợ, không bắt buộc) đi kèm mỗi lịch được sinh ra.
 - Ràng buộc/mục tiêu tối ưu hoá hiệu suất sử dụng máy khi đã bật (chi tiết ở mục 2.3).
 - Quản lý tồn kho là một phần của dữ liệu chủ (tồn đầu kỳ và ngưỡng an toàn theo từng loại sản phẩm), dùng làm ràng buộc đầu vào cho lịch sản xuất ở mức vừa đủ (không đi sâu tối ưu tồn kho như một bài toán độc lập).
 
@@ -81,7 +81,9 @@ Một yêu cầu nghiệp vụ quan trọng: một khi máy đã bật (mở ca,
 2. Thêm biến quyết định nhị phân "có nên bật máy trong ca này không?", nếu bật mà không gán đủ công việc để đạt hiệu suất sử dụng mục tiêu thì bị phạt trong hàm mục tiêu (ràng buộc mềm, không bắt buộc cứng để tránh bài toán trở nên bất khả thi khi không đủ đơn hàng lấp ca); nếu không đủ việc, bộ giải có thể chọn không bật máy đó (tiết kiệm chi phí nhân công).
 3. Ràng buộc này liên kết trực tiếp với quy mô lô tối thiểu: nếu một máy sắp phải bật cho một công việc nhỏ lẻ không lấp đầy được ca, bộ giải nên ưu tiên dồn/hoãn công việc để gộp lô, miễn không vi phạm hạn giao hàng, đây là sự đánh đổi giữa hiệu suất sử dụng máy và độ trễ giao hàng, cần thể hiện rõ qua trọng số trong hàm mục tiêu.
 
-### 2.4. Lớp giải thích
+### 2.4. Lớp diễn giải hỗ trợ (không phải mục tiêu cốt lõi)
+
+Ngoài mục tiêu chính là tạo ra lịch hợp lý (mục 1.2), tác nhân giữ lại một số tính năng diễn giải phụ trợ — tận dụng sẵn CP-SAT (không tốn thêm nhiều effort) để tăng độ tin cậy khi ban lãnh đạo cần tham khảo lý do, không bắt buộc phải "trong suốt hoàn toàn":
 
 - Phân tích độ nhạy: nới lỏng từng ràng buộc và đo mức cải thiện tổng thời gian hoàn thành → xác định điểm nghẽn chính. Phương pháp gần trùng khớp nhất tìm được trong tài liệu: nới lỏng ràng buộc để xác định điểm nghẽn trong bài toán lập lịch có ràng buộc tài nguyên (Nedbálek & Novák, 2025 — ICORES, tài liệu tham khảo số 15).
 - Phân tích đường găng (critical path): xác định chuỗi công đoạn quyết định tổng thời gian hoàn thành → giải thích "vì sao công việc X trễ". Phương pháp gốc: Kelley & Walker (1959), tài liệu tham khảo số 14.
@@ -107,7 +109,7 @@ Rà soát tài liệu gần đây (2020–2025) về explainable scheduling, XAI
 | Mota et al. 2020 (Zenodo) | Lập lịch dây chuyền thực tế + năng lượng | GA | Có — dữ liệu năng lượng thực | Không | Không | Dữ liệu thực (nhà máy dệt may) |
 | **Đề tài này (Dũng, 2026)** | FJSP 4 công đoạn (đúc→CNC→sơn→QC), 2 tầng planning/scheduling | CP-SAT (OR-Tools) | **Có đủ:** setup phụ thuộc trình tự, lô tối thiểu, bảo trì khuôn, tồn kho an toàn, hiệu suất sử dụng máy | **Có:** đường găng + độ nhạy + phản thực (đơn gấp/máy hỏng) + báo cáo hiệu suất máy | **Có:** đơn gấp + máy hỏng, giải lại và so lịch gốc | Tổng hợp tham số hoá theo thực tế + đối chứng lõi trên Taillard/Lawrence/Deliktaş et al. |
 
-**Nhận định:** chưa tìm thấy công trình nào kết hợp đủ cả 3 trục — bộ ràng buộc đặc thù ngành sản xuất linh kiện, khả năng giải thích, và xử lý gián đoạn động — trong cùng một hệ thống. Mỗi công trình chỉ mạnh ở một trục: FJSP-MRST xử lý tốt ràng buộc khuôn nhưng không giải thích; Mehdiyev et al. giải thích phản thực tốt nhưng không có ràng buộc sản xuất đặc thù; Wang & Chen mạnh về khung XAI nhưng dùng GA và không xử lý gián đoạn động. Đây là khoảng trống mà đề tài hướng tới lấp vào.
+**Nhận định:** chưa tìm thấy công trình nào kết hợp đủ cả 3 trục — bộ ràng buộc đặc thù ngành sản xuất linh kiện, khả năng giải thích, và xử lý gián đoạn động — trong cùng một hệ thống. Mỗi công trình chỉ mạnh ở một trục: FJSP-MRST xử lý tốt ràng buộc khuôn nhưng không giải thích; Mehdiyev et al. giải thích phản thực tốt nhưng không có ràng buộc sản xuất đặc thù; Wang & Chen mạnh về khung XAI nhưng dùng GA và không xử lý gián đoạn động. Đề tài này vẫn giữ được cả 3 năng lực trên (bảng), nhưng sau khi tái định hướng mục tiêu chính sang **lịch hợp lý** (mục 1.2), khả năng giải thích không còn là trục khác biệt hoá bắt buộc — nó là một điểm cộng phụ trợ có sẵn nhờ dùng CP-SAT, không phải lý do chọn phương pháp.
 
 ## 3. Nguồn dữ liệu dự kiến sử dụng
 
@@ -127,7 +129,7 @@ Quy trình sinh dữ liệu: Xây dựng bộ sinh dữ liệu có thể điều
 
 - Lịch sinh ra hợp lệ về mặt vật lý 100% (không vi phạm tồn kho, công suất máy, trình tự công đoạn) trên mọi kịch bản kiểm thử.
 - Hiệu suất sử dụng máy trong các ca đã bật đạt mục tiêu đề ra (ví dụ ≥ 90%), có thể hiện cải thiện rõ so với kịch bản không có ràng buộc này.
-- Mỗi lịch sinh ra đều có giải thích tương ứng (điểm nghẽn, đường găng, tác động khi giả lập đơn gấp/máy hỏng) mà nhà quản lý có thể đọc hiểu mà không cần biết CP-SAT là gì.
+- (Phụ trợ) Mỗi lịch sinh ra có thể tra cứu diễn giải tương ứng (điểm nghẽn, đường găng, tác động khi giả lập đơn gấp/máy hỏng) mà nhà quản lý có thể đọc hiểu mà không cần biết CP-SAT là gì — không phải điều kiện thành công bắt buộc như 4 tiêu chí trên/dưới.
 - Thời gian giải nằm trong ngưỡng chấp nhận được cho một phiên làm việc, có cảnh báo rõ khi solver không kịp tìm lời giải tối ưu.
 - Chất lượng lời giải trên bộ dữ liệu chuẩn công khai không thua kém đáng kể so với kết quả tốt nhất đã công bố cho phần lõi thuật toán.
 

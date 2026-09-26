@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+build/
+dist/
+*.egg-info/
+.pytest-run-*/
+.migration-*.db
+.test-tmp/
+.ui-review/
+
+# Application state
+data/*.db
+data/*.db-*
+backend/data/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# Local configuration
+.env
+.env.local
+!.env.example
+
+# Editors / OS
+.idea/
+.DS_Store
+Thumbs.db

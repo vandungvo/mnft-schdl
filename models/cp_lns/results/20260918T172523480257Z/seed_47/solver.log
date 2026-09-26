@@ -1,0 +1,199 @@
+{
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.040260299923829734,
+      "objective": 68017,
+      "source": "EDD"
+    },
+    {
+      "seconds": 3.67325729993172,
+      "objective": 65934,
+      "iteration": 1
+    },
+    {
+      "seconds": 7.012295499909669,
+      "objective": 64544,
+      "iteration": 2
+    },
+    {
+      "seconds": 10.65438889991492,
+      "objective": 64278,
+      "iteration": 3
+    },
+    {
+      "seconds": 13.477441199938767,
+      "objective": 60842,
+      "iteration": 4
+    },
+    {
+      "seconds": 16.781666399911046,
+      "objective": 60437,
+      "iteration": 5
+    },
+    {
+      "seconds": 18.816161099937744,
+      "objective": 60429,
+      "iteration": 6
+    },
+    {
+      "seconds": 21.803488399949856,
+      "objective": 59979,
+      "iteration": 7
+    },
+    {
+      "seconds": 24.618385699926876,
+      "objective": 59971,
+      "iteration": 8
+    }
+  ],
+  "iterations": [
+    {
+      "released_lots": [
+        "L005",
+        "L017",
+        "L022",
+        "L023",
+        "L028",
+        "L030",
+        "L033",
+        "L036",
+        "L037"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.8382805999135599,
+      "solve_seconds": 2.7092261
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L002",
+        "L003",
+        "L007",
+        "L025",
+        "L026",
+        "L027",
+        "L040",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.8672502000117674,
+      "solve_seconds": 2.3822766
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L015",
+        "L016",
+        "L017",
+        "L021",
+        "L028",
+        "L031",
+        "L035",
+        "L037"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2217226000502706,
+      "solve_seconds": 2.3359594
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L016",
+        "L023",
+        "L024",
+        "L029",
+        "L033",
+        "L034",
+        "L036",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.8070503999479115,
+      "solve_seconds": 1.9246468
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L009",
+        "L013",
+        "L016",
+        "L022",
+        "L036",
+        "L037",
+        "L039",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.824395600007847,
+      "solve_seconds": 2.3960061
+    },
+    {
+      "released_lots": [
+        "L007",
+        "L015",
+        "L017",
+        "L024",
+        "L025",
+        "L033",
+        "L035",
+        "L038",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.8221053000306711,
+      "solve_seconds": 1.1311487
+    },
+    {
+      "released_lots": [
+        "L008",
+        "L014",
+        "L019",
+        "L022",
+        "L023",
+        "L027",
+        "L031",
+        "L039",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.818893100018613,
+      "solve_seconds": 2.082031
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L016",
+        "L017",
+        "L020",
+        "L023",
+        "L031",
+        "L035",
+        "L036",
+        "L037"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.8222705000080168,
+      "solve_seconds": 1.9095295
+    },
+    {
+      "released_lots": [
+        "L008",
+        "L014",
+        "L015",
+        "L017",
+        "L026",
+        "L034",
+        "L037",
+        "L039",
+        "L041"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.8295225999318063,
+      "solve_seconds": 1.9294841
+    }
+  ],
+  "bound": null,
+  "bound_scope": "none; neighborhood bounds are not global",
+  "initial_hint_objective": 68017
+}

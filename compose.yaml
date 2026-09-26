@@ -1,0 +1,42 @@
+name: mnft-scheduling
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      MNFT_ENVIRONMENT: production
+      MNFT_DATABASE_URL: sqlite:////srv/data/mnft.db
+      MNFT_DATABASE_AUTO_CREATE: "false"
+      MNFT_BOOTSTRAP_STANDARD_DATA: "true"
+      MNFT_STANDARD_DATA_PATH: /srv/models/input/wheel_factory.json
+      MNFT_CORS_ORIGINS: '["http://localhost:3000"]'
+      MNFT_SOLVER_MAX_CONCURRENT_JOBS: "1"
+    ports:
+      - "8000:8000"
+    volumes:
+      - scheduling-data:/srv/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  scheduling-data:

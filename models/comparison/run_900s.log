@@ -1,0 +1,20 @@
+RUN_ID=20260919T015246251063Z
+fifo seed=11 status=HEURISTIC_FEASIBLE valid=True objective=276999 time=0.07s
+edd seed=11 status=HEURISTIC_FEASIBLE valid=True objective=68017 time=0.06s
+spt seed=11 status=HEURISTIC_FEASIBLE valid=True objective=167625 time=0.08s
+simulated_annealing seed=11 status=HEURISTIC_FEASIBLE valid=True objective=39216 time=900.02s
+simulated_annealing seed=29 status=HEURISTIC_FEASIBLE valid=True objective=40941 time=900.01s
+simulated_annealing seed=47 status=HEURISTIC_FEASIBLE valid=True objective=40610 time=900.06s
+genetic_algorithm seed=11 status=HEURISTIC_FEASIBLE valid=True objective=41768 time=900.06s
+genetic_algorithm seed=29 status=HEURISTIC_FEASIBLE valid=True objective=44792 time=900.01s
+genetic_algorithm seed=47 status=HEURISTIC_FEASIBLE valid=True objective=52436 time=900.05s
+cp_sat seed=11 status=UNKNOWN valid=False objective=None time=23589.65s
+cp_sat seed=29 status=UNKNOWN valid=False objective=None time=1030.96s
+cp_sat seed=47 status=UNKNOWN valid=False objective=None time=2979.16s
+cp_sat_hint seed=11 status=FEASIBLE valid=True objective=67706 time=900.44s
+cp_sat_hint seed=29 status=FEASIBLE valid=True objective=67453 time=900.12s
+cp_sat_hint seed=47 status=FEASIBLE valid=True objective=67958 time=48755.94s
+cp_lns seed=11 status=HEURISTIC_FEASIBLE valid=True objective=37802 time=899.21s
+cp_lns seed=29 status=HEURISTIC_FEASIBLE valid=True objective=37927 time=899.34s
+cp_lns seed=47 status=HEURISTIC_FEASIBLE valid=True objective=38346 time=899.94s
+REPORT=D:\mnft-schdl\models\comparison\20260919T015246251063Z\REPORT.md

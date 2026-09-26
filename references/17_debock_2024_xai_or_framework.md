@@ -10,4 +10,4 @@
 
 **Nội dung:** bài **định khung (framework paper)** cho XAI trong Operations Research nói chung — do 16 tác giả từ nhiều đại học lớn đồng biên soạn, được xem là tài liệu tham chiếu chuẩn khi mở đầu một chương tổng quan về XAI trong OR.
 
-**Liên quan đến đề tài:** khác với tài liệu #5/#6 (Wang & Chen — XAI chuyên biệt cho GA/job scheduling), bài này cho một **định nghĩa/khung lý thuyết XAI cho OR nói chung** — nên dùng để mở đầu phần trình bày về XAI trong chương tổng quan luận văn, trước khi thu hẹp vào các nghiên cứu cụ thể (GA-scheduling, counterfactual cho job-shop) đã có ở đợt rà soát đầu.
+**Liên quan đến đề tài:** khác với tài liệu #5/#6 (Wang & Chen — XAI chuyên biệt cho GA/job scheduling), bài này cho một **định nghĩa/khung lý thuyết XAI cho OR nói chung** — nên dùng để mở đầu phần trình bày về XAI trong chương tổng quan luận văn, trước khi thu hẹp vào các nghiên cứu cụ thể (GA-scheduling, counterfactual cho job-shop) đã có ở đợt rà soát đầu. Mục tiêu chính của đề tài là "lịch hợp lý" (§1.2 báo cáo), nên tài liệu này giữ vai trò nền tảng lý thuyết cho chương tổng quan/lớp diễn giải phụ trợ, không phải căn cứ chọn phương pháp lõi.

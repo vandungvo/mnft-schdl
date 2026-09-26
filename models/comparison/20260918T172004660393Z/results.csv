@@ -1,0 +1,3 @@
+﻿method,seed,status,valid,objective,makespan,late_orders,weighted_tardiness,setup_minutes,maintenance_count,idle_minutes,safety_shortfall,activated_shifts,productive_utilization,algorithm_seconds,bound,gap,artifacts
+cp_sat_hint,11,FEASIBLE,True,36948,12540,0,0,1376,15,17480,140,84,0.4775013376136972,30.10489710001275,-8707.0,1.2356555158601277,cp_sat_hint/results/20260918T172004660393Z/seed_11
+cp_sat,11,UNKNOWN,False,,,,,,,,,,,30.035533200018108,,,cp_sat/results/20260918T172004660393Z/seed_11

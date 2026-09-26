@@ -1,0 +1,72 @@
+{
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.038980099954642355,
+      "objective": 36948,
+      "evaluations": 1
+    },
+    {
+      "seconds": 0.1568254999583587,
+      "objective": 36560,
+      "evaluations": 4
+    },
+    {
+      "seconds": 0.2731240999419242,
+      "objective": 36243,
+      "evaluations": 7
+    },
+    {
+      "seconds": 0.39009070000611246,
+      "objective": 35975,
+      "evaluations": 10
+    },
+    {
+      "seconds": 0.6436167999636382,
+      "objective": 34634,
+      "evaluations": 16
+    },
+    {
+      "seconds": 1.6502419000025839,
+      "objective": 34236,
+      "evaluations": 41
+    },
+    {
+      "seconds": 1.7693458999274299,
+      "objective": 33992,
+      "evaluations": 44
+    },
+    {
+      "seconds": 2.7500148999970406,
+      "objective": 33693,
+      "evaluations": 69
+    },
+    {
+      "seconds": 3.7054863999364898,
+      "objective": 33611,
+      "evaluations": 93
+    },
+    {
+      "seconds": 4.73376279999502,
+      "objective": 33591,
+      "evaluations": 119
+    },
+    {
+      "seconds": 5.518713700002991,
+      "objective": 33526,
+      "evaluations": 139
+    },
+    {
+      "seconds": 5.945840599946678,
+      "objective": 33155,
+      "evaluations": 150
+    }
+  ],
+  "evaluations": 152,
+  "bound": null,
+  "generations": 12,
+  "population_size": 14,
+  "elite": 2,
+  "selection": "tournament_3",
+  "crossover": "uniform_random_keys"
+}

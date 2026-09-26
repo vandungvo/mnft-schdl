@@ -1,0 +1,56 @@
+{
+  "case": "standard_case",
+  "method": "lập tay theo kinh nghiệm điều độ, không dùng solver",
+  "shipping_policy": "giao ngay khi đủ hàng (mọi lô được gán đã xong QC và đơn đã release)",
+  "opened_optional_shifts": [],
+  "runs": [
+    {"id": "R01", "lot": "L01", "stage": "cnc",   "machine": "CNC_1",   "setup_start": 0,    "setup_minutes": 0,  "start": 0,    "end": 50},
+    {"id": "R02", "lot": "L10", "stage": "cast",  "machine": "CAST_1",  "setup_start": 0,    "setup_minutes": 0,  "start": 0,    "end": 32},
+    {"id": "R03", "lot": "L10", "stage": "cnc",   "machine": "CNC_1",   "setup_start": 50,   "setup_minutes": 0,  "start": 50,   "end": 100},
+    {"id": "R04", "lot": "L02", "stage": "cast",  "machine": "CAST_1",  "setup_start": 32,   "setup_minutes": 0,  "start": 32,   "end": 64},
+    {"id": "R05", "lot": "L02", "stage": "cnc",   "machine": "CNC_1",   "setup_start": 100,  "setup_minutes": 0,  "start": 100,  "end": 150},
+    {"id": "R06", "lot": "L03", "stage": "cast",  "machine": "CAST_1",  "setup_start": 64,   "setup_minutes": 0,  "start": 64,   "end": 96},
+    {"id": "R07", "lot": "L03", "stage": "cnc",   "machine": "CNC_1",   "setup_start": 150,  "setup_minutes": 0,  "start": 150,  "end": 200},
+    {"id": "R08", "lot": "L04", "stage": "cast",  "machine": "CAST_1",  "setup_start": 96,   "setup_minutes": 0,  "start": 96,   "end": 128},
+    {"id": "R09", "lot": "L04", "stage": "cnc",   "machine": "CNC_1",   "setup_start": 270,  "setup_minutes": 0,  "start": 270,  "end": 320},
+
+    {"id": "R10", "lot": "L01", "stage": "paint", "machine": "PAINT_1", "setup_start": 50,   "setup_minutes": 24, "start": 74,   "end": 110},
+    {"id": "R11", "lot": "L10", "stage": "paint", "machine": "PAINT_1", "setup_start": 110,  "setup_minutes": 0,  "start": 110,  "end": 146},
+    {"id": "R12", "lot": "L02", "stage": "paint", "machine": "PAINT_1", "setup_start": 150,  "setup_minutes": 0,  "start": 150,  "end": 186},
+    {"id": "R13", "lot": "L03", "stage": "paint", "machine": "PAINT_1", "setup_start": 200,  "setup_minutes": 0,  "start": 200,  "end": 236},
+    {"id": "R14", "lot": "L04", "stage": "paint", "machine": "PAINT_1", "setup_start": 320,  "setup_minutes": 0,  "start": 320,  "end": 356},
+
+    {"id": "R15", "lot": "L01", "stage": "qc",    "machine": "QC_1",    "setup_start": 110,  "setup_minutes": 0,  "start": 110,  "end": 126},
+    {"id": "R16", "lot": "L10", "stage": "qc",    "machine": "QC_1",    "setup_start": 146,  "setup_minutes": 0,  "start": 146,  "end": 162},
+    {"id": "R17", "lot": "L02", "stage": "qc",    "machine": "QC_1",    "setup_start": 186,  "setup_minutes": 0,  "start": 186,  "end": 202},
+    {"id": "R18", "lot": "L03", "stage": "qc",    "machine": "QC_1",    "setup_start": 270,  "setup_minutes": 0,  "start": 270,  "end": 286},
+    {"id": "R19", "lot": "L04", "stage": "qc",    "machine": "QC_1",    "setup_start": 356,  "setup_minutes": 0,  "start": 356,  "end": 372},
+
+    {"id": "R20", "lot": "L12", "stage": "cast",  "machine": "CAST_2",  "setup_start": 0,    "setup_minutes": 0,  "start": 0,    "end": 33},
+    {"id": "R21", "lot": "L06", "stage": "cast",  "machine": "CAST_2",  "setup_start": 78,   "setup_minutes": 16, "start": 94,   "end": 127},
+    {"id": "R22", "lot": "L12", "stage": "cnc",   "machine": "CNC_2",   "setup_start": 33,   "setup_minutes": 0,  "start": 33,   "end": 88},
+    {"id": "R23", "lot": "L06", "stage": "cnc",   "machine": "CNC_2",   "setup_start": 127,  "setup_minutes": 0,  "start": 127,  "end": 182},
+    {"id": "R24", "lot": "L05", "stage": "paint", "machine": "PAINT_1", "setup_start": 356,  "setup_minutes": 12, "start": 368,  "end": 404},
+    {"id": "R25", "lot": "L12", "stage": "paint", "machine": "PAINT_1", "setup_start": 404,  "setup_minutes": 0,  "start": 404,  "end": 440},
+    {"id": "R26", "lot": "L06", "stage": "paint", "machine": "PAINT_1", "setup_start": 440,  "setup_minutes": 0,  "start": 440,  "end": 476},
+    {"id": "R27", "lot": "L05", "stage": "qc",    "machine": "QC_1",    "setup_start": 404,  "setup_minutes": 0,  "start": 404,  "end": 420},
+    {"id": "R28", "lot": "L12", "stage": "qc",    "machine": "QC_1",    "setup_start": 440,  "setup_minutes": 0,  "start": 440,  "end": 456},
+    {"id": "R29", "lot": "L06", "stage": "qc",    "machine": "QC_1",    "setup_start": 1440, "setup_minutes": 0,  "start": 1440, "end": 1456},
+
+    {"id": "R30", "lot": "L07", "stage": "cast",  "machine": "CAST_2",  "setup_start": 1440, "setup_minutes": 0,  "start": 1440, "end": 1473},
+    {"id": "R31", "lot": "L08", "stage": "cast",  "machine": "CAST_2",  "setup_start": 1473, "setup_minutes": 0,  "start": 1473, "end": 1506},
+    {"id": "R32", "lot": "L09", "stage": "cast",  "machine": "CAST_2",  "setup_start": 1506, "setup_minutes": 0,  "start": 1506, "end": 1539},
+    {"id": "R33", "lot": "L07", "stage": "cnc",   "machine": "CNC_2",   "setup_start": 1473, "setup_minutes": 0,  "start": 1473, "end": 1528},
+    {"id": "R34", "lot": "L08", "stage": "cnc",   "machine": "CNC_2",   "setup_start": 1528, "setup_minutes": 0,  "start": 1528, "end": 1583},
+    {"id": "R35", "lot": "L09", "stage": "cnc",   "machine": "CNC_1",   "setup_start": 1560, "setup_minutes": 10, "start": 1570, "end": 1620},
+    {"id": "R36", "lot": "L07", "stage": "paint", "machine": "PAINT_1", "setup_start": 1528, "setup_minutes": 0,  "start": 1528, "end": 1564},
+    {"id": "R37", "lot": "L08", "stage": "paint", "machine": "PAINT_1", "setup_start": 1583, "setup_minutes": 0,  "start": 1583, "end": 1619},
+    {"id": "R38", "lot": "L09", "stage": "paint", "machine": "PAINT_1", "setup_start": 1620, "setup_minutes": 0,  "start": 1620, "end": 1656},
+    {"id": "R39", "lot": "L07", "stage": "qc",    "machine": "QC_1",    "setup_start": 1564, "setup_minutes": 0,  "start": 1564, "end": 1580},
+    {"id": "R40", "lot": "L08", "stage": "qc",    "machine": "QC_1",    "setup_start": 1619, "setup_minutes": 0,  "start": 1619, "end": 1635},
+    {"id": "R41", "lot": "L09", "stage": "qc",    "machine": "QC_1",    "setup_start": 1656, "setup_minutes": 0,  "start": 1656, "end": 1672}
+  ],
+  "maintenance": [
+    {"id": "M1", "mold": "MOLD_R", "machine": "CAST_2", "start": 33, "end": 78}
+  ]
+}

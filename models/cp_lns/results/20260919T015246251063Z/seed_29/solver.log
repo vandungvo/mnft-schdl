@@ -1,0 +1,3525 @@
+{
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.06883889999880921,
+      "objective": 68017,
+      "source": "EDD"
+    },
+    {
+      "seconds": 5.820783799994388,
+      "objective": 67254,
+      "iteration": 1
+    },
+    {
+      "seconds": 10.005124400006025,
+      "objective": 66316,
+      "iteration": 2
+    },
+    {
+      "seconds": 14.667791400002898,
+      "objective": 65869,
+      "iteration": 3
+    },
+    {
+      "seconds": 19.11620309999853,
+      "objective": 65621,
+      "iteration": 4
+    },
+    {
+      "seconds": 22.44192430000112,
+      "objective": 64905,
+      "iteration": 5
+    },
+    {
+      "seconds": 26.48192960000597,
+      "objective": 64640,
+      "iteration": 6
+    },
+    {
+      "seconds": 31.89442759999656,
+      "objective": 64021,
+      "iteration": 7
+    },
+    {
+      "seconds": 35.282182800001465,
+      "objective": 63629,
+      "iteration": 8
+    },
+    {
+      "seconds": 40.320861300002434,
+      "objective": 63149,
+      "iteration": 9
+    },
+    {
+      "seconds": 45.771919100006926,
+      "objective": 62981,
+      "iteration": 10
+    },
+    {
+      "seconds": 55.920536000005086,
+      "objective": 62807,
+      "iteration": 11
+    },
+    {
+      "seconds": 61.63145699999586,
+      "objective": 62799,
+      "iteration": 12
+    },
+    {
+      "seconds": 72.34800959999848,
+      "objective": 56786,
+      "iteration": 14
+    },
+    {
+      "seconds": 77.12660640000831,
+      "objective": 56071,
+      "iteration": 15
+    },
+    {
+      "seconds": 81.67087060000631,
+      "objective": 52529,
+      "iteration": 16
+    },
+    {
+      "seconds": 86.5417243999982,
+      "objective": 52515,
+      "iteration": 17
+    },
+    {
+      "seconds": 92.10280209999473,
+      "objective": 52271,
+      "iteration": 18
+    },
+    {
+      "seconds": 110.29503049999767,
+      "objective": 51790,
+      "iteration": 22
+    },
+    {
+      "seconds": 115.25710129999788,
+      "objective": 51552,
+      "iteration": 23
+    },
+    {
+      "seconds": 125.03209130000323,
+      "objective": 51549,
+      "iteration": 25
+    },
+    {
+      "seconds": 130.0195526000025,
+      "objective": 51525,
+      "iteration": 26
+    },
+    {
+      "seconds": 135.48023109999485,
+      "objective": 51501,
+      "iteration": 27
+    },
+    {
+      "seconds": 143.37481789999583,
+      "objective": 48561,
+      "iteration": 29
+    },
+    {
+      "seconds": 147.82390909999958,
+      "objective": 48553,
+      "iteration": 30
+    },
+    {
+      "seconds": 160.15793689999555,
+      "objective": 48392,
+      "iteration": 33
+    },
+    {
+      "seconds": 164.1131485000078,
+      "objective": 48384,
+      "iteration": 34
+    },
+    {
+      "seconds": 168.9425673000078,
+      "objective": 47304,
+      "iteration": 35
+    },
+    {
+      "seconds": 188.77694110000448,
+      "objective": 47279,
+      "iteration": 39
+    },
+    {
+      "seconds": 215.7855081000016,
+      "objective": 47206,
+      "iteration": 45
+    },
+    {
+      "seconds": 221.14826889999676,
+      "objective": 46966,
+      "iteration": 46
+    },
+    {
+      "seconds": 226.22465000000375,
+      "objective": 39270,
+      "iteration": 47
+    },
+    {
+      "seconds": 256.6277928000054,
+      "objective": 39246,
+      "iteration": 53
+    },
+    {
+      "seconds": 277.18936050000775,
+      "objective": 39198,
+      "iteration": 58
+    },
+    {
+      "seconds": 303.3918224999943,
+      "objective": 39178,
+      "iteration": 64
+    },
+    {
+      "seconds": 307.72732960000576,
+      "objective": 39142,
+      "iteration": 65
+    },
+    {
+      "seconds": 312.2853589000006,
+      "objective": 39123,
+      "iteration": 66
+    },
+    {
+      "seconds": 315.7646709999972,
+      "objective": 38867,
+      "iteration": 67
+    },
+    {
+      "seconds": 331.1738248000038,
+      "objective": 38859,
+      "iteration": 70
+    },
+    {
+      "seconds": 417.9377544000017,
+      "objective": 38423,
+      "iteration": 92
+    },
+    {
+      "seconds": 527.4985019000014,
+      "objective": 38413,
+      "iteration": 118
+    },
+    {
+      "seconds": 625.1737361999985,
+      "objective": 38389,
+      "iteration": 141
+    },
+    {
+      "seconds": 674.2310419999994,
+      "objective": 38353,
+      "iteration": 153
+    },
+    {
+      "seconds": 724.2000341999956,
+      "objective": 38345,
+      "iteration": 165
+    },
+    {
+      "seconds": 745.0854689999978,
+      "objective": 38237,
+      "iteration": 169
+    },
+    {
+      "seconds": 878.4506846000004,
+      "objective": 37967,
+      "iteration": 200
+    },
+    {
+      "seconds": 889.8566776999942,
+      "objective": 37927,
+      "iteration": 203
+    }
+  ],
+  "iterations": [
+    {
+      "released_lots": [
+        "L005",
+        "L006",
+        "L019",
+        "L023",
+        "L033",
+        "L036",
+        "L039",
+        "L045",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.125241100002313,
+      "solve_seconds": 4.4912811
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L003",
+        "L007",
+        "L015",
+        "L023",
+        "L026",
+        "L027",
+        "L029",
+        "L042"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2150412000046344,
+      "solve_seconds": 2.8537086
+    },
+    {
+      "released_lots": [
+        "L006",
+        "L011",
+        "L013",
+        "L022",
+        "L027",
+        "L029",
+        "L032",
+        "L035",
+        "L039"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1594999000080861,
+      "solve_seconds": 3.3805558
+    },
+    {
+      "released_lots": [
+        "L013",
+        "L015",
+        "L027",
+        "L028",
+        "L034",
+        "L035",
+        "L037",
+        "L044",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.122193300005165,
+      "solve_seconds": 3.2133423000000003
+    },
+    {
+      "released_lots": [
+        "L015",
+        "L018",
+        "L020",
+        "L027",
+        "L028",
+        "L031",
+        "L033",
+        "L034",
+        "L044"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1397940000024391,
+      "solve_seconds": 2.0683926
+    },
+    {
+      "released_lots": [
+        "L007",
+        "L010",
+        "L020",
+        "L026",
+        "L031",
+        "L038",
+        "L040",
+        "L042",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1960627999942517,
+      "solve_seconds": 2.7285063000000003
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L009",
+        "L010",
+        "L017",
+        "L022",
+        "L024",
+        "L026",
+        "L036",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1432217999972636,
+      "solve_seconds": 4.156062100000001
+    },
+    {
+      "released_lots": [
+        "L010",
+        "L011",
+        "L019",
+        "L027",
+        "L028",
+        "L030",
+        "L040",
+        "L041",
+        "L042"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.138522599998396,
+      "solve_seconds": 2.1252819
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L002",
+        "L014",
+        "L018",
+        "L021",
+        "L041",
+        "L043",
+        "L044",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0911181999981636,
+      "solve_seconds": 3.7930864000000004
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L004",
+        "L009",
+        "L010",
+        "L019",
+        "L026",
+        "L027",
+        "L028",
+        "L036"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.6579780000029132,
+      "solve_seconds": 3.6573653000000004
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L003",
+        "L004",
+        "L008",
+        "L020",
+        "L034",
+        "L041",
+        "L042",
+        "L047"
+      ],
+      "status": "FEASIBLE",
+      "build_seconds": 1.179855399997905,
+      "solve_seconds": 8.8276856
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L003",
+        "L005",
+        "L010",
+        "L012",
+        "L015",
+        "L024",
+        "L029",
+        "L033"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1928828999953112,
+      "solve_seconds": 4.3901803
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L008",
+        "L009",
+        "L013",
+        "L017",
+        "L032",
+        "L046",
+        "L047",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1972803999960888,
+      "solve_seconds": 3.6983404
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L011",
+        "L013",
+        "L014",
+        "L015",
+        "L025",
+        "L035",
+        "L042",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.201430100001744,
+      "solve_seconds": 4.3670039
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L008",
+        "L015",
+        "L016",
+        "L017",
+        "L021",
+        "L022",
+        "L037",
+        "L040"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1942095999984303,
+      "solve_seconds": 3.4376966
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L011",
+        "L015",
+        "L019",
+        "L021",
+        "L027",
+        "L037",
+        "L044",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1799979000061285,
+      "solve_seconds": 3.2339402
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L008",
+        "L019",
+        "L025",
+        "L027",
+        "L028",
+        "L032",
+        "L044",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1815436000033515,
+      "solve_seconds": 3.5632039000000004
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L009",
+        "L010",
+        "L011",
+        "L021",
+        "L023",
+        "L025",
+        "L040",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2158906999975443,
+      "solve_seconds": 4.2164219
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L006",
+        "L013",
+        "L021",
+        "L026",
+        "L031",
+        "L033",
+        "L042",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1778019999910612,
+      "solve_seconds": 3.6619849
+    },
+    {
+      "released_lots": [
+        "L012",
+        "L015",
+        "L022",
+        "L029",
+        "L033",
+        "L038",
+        "L042",
+        "L047",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1822201999893878,
+      "solve_seconds": 2.3303070000000004
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L004",
+        "L011",
+        "L012",
+        "L030",
+        "L036",
+        "L041",
+        "L044",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.266279300005408,
+      "solve_seconds": 3.8267166
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L007",
+        "L008",
+        "L015",
+        "L020",
+        "L021",
+        "L043",
+        "L045",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.187619000003906,
+      "solve_seconds": 3.0564191000000003
+    },
+    {
+      "released_lots": [
+        "L007",
+        "L011",
+        "L013",
+        "L017",
+        "L021",
+        "L024",
+        "L039",
+        "L045",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2031592999992426,
+      "solve_seconds": 3.5721202
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L010",
+        "L013",
+        "L015",
+        "L017",
+        "L024",
+        "L028",
+        "L041",
+        "L044"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.3652366000023903,
+      "solve_seconds": 3.4982335000000004
+    },
+    {
+      "released_lots": [
+        "L008",
+        "L014",
+        "L017",
+        "L020",
+        "L021",
+        "L022",
+        "L026",
+        "L030",
+        "L035"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.192804199992679,
+      "solve_seconds": 3.4930824
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L007",
+        "L011",
+        "L017",
+        "L037",
+        "L038",
+        "L042",
+        "L044",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.20078569999896,
+      "solve_seconds": 3.6757267000000002
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L005",
+        "L009",
+        "L014",
+        "L015",
+        "L018",
+        "L019",
+        "L021",
+        "L024"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1991512999957195,
+      "solve_seconds": 4.1541233
+    },
+    {
+      "released_lots": [
+        "L007",
+        "L008",
+        "L019",
+        "L022",
+        "L024",
+        "L027",
+        "L041",
+        "L043",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.130418600005214,
+      "solve_seconds": 2.6225466
+    },
+    {
+      "released_lots": [
+        "L008",
+        "L009",
+        "L012",
+        "L023",
+        "L033",
+        "L034",
+        "L035",
+        "L040",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.5298695000092266,
+      "solve_seconds": 2.3796441
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L014",
+        "L015",
+        "L021",
+        "L026",
+        "L028",
+        "L029",
+        "L042",
+        "L044"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.3196277000097325,
+      "solve_seconds": 3.0131586
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L013",
+        "L016",
+        "L025",
+        "L029",
+        "L030",
+        "L033",
+        "L035",
+        "L040"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1749375999934273,
+      "solve_seconds": 3.0307864
+    },
+    {
+      "released_lots": [
+        "L014",
+        "L017",
+        "L019",
+        "L021",
+        "L023",
+        "L033",
+        "L034",
+        "L036",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1226700999977766,
+      "solve_seconds": 1.9122378000000002
+    },
+    {
+      "released_lots": [
+        "L014",
+        "L015",
+        "L016",
+        "L031",
+        "L033",
+        "L041",
+        "L044",
+        "L045",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.123088699998334,
+      "solve_seconds": 3.6405980000000002
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L003",
+        "L007",
+        "L010",
+        "L018",
+        "L020",
+        "L028",
+        "L042",
+        "L044"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1092510000016773,
+      "solve_seconds": 2.7411218
+    },
+    {
+      "released_lots": [
+        "L022",
+        "L026",
+        "L038",
+        "L039",
+        "L042",
+        "L045",
+        "L046",
+        "L047",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1572458999871742,
+      "solve_seconds": 3.53589
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L005",
+        "L006",
+        "L008",
+        "L016",
+        "L020",
+        "L040",
+        "L044",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1560915000009118,
+      "solve_seconds": 5.1110965
+    },
+    {
+      "released_lots": [
+        "L010",
+        "L011",
+        "L012",
+        "L021",
+        "L025",
+        "L030",
+        "L035",
+        "L044",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1798737999924924,
+      "solve_seconds": 3.2408281000000003
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L003",
+        "L008",
+        "L010",
+        "L011",
+        "L024",
+        "L026",
+        "L027",
+        "L033"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1289940999995451,
+      "solve_seconds": 3.1002548
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L006",
+        "L013",
+        "L026",
+        "L028",
+        "L033",
+        "L039",
+        "L041",
+        "L044"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1506601000000956,
+      "solve_seconds": 3.2815499000000004
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L007",
+        "L013",
+        "L017",
+        "L018",
+        "L021",
+        "L039",
+        "L043",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2109786000073655,
+      "solve_seconds": 2.7615101
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L006",
+        "L018",
+        "L022",
+        "L037",
+        "L042",
+        "L046",
+        "L047",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1189771999925142,
+      "solve_seconds": 2.8492368000000003
+    },
+    {
+      "released_lots": [
+        "L009",
+        "L014",
+        "L017",
+        "L022",
+        "L029",
+        "L035",
+        "L036",
+        "L043",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2074527999939164,
+      "solve_seconds": 2.6696267000000002
+    },
+    {
+      "released_lots": [
+        "L014",
+        "L016",
+        "L018",
+        "L021",
+        "L024",
+        "L040",
+        "L044",
+        "L045",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.277980300001218,
+      "solve_seconds": 3.3851706000000004
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L008",
+        "L012",
+        "L014",
+        "L017",
+        "L024",
+        "L025",
+        "L033",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.4889672999997856,
+      "solve_seconds": 4.1270827
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L012",
+        "L016",
+        "L029",
+        "L032",
+        "L038",
+        "L039",
+        "L042",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.4203459999989718,
+      "solve_seconds": 2.6820295
+    },
+    {
+      "released_lots": [
+        "L008",
+        "L013",
+        "L015",
+        "L023",
+        "L033",
+        "L037",
+        "L039",
+        "L043",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.4341584999929182,
+      "solve_seconds": 3.7333097000000004
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L003",
+        "L019",
+        "L020",
+        "L027",
+        "L033",
+        "L034",
+        "L035",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.4650200000032783,
+      "solve_seconds": 3.4728100000000004
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L006",
+        "L009",
+        "L010",
+        "L015",
+        "L021",
+        "L023",
+        "L028",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.8657265000074403,
+      "solve_seconds": 4.5540167
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L003",
+        "L014",
+        "L016",
+        "L017",
+        "L029",
+        "L035",
+        "L039",
+        "L040"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.381307799994829,
+      "solve_seconds": 3.3275434
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L008",
+        "L010",
+        "L015",
+        "L017",
+        "L020",
+        "L034",
+        "L035",
+        "L041"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.159632299997611,
+      "solve_seconds": 2.9148915
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L006",
+        "L013",
+        "L016",
+        "L021",
+        "L022",
+        "L038",
+        "L044",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.113885400001891,
+      "solve_seconds": 4.3485109
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L010",
+        "L013",
+        "L016",
+        "L023",
+        "L025",
+        "L032",
+        "L042",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1704746000032173,
+      "solve_seconds": 3.2623597
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L011",
+        "L018",
+        "L019",
+        "L024",
+        "L029",
+        "L032",
+        "L037",
+        "L044"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0671351000055438,
+      "solve_seconds": 3.4737001000000003
+    },
+    {
+      "released_lots": [
+        "L006",
+        "L018",
+        "L021",
+        "L022",
+        "L023",
+        "L037",
+        "L041",
+        "L044",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2013498000014806,
+      "solve_seconds": 2.9811915
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L010",
+        "L015",
+        "L032",
+        "L034",
+        "L040",
+        "L044",
+        "L045",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0531983000109904,
+      "solve_seconds": 3.1399111000000004
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L002",
+        "L011",
+        "L016",
+        "L024",
+        "L027",
+        "L042",
+        "L044",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.287144600006286,
+      "solve_seconds": 4.0069179
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L011",
+        "L012",
+        "L015",
+        "L022",
+        "L027",
+        "L034",
+        "L040",
+        "L042"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1415246999968076,
+      "solve_seconds": 2.4142040000000002
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L009",
+        "L020",
+        "L023",
+        "L027",
+        "L031",
+        "L032",
+        "L042",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0791273000068031,
+      "solve_seconds": 1.6747508000000002
+    },
+    {
+      "released_lots": [
+        "L018",
+        "L022",
+        "L024",
+        "L025",
+        "L029",
+        "L035",
+        "L042",
+        "L044",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1425967999966815,
+      "solve_seconds": 2.5376266000000003
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L004",
+        "L005",
+        "L018",
+        "L019",
+        "L030",
+        "L036",
+        "L045",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1617948999919463,
+      "solve_seconds": 2.4189763
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L004",
+        "L012",
+        "L018",
+        "L021",
+        "L024",
+        "L029",
+        "L033",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1013431000028504,
+      "solve_seconds": 3.0805838000000003
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L016",
+        "L017",
+        "L020",
+        "L022",
+        "L030",
+        "L032",
+        "L040",
+        "L041"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2284297999867704,
+      "solve_seconds": 2.7247909000000003
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L003",
+        "L010",
+        "L016",
+        "L022",
+        "L023",
+        "L034",
+        "L035",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.3331496000027983,
+      "solve_seconds": 3.7401077000000003
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L005",
+        "L011",
+        "L014",
+        "L016",
+        "L020",
+        "L030",
+        "L042",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1274149999953806,
+      "solve_seconds": 3.8595862000000003
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L009",
+        "L010",
+        "L014",
+        "L016",
+        "L023",
+        "L043",
+        "L047",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.201107700006105,
+      "solve_seconds": 2.9885608
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L003",
+        "L008",
+        "L020",
+        "L023",
+        "L027",
+        "L037",
+        "L041",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2353922999900533,
+      "solve_seconds": 3.2018819
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L021",
+        "L032",
+        "L035",
+        "L041",
+        "L043",
+        "L045",
+        "L047",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.6506229000078747,
+      "solve_seconds": 1.705216
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L008",
+        "L009",
+        "L010",
+        "L013",
+        "L016",
+        "L020",
+        "L027",
+        "L030"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.3353761000034865,
+      "solve_seconds": 3.7755660000000004
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L005",
+        "L019",
+        "L025",
+        "L026",
+        "L030",
+        "L033",
+        "L034",
+        "L039"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2453940000123112,
+      "solve_seconds": 4.4233219
+    },
+    {
+      "released_lots": [
+        "L011",
+        "L013",
+        "L023",
+        "L035",
+        "L036",
+        "L043",
+        "L044",
+        "L046",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1312753000092926,
+      "solve_seconds": 3.0999741000000003
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L002",
+        "L010",
+        "L024",
+        "L033",
+        "L035",
+        "L043",
+        "L044",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1506074000062654,
+      "solve_seconds": 2.6484066
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L014",
+        "L015",
+        "L018",
+        "L020",
+        "L035",
+        "L037",
+        "L045",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0828710999921896,
+      "solve_seconds": 2.4747741000000003
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L017",
+        "L021",
+        "L024",
+        "L025",
+        "L032",
+        "L035",
+        "L037",
+        "L044"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1915501999901608,
+      "solve_seconds": 1.9834074000000002
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L003",
+        "L021",
+        "L022",
+        "L023",
+        "L028",
+        "L036",
+        "L046",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0637176000018371,
+      "solve_seconds": 2.8336138
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L016",
+        "L018",
+        "L025",
+        "L027",
+        "L031",
+        "L035",
+        "L041",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1008306999865454,
+      "solve_seconds": 1.8893566000000002
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L013",
+        "L018",
+        "L022",
+        "L025",
+        "L032",
+        "L036",
+        "L038",
+        "L039"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0859466000110842,
+      "solve_seconds": 2.9617251
+    },
+    {
+      "released_lots": [
+        "L008",
+        "L010",
+        "L012",
+        "L022",
+        "L023",
+        "L029",
+        "L033",
+        "L037",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.324765600002138,
+      "solve_seconds": 3.2537893
+    },
+    {
+      "released_lots": [
+        "L007",
+        "L018",
+        "L019",
+        "L021",
+        "L023",
+        "L027",
+        "L038",
+        "L039",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1477263999986462,
+      "solve_seconds": 1.7005504
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L004",
+        "L005",
+        "L010",
+        "L024",
+        "L026",
+        "L040",
+        "L044",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0643481999868527,
+      "solve_seconds": 2.4900069
+    },
+    {
+      "released_lots": [
+        "L007",
+        "L011",
+        "L015",
+        "L020",
+        "L029",
+        "L030",
+        "L034",
+        "L041",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0752639999991516,
+      "solve_seconds": 2.297368
+    },
+    {
+      "released_lots": [
+        "L006",
+        "L018",
+        "L032",
+        "L033",
+        "L036",
+        "L037",
+        "L040",
+        "L041",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1578948000096716,
+      "solve_seconds": 2.0489904
+    },
+    {
+      "released_lots": [
+        "L011",
+        "L013",
+        "L015",
+        "L018",
+        "L021",
+        "L024",
+        "L028",
+        "L038",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.127087400003802,
+      "solve_seconds": 2.8003752
+    },
+    {
+      "released_lots": [
+        "L007",
+        "L009",
+        "L017",
+        "L019",
+        "L020",
+        "L022",
+        "L040",
+        "L043",
+        "L044"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1480910999962362,
+      "solve_seconds": 2.4941875000000002
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L004",
+        "L009",
+        "L010",
+        "L015",
+        "L018",
+        "L026",
+        "L030",
+        "L032"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2226127000030829,
+      "solve_seconds": 3.9916920000000005
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L004",
+        "L016",
+        "L017",
+        "L025",
+        "L033",
+        "L039",
+        "L040",
+        "L041"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.7084211999899708,
+      "solve_seconds": 2.6254846
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L006",
+        "L013",
+        "L019",
+        "L030",
+        "L042",
+        "L044",
+        "L045",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.144125199993141,
+      "solve_seconds": 3.4937346000000002
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L008",
+        "L013",
+        "L016",
+        "L017",
+        "L030",
+        "L036",
+        "L038",
+        "L039"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.170265599997947,
+      "solve_seconds": 3.0680818000000003
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L007",
+        "L012",
+        "L014",
+        "L018",
+        "L024",
+        "L025",
+        "L043",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.160794800001895,
+      "solve_seconds": 3.0634636000000004
+    },
+    {
+      "released_lots": [
+        "L011",
+        "L016",
+        "L023",
+        "L025",
+        "L027",
+        "L030",
+        "L031",
+        "L042",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1378066000033868,
+      "solve_seconds": 2.1636533
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L013",
+        "L014",
+        "L025",
+        "L030",
+        "L038",
+        "L041",
+        "L046",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0527349000039976,
+      "solve_seconds": 3.0686096000000003
+    },
+    {
+      "released_lots": [
+        "L016",
+        "L017",
+        "L018",
+        "L019",
+        "L020",
+        "L022",
+        "L028",
+        "L034",
+        "L039"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.088201199992909,
+      "solve_seconds": 3.047874
+    },
+    {
+      "released_lots": [
+        "L014",
+        "L017",
+        "L021",
+        "L026",
+        "L028",
+        "L032",
+        "L043",
+        "L045",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.355934300008812,
+      "solve_seconds": 1.9709494
+    },
+    {
+      "released_lots": [
+        "L009",
+        "L010",
+        "L015",
+        "L027",
+        "L028",
+        "L032",
+        "L042",
+        "L043",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1287589000130538,
+      "solve_seconds": 2.1458108
+    },
+    {
+      "released_lots": [
+        "L007",
+        "L011",
+        "L012",
+        "L018",
+        "L023",
+        "L028",
+        "L035",
+        "L037",
+        "L041"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.172534600002109,
+      "solve_seconds": 2.6614660000000003
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L004",
+        "L014",
+        "L015",
+        "L019",
+        "L023",
+        "L043",
+        "L045",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2609539000113728,
+      "solve_seconds": 2.7357434
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L013",
+        "L015",
+        "L016",
+        "L026",
+        "L030",
+        "L031",
+        "L041",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1905961000011303,
+      "solve_seconds": 2.8971955
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L007",
+        "L021",
+        "L022",
+        "L023",
+        "L024",
+        "L027",
+        "L038",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1523120000056224,
+      "solve_seconds": 2.3550704000000002
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L003",
+        "L007",
+        "L011",
+        "L021",
+        "L022",
+        "L024",
+        "L043",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.136206700000912,
+      "solve_seconds": 3.1100807
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L016",
+        "L022",
+        "L026",
+        "L030",
+        "L034",
+        "L039",
+        "L045",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2701216999994358,
+      "solve_seconds": 2.9430197000000002
+    },
+    {
+      "released_lots": [
+        "L006",
+        "L010",
+        "L012",
+        "L025",
+        "L028",
+        "L030",
+        "L036",
+        "L037",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1190512999892235,
+      "solve_seconds": 2.6646741
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L010",
+        "L012",
+        "L016",
+        "L027",
+        "L029",
+        "L033",
+        "L041",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1570260000007693,
+      "solve_seconds": 2.0210038
+    },
+    {
+      "released_lots": [
+        "L016",
+        "L017",
+        "L030",
+        "L034",
+        "L036",
+        "L039",
+        "L042",
+        "L044",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1661075000010896,
+      "solve_seconds": 2.429192
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L006",
+        "L013",
+        "L018",
+        "L020",
+        "L021",
+        "L029",
+        "L030",
+        "L036"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1451357999903848,
+      "solve_seconds": 3.3559131000000004
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L002",
+        "L006",
+        "L012",
+        "L022",
+        "L028",
+        "L035",
+        "L037",
+        "L042"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.5832072000048356,
+      "solve_seconds": 3.7128739000000004
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L006",
+        "L012",
+        "L019",
+        "L026",
+        "L039",
+        "L041",
+        "L042",
+        "L044"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1457520999974804,
+      "solve_seconds": 3.5168700000000004
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L009",
+        "L014",
+        "L015",
+        "L029",
+        "L044",
+        "L045",
+        "L046",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2274801000021398,
+      "solve_seconds": 3.1853127000000003
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L005",
+        "L007",
+        "L022",
+        "L026",
+        "L037",
+        "L044",
+        "L045",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1045672000036575,
+      "solve_seconds": 1.8509988000000002
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L010",
+        "L011",
+        "L035",
+        "L036",
+        "L037",
+        "L040",
+        "L044",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1474703999992926,
+      "solve_seconds": 2.5772795
+    },
+    {
+      "released_lots": [
+        "L006",
+        "L020",
+        "L021",
+        "L031",
+        "L032",
+        "L034",
+        "L037",
+        "L041",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.225300199992489,
+      "solve_seconds": 2.4575043
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L012",
+        "L018",
+        "L020",
+        "L023",
+        "L030",
+        "L031",
+        "L035",
+        "L037"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1155319999961648,
+      "solve_seconds": 2.5770064
+    },
+    {
+      "released_lots": [
+        "L007",
+        "L008",
+        "L018",
+        "L024",
+        "L031",
+        "L033",
+        "L036",
+        "L044",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0473303999897325,
+      "solve_seconds": 2.9965751000000003
+    },
+    {
+      "released_lots": [
+        "L013",
+        "L018",
+        "L019",
+        "L020",
+        "L021",
+        "L026",
+        "L041",
+        "L044",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0805381999962265,
+      "solve_seconds": 2.7124529
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L004",
+        "L006",
+        "L008",
+        "L011",
+        "L018",
+        "L028",
+        "L041",
+        "L044"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1796786999912001,
+      "solve_seconds": 3.7207301000000004
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L011",
+        "L016",
+        "L017",
+        "L020",
+        "L029",
+        "L035",
+        "L040",
+        "L044"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.3922565999964718,
+      "solve_seconds": 2.5009054
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L005",
+        "L011",
+        "L012",
+        "L025",
+        "L028",
+        "L029",
+        "L032",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2211516999959713,
+      "solve_seconds": 3.7885910000000003
+    },
+    {
+      "released_lots": [
+        "L006",
+        "L016",
+        "L023",
+        "L029",
+        "L032",
+        "L035",
+        "L036",
+        "L044",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2392748999991454,
+      "solve_seconds": 2.8316596
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L004",
+        "L014",
+        "L021",
+        "L028",
+        "L030",
+        "L033",
+        "L036",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.20516700000735,
+      "solve_seconds": 3.1562080000000003
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L004",
+        "L009",
+        "L018",
+        "L025",
+        "L026",
+        "L028",
+        "L031",
+        "L040"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2288979000004474,
+      "solve_seconds": 4.2994414
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L005",
+        "L008",
+        "L015",
+        "L017",
+        "L030",
+        "L034",
+        "L037",
+        "L041"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1732696999970358,
+      "solve_seconds": 3.0116525000000003
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L003",
+        "L012",
+        "L013",
+        "L018",
+        "L019",
+        "L020",
+        "L021",
+        "L027"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.3564228000032017,
+      "solve_seconds": 3.5112593000000003
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L009",
+        "L016",
+        "L017",
+        "L024",
+        "L027",
+        "L032",
+        "L035",
+        "L039"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1187522000109311,
+      "solve_seconds": 2.6174348000000003
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L003",
+        "L033",
+        "L034",
+        "L035",
+        "L036",
+        "L037",
+        "L045",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.140335900010541,
+      "solve_seconds": 2.4499708
+    },
+    {
+      "released_lots": [
+        "L020",
+        "L023",
+        "L029",
+        "L030",
+        "L037",
+        "L039",
+        "L040",
+        "L041",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.6221738000022015,
+      "solve_seconds": 2.7307107000000004
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L005",
+        "L008",
+        "L014",
+        "L031",
+        "L035",
+        "L036",
+        "L039",
+        "L042"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2140130999905523,
+      "solve_seconds": 4.5372482000000005
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L014",
+        "L015",
+        "L017",
+        "L018",
+        "L019",
+        "L024",
+        "L037",
+        "L038"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1053784000105225,
+      "solve_seconds": 3.2379694000000003
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L009",
+        "L010",
+        "L032",
+        "L033",
+        "L035",
+        "L038",
+        "L040",
+        "L041"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1157322000071872,
+      "solve_seconds": 2.8151391
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L009",
+        "L011",
+        "L012",
+        "L015",
+        "L016",
+        "L024",
+        "L033",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.312144099996658,
+      "solve_seconds": 3.5854008000000004
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L008",
+        "L015",
+        "L016",
+        "L020",
+        "L032",
+        "L036",
+        "L040",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0636678000009852,
+      "solve_seconds": 2.5893871
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L008",
+        "L010",
+        "L016",
+        "L025",
+        "L028",
+        "L034",
+        "L046",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1519005000009201,
+      "solve_seconds": 2.26317
+    },
+    {
+      "released_lots": [
+        "L007",
+        "L009",
+        "L011",
+        "L015",
+        "L016",
+        "L030",
+        "L031",
+        "L037",
+        "L040"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.143753199998173,
+      "solve_seconds": 2.3105168000000003
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L010",
+        "L015",
+        "L017",
+        "L026",
+        "L027",
+        "L033",
+        "L036",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1993509000021731,
+      "solve_seconds": 2.0799509
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L006",
+        "L010",
+        "L011",
+        "L015",
+        "L017",
+        "L023",
+        "L034",
+        "L036"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.077647899990552,
+      "solve_seconds": 4.250793900000001
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L010",
+        "L011",
+        "L012",
+        "L013",
+        "L017",
+        "L019",
+        "L035",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.094521299994085,
+      "solve_seconds": 3.7449943
+    },
+    {
+      "released_lots": [
+        "L010",
+        "L013",
+        "L019",
+        "L024",
+        "L025",
+        "L027",
+        "L035",
+        "L037",
+        "L039"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.3634727000026032,
+      "solve_seconds": 2.9289194000000003
+    },
+    {
+      "released_lots": [
+        "L017",
+        "L025",
+        "L026",
+        "L027",
+        "L034",
+        "L035",
+        "L036",
+        "L042",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1003314000117825,
+      "solve_seconds": 2.0748107
+    },
+    {
+      "released_lots": [
+        "L010",
+        "L020",
+        "L021",
+        "L022",
+        "L024",
+        "L029",
+        "L038",
+        "L045",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1106428999919444,
+      "solve_seconds": 2.7611025000000002
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L010",
+        "L019",
+        "L022",
+        "L023",
+        "L032",
+        "L044",
+        "L045",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.120831599997473,
+      "solve_seconds": 2.3273869
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L008",
+        "L009",
+        "L011",
+        "L017",
+        "L019",
+        "L021",
+        "L022",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1124383999995189,
+      "solve_seconds": 3.5390202000000004
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L007",
+        "L009",
+        "L010",
+        "L018",
+        "L024",
+        "L030",
+        "L033",
+        "L039"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.187792199998512,
+      "solve_seconds": 2.578001
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L013",
+        "L029",
+        "L033",
+        "L034",
+        "L036",
+        "L037",
+        "L042",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.158939000000828,
+      "solve_seconds": 2.4368177
+    },
+    {
+      "released_lots": [
+        "L009",
+        "L011",
+        "L017",
+        "L020",
+        "L029",
+        "L032",
+        "L039",
+        "L047",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1180996999901254,
+      "solve_seconds": 3.2151267000000003
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L010",
+        "L017",
+        "L025",
+        "L027",
+        "L029",
+        "L034",
+        "L038",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.6989749999920605,
+      "solve_seconds": 2.4093857
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L007",
+        "L022",
+        "L024",
+        "L025",
+        "L029",
+        "L032",
+        "L040",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1478570000035688,
+      "solve_seconds": 2.6697584
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L005",
+        "L020",
+        "L022",
+        "L025",
+        "L036",
+        "L037",
+        "L038",
+        "L044"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1512024000112433,
+      "solve_seconds": 2.2547201
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L005",
+        "L018",
+        "L020",
+        "L027",
+        "L030",
+        "L033",
+        "L039",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1802644999988843,
+      "solve_seconds": 2.4808275
+    },
+    {
+      "released_lots": [
+        "L010",
+        "L014",
+        "L021",
+        "L030",
+        "L032",
+        "L033",
+        "L037",
+        "L041",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.171003399998881,
+      "solve_seconds": 2.2285475000000003
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L006",
+        "L007",
+        "L010",
+        "L022",
+        "L028",
+        "L030",
+        "L032",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1299101999902632,
+      "solve_seconds": 3.9082832
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L005",
+        "L006",
+        "L013",
+        "L024",
+        "L038",
+        "L039",
+        "L044",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1585919000062859,
+      "solve_seconds": 4.9020714000000005
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L010",
+        "L014",
+        "L017",
+        "L022",
+        "L032",
+        "L037",
+        "L038",
+        "L044"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.124488300003577,
+      "solve_seconds": 1.836464
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L002",
+        "L008",
+        "L009",
+        "L014",
+        "L029",
+        "L038",
+        "L040",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0480039999965811,
+      "solve_seconds": 3.0298213
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L007",
+        "L013",
+        "L031",
+        "L035",
+        "L038",
+        "L040",
+        "L041",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1452741000102833,
+      "solve_seconds": 3.5151177000000002
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L005",
+        "L014",
+        "L019",
+        "L026",
+        "L034",
+        "L035",
+        "L037",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1906633000035072,
+      "solve_seconds": 2.2970191
+    },
+    {
+      "released_lots": [
+        "L016",
+        "L019",
+        "L024",
+        "L025",
+        "L030",
+        "L031",
+        "L036",
+        "L039",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.077661999996053,
+      "solve_seconds": 1.8919837000000002
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L006",
+        "L015",
+        "L024",
+        "L028",
+        "L031",
+        "L034",
+        "L035",
+        "L044"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0943969000072684,
+      "solve_seconds": 2.1716078000000003
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L009",
+        "L011",
+        "L013",
+        "L017",
+        "L022",
+        "L026",
+        "L031",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.058977099994081,
+      "solve_seconds": 2.5515516000000003
+    },
+    {
+      "released_lots": [
+        "L008",
+        "L024",
+        "L030",
+        "L032",
+        "L035",
+        "L039",
+        "L043",
+        "L044",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0777743999933591,
+      "solve_seconds": 3.0286818
+    },
+    {
+      "released_lots": [
+        "L008",
+        "L013",
+        "L017",
+        "L026",
+        "L028",
+        "L034",
+        "L035",
+        "L036",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1117984000011347,
+      "solve_seconds": 3.3619372000000003
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L005",
+        "L008",
+        "L012",
+        "L020",
+        "L022",
+        "L026",
+        "L029",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.158384099995601,
+      "solve_seconds": 3.8303092000000003
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L003",
+        "L013",
+        "L026",
+        "L037",
+        "L043",
+        "L044",
+        "L045",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0710905000014463,
+      "solve_seconds": 2.6913889
+    },
+    {
+      "released_lots": [
+        "L010",
+        "L012",
+        "L018",
+        "L027",
+        "L032",
+        "L033",
+        "L035",
+        "L036",
+        "L041"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.4928036000055727,
+      "solve_seconds": 1.9671171
+    },
+    {
+      "released_lots": [
+        "L009",
+        "L011",
+        "L012",
+        "L015",
+        "L020",
+        "L036",
+        "L037",
+        "L042",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.435826700006146,
+      "solve_seconds": 2.8013480000000004
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L022",
+        "L023",
+        "L024",
+        "L025",
+        "L033",
+        "L036",
+        "L044",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1228638000029605,
+      "solve_seconds": 2.3050222000000002
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L013",
+        "L014",
+        "L019",
+        "L027",
+        "L028",
+        "L038",
+        "L039",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0828100000071572,
+      "solve_seconds": 3.3482556000000003
+    },
+    {
+      "released_lots": [
+        "L006",
+        "L007",
+        "L010",
+        "L015",
+        "L022",
+        "L034",
+        "L037",
+        "L040",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.21804809999594,
+      "solve_seconds": 3.2106448000000003
+    },
+    {
+      "released_lots": [
+        "L007",
+        "L011",
+        "L012",
+        "L020",
+        "L022",
+        "L029",
+        "L030",
+        "L031",
+        "L044"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0461845000099856,
+      "solve_seconds": 3.2581958
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L009",
+        "L013",
+        "L022",
+        "L025",
+        "L032",
+        "L034",
+        "L041",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1455780999967828,
+      "solve_seconds": 3.0775038
+    },
+    {
+      "released_lots": [
+        "L010",
+        "L017",
+        "L018",
+        "L019",
+        "L020",
+        "L024",
+        "L035",
+        "L044",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0710938999982318,
+      "solve_seconds": 2.5986519
+    },
+    {
+      "released_lots": [
+        "L006",
+        "L007",
+        "L008",
+        "L012",
+        "L021",
+        "L025",
+        "L029",
+        "L034",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1341199999878881,
+      "solve_seconds": 4.0987081000000005
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L014",
+        "L016",
+        "L020",
+        "L021",
+        "L022",
+        "L041",
+        "L042",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0674481000023661,
+      "solve_seconds": 6.1986099
+    },
+    {
+      "released_lots": [
+        "L006",
+        "L016",
+        "L022",
+        "L032",
+        "L033",
+        "L038",
+        "L039",
+        "L047",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2468072999909054,
+      "solve_seconds": 2.136407
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L007",
+        "L008",
+        "L012",
+        "L014",
+        "L017",
+        "L023",
+        "L033",
+        "L044"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1410867999948096,
+      "solve_seconds": 2.5794818000000004
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L004",
+        "L009",
+        "L014",
+        "L017",
+        "L035",
+        "L036",
+        "L043",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.168932800006587,
+      "solve_seconds": 2.5566397000000003
+    },
+    {
+      "released_lots": [
+        "L006",
+        "L007",
+        "L009",
+        "L011",
+        "L014",
+        "L026",
+        "L037",
+        "L039",
+        "L041"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2414932000101544,
+      "solve_seconds": 3.9552678
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L007",
+        "L009",
+        "L011",
+        "L014",
+        "L016",
+        "L023",
+        "L032",
+        "L041"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.203050500000245,
+      "solve_seconds": 3.6683332
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L011",
+        "L018",
+        "L023",
+        "L025",
+        "L026",
+        "L033",
+        "L041",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.141384200003813,
+      "solve_seconds": 2.6649847
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L005",
+        "L011",
+        "L012",
+        "L014",
+        "L025",
+        "L029",
+        "L040",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1094759000116028,
+      "solve_seconds": 3.9591491000000003
+    },
+    {
+      "released_lots": [
+        "L006",
+        "L011",
+        "L013",
+        "L019",
+        "L021",
+        "L032",
+        "L033",
+        "L034",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.181801099999575,
+      "solve_seconds": 3.0408547
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L005",
+        "L009",
+        "L016",
+        "L018",
+        "L020",
+        "L024",
+        "L036",
+        "L039"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0768133999954443,
+      "solve_seconds": 3.1331455000000004
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L018",
+        "L020",
+        "L023",
+        "L033",
+        "L036",
+        "L038",
+        "L042",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.5866062999994028,
+      "solve_seconds": 2.3008446
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L008",
+        "L015",
+        "L017",
+        "L018",
+        "L022",
+        "L026",
+        "L032",
+        "L042"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1299782999994932,
+      "solve_seconds": 3.4458591000000003
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L003",
+        "L004",
+        "L006",
+        "L009",
+        "L014",
+        "L018",
+        "L023",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1308942000032403,
+      "solve_seconds": 3.2968449000000004
+    },
+    {
+      "released_lots": [
+        "L007",
+        "L008",
+        "L012",
+        "L014",
+        "L018",
+        "L024",
+        "L036",
+        "L040",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.12502379999205,
+      "solve_seconds": 2.2830676000000003
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L005",
+        "L014",
+        "L015",
+        "L020",
+        "L023",
+        "L026",
+        "L027",
+        "L032"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1002543999929912,
+      "solve_seconds": 6.1661415
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L008",
+        "L010",
+        "L015",
+        "L023",
+        "L026",
+        "L035",
+        "L036",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1538246999989497,
+      "solve_seconds": 4.6204228
+    },
+    {
+      "released_lots": [
+        "L007",
+        "L012",
+        "L015",
+        "L031",
+        "L035",
+        "L040",
+        "L041",
+        "L042",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1240939999988768,
+      "solve_seconds": 1.3812444000000001
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L004",
+        "L006",
+        "L007",
+        "L009",
+        "L014",
+        "L020",
+        "L039",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0982539000106044,
+      "solve_seconds": 3.6351383000000004
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L004",
+        "L011",
+        "L019",
+        "L021",
+        "L026",
+        "L037",
+        "L040",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.098985899996478,
+      "solve_seconds": 3.3113247
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L006",
+        "L010",
+        "L014",
+        "L015",
+        "L022",
+        "L025",
+        "L027",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1515795000013895,
+      "solve_seconds": 4.7259607
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L005",
+        "L012",
+        "L015",
+        "L020",
+        "L023",
+        "L033",
+        "L044",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.3158492999937152,
+      "solve_seconds": 2.5061651
+    },
+    {
+      "released_lots": [
+        "L006",
+        "L025",
+        "L026",
+        "L028",
+        "L035",
+        "L036",
+        "L039",
+        "L045",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1536850999982562,
+      "solve_seconds": 2.5200342
+    },
+    {
+      "released_lots": [
+        "L007",
+        "L009",
+        "L017",
+        "L019",
+        "L027",
+        "L028",
+        "L034",
+        "L038",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1017573999997694,
+      "solve_seconds": 2.0317586000000003
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L012",
+        "L017",
+        "L019",
+        "L020",
+        "L023",
+        "L035",
+        "L039",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0592168000002857,
+      "solve_seconds": 2.7136910000000003
+    },
+    {
+      "released_lots": [
+        "L001",
+        "L006",
+        "L010",
+        "L013",
+        "L022",
+        "L028",
+        "L035",
+        "L037",
+        "L043"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0669958999933442,
+      "solve_seconds": 3.6658816
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L009",
+        "L010",
+        "L028",
+        "L032",
+        "L035",
+        "L040",
+        "L041",
+        "L042"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1019405999977607,
+      "solve_seconds": 2.3003594
+    },
+    {
+      "released_lots": [
+        "L004",
+        "L007",
+        "L022",
+        "L024",
+        "L025",
+        "L037",
+        "L038",
+        "L040",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1184884999966016,
+      "solve_seconds": 2.0370291000000003
+    },
+    {
+      "released_lots": [
+        "L002",
+        "L006",
+        "L011",
+        "L016",
+        "L018",
+        "L028",
+        "L031",
+        "L035",
+        "L040"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1718032000062522,
+      "solve_seconds": 3.1208601000000002
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L010",
+        "L012",
+        "L017",
+        "L025",
+        "L031",
+        "L032",
+        "L038",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.3473125999880722,
+      "solve_seconds": 2.5369939
+    },
+    {
+      "released_lots": [
+        "L007",
+        "L008",
+        "L016",
+        "L023",
+        "L024",
+        "L025",
+        "L027",
+        "L030",
+        "L046"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.5521453000110341,
+      "solve_seconds": 2.9426240000000004
+    },
+    {
+      "released_lots": [
+        "L005",
+        "L012",
+        "L016",
+        "L026",
+        "L027",
+        "L031",
+        "L037",
+        "L044",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.069750299997395,
+      "solve_seconds": 1.3480203000000002
+    },
+    {
+      "released_lots": [
+        "L003",
+        "L004",
+        "L013",
+        "L021",
+        "L026",
+        "L030",
+        "L035",
+        "L040",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0541719000029843,
+      "solve_seconds": 2.7643637
+    },
+    {
+      "released_lots": [
+        "L021",
+        "L022",
+        "L027",
+        "L028",
+        "L032",
+        "L033",
+        "L042",
+        "L043",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.0348134999949252,
+      "solve_seconds": 2.7750368
+    },
+    {
+      "released_lots": [
+        "L007",
+        "L014",
+        "L016",
+        "L018",
+        "L022",
+        "L027",
+        "L031",
+        "L034",
+        "L041"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.1717522999970242,
+      "solve_seconds": 1.6229521
+    },
+    {
+      "released_lots": [
+        "L011",
+        "L017",
+        "L019",
+        "L021",
+        "L022",
+        "L029",
+        "L035",
+        "L038",
+        "L048"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.2393554999871412,
+      "solve_seconds": 3.1656971
+    },
+    {
+      "released_lots": [
+        "L011",
+        "L012",
+        "L017",
+        "L020",
+        "L024",
+        "L029",
+        "L034",
+        "L035",
+        "L045"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.132207999995444,
+      "solve_seconds": 3.4144662
+    },
+    {
+      "released_lots": [
+        "L008",
+        "L016",
+        "L024",
+        "L030",
+        "L032",
+        "L034",
+        "L036",
+        "L040",
+        "L047"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 1.3962295999954222,
+      "solve_seconds": 3.2508829
+    }
+  ],
+  "bound": null,
+  "bound_scope": "none; neighborhood bounds are not global",
+  "initial_hint_objective": 68017
+}

@@ -1,0 +1,52 @@
+{
+  "method": "fifo",
+  "seed": 11,
+  "run_id": "20260919T015246251063Z",
+  "input_sha256": "d1101b0c79be63b7293e7aeac0c4c6aff53ea6fbae130bf105ef375e282fa7d3",
+  "code_sha256": "d43eb5f8c19002dc5ad3c99a7813dfa1ea1155adaf62b4a7cca389f6c5396cfd",
+  "budget_seconds": 900.0,
+  "algorithm_seconds": 0.06518600000026709,
+  "environment": {
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "ortools": "9.15.6755",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 23 Model 104 Stepping 1, AuthenticAMD",
+    "workers": 1
+  },
+  "status": "HEURISTIC_FEASIBLE",
+  "bound": null,
+  "history": [],
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "operations_checked": 192,
+    "scope": "static fixed-lot scenario; dedicated molds; contiguous prep/processing blocks"
+  },
+  "metrics": {
+    "makespan": 12319,
+    "weighted_tardiness": 16108,
+    "total_tardiness": 4027,
+    "late_orders": 4,
+    "max_tardiness": 1399,
+    "setup_minutes": 1320,
+    "maintenance_minutes": 675,
+    "maintenance_count": 15,
+    "idle_minutes": 15260,
+    "safety_shortfall": 192,
+    "activated_shifts": 79,
+    "productive_utilization": 0.508824366638201,
+    "processing_minutes": 17875,
+    "available_minutes": 35130,
+    "produced_quantity": 3588,
+    "shipped_quantity": 3492,
+    "end_inventory": {
+      "F_SILVER": 42,
+      "F_BLACK": 42,
+      "R_SILVER": 42,
+      "R_BLACK": 42
+    },
+    "objective": 276999
+  },
+  "gap": null,
+  "total_seconds": 0.20277400000031776
+}

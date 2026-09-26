@@ -33,4 +33,4 @@ Gom toàn bộ 19 tài liệu tham khảo trong `docs/Report_so_bo_Do_an_CO5103_
 
 **Còn treo:** không có việc treo nào — tất cả nguồn open access xác định được đều đã tải hoặc tải thủ công xong; các nguồn trả phí chỉ có ghi chú + DOI theo đúng nguyên tắc không vi phạm bản quyền.
 
-Nguồn gốc: tài liệu #5–11 từ đợt rà soát thứ nhất (`report/lit_review_draft.md`) theo yêu cầu của GVHD (cô Châu) sau khi xem báo cáo sơ bộ; tài liệu #12–19 từ đợt rà soát thứ hai (`report/lit_review_draft_2.md`), lấp các khoảng trống trích dẫn còn lại trong `TECHNICAL_SPEC.md`.
+Nguồn gốc: tài liệu #5–11 từ đợt rà soát thứ nhất (`report/literature-review/lit_review_draft.md`) theo yêu cầu của GVHD (cô Châu) sau khi xem báo cáo sơ bộ; tài liệu #12–19 từ đợt rà soát thứ hai (`report/literature-review/lit_review_draft_2.md`), lấp các khoảng trống trích dẫn còn lại trong `TECHNICAL_SPEC.md`.

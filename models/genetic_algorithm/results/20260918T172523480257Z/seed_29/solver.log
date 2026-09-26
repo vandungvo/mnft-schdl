@@ -1,0 +1,112 @@
+{
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.040809699916280806,
+      "objective": 68017,
+      "evaluations": 1
+    },
+    {
+      "seconds": 0.15948379994370043,
+      "objective": 57621,
+      "evaluations": 4
+    },
+    {
+      "seconds": 1.2047512999270111,
+      "objective": 56913,
+      "evaluations": 30
+    },
+    {
+      "seconds": 2.059607299976051,
+      "objective": 55180,
+      "evaluations": 52
+    },
+    {
+      "seconds": 2.451162499957718,
+      "objective": 54577,
+      "evaluations": 62
+    },
+    {
+      "seconds": 4.434494499932043,
+      "objective": 54559,
+      "evaluations": 112
+    },
+    {
+      "seconds": 4.514470599940978,
+      "objective": 54431,
+      "evaluations": 114
+    },
+    {
+      "seconds": 4.714440900017507,
+      "objective": 54209,
+      "evaluations": 119
+    },
+    {
+      "seconds": 4.916563999955542,
+      "objective": 54063,
+      "evaluations": 124
+    },
+    {
+      "seconds": 5.870532799977809,
+      "objective": 54028,
+      "evaluations": 148
+    },
+    {
+      "seconds": 6.7393166000256315,
+      "objective": 53640,
+      "evaluations": 170
+    },
+    {
+      "seconds": 8.589367699925788,
+      "objective": 53502,
+      "evaluations": 217
+    },
+    {
+      "seconds": 10.126299099996686,
+      "objective": 53014,
+      "evaluations": 256
+    },
+    {
+      "seconds": 12.012188000022434,
+      "objective": 52979,
+      "evaluations": 304
+    },
+    {
+      "seconds": 13.784008099930361,
+      "objective": 52946,
+      "evaluations": 349
+    },
+    {
+      "seconds": 13.942592600011267,
+      "objective": 52931,
+      "evaluations": 353
+    },
+    {
+      "seconds": 16.93014089995995,
+      "objective": 52564,
+      "evaluations": 429
+    },
+    {
+      "seconds": 17.52172459999565,
+      "objective": 52496,
+      "evaluations": 444
+    },
+    {
+      "seconds": 23.141742900013924,
+      "objective": 52255,
+      "evaluations": 583
+    },
+    {
+      "seconds": 27.43969799997285,
+      "objective": 52188,
+      "evaluations": 692
+    }
+  ],
+  "evaluations": 757,
+  "bound": null,
+  "generations": 62,
+  "population_size": 14,
+  "elite": 2,
+  "selection": "tournament_3",
+  "crossover": "uniform_random_keys"
+}

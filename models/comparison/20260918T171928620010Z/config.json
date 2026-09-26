@@ -1,0 +1,16 @@
+{
+  "run_id": "20260918T171928620010Z",
+  "input_sha256": "66e736ed320d9dcb33d09b2dee9e12fd1493af79e4f538b3f8e0f51725ba8d4c",
+  "seconds": 6.0,
+  "seeds": [
+    11
+  ],
+  "methods": [
+    "fifo",
+    "edd",
+    "spt",
+    "cp_sat_hint",
+    "cp_sat"
+  ],
+  "execution": "sequential, 1 CP-SAT worker"
+}

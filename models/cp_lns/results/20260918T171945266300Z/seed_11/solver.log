@@ -1,0 +1,36 @@
+{
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.9975732000311837,
+      "objective": 36948,
+      "source": "EDD"
+    },
+    {
+      "seconds": 6.095719499979168,
+      "objective": 36694,
+      "iteration": 1
+    }
+  ],
+  "iterations": [
+    {
+      "released_lots": [
+        "L012",
+        "L013",
+        "L029",
+        "L030",
+        "L033",
+        "L036",
+        "L038",
+        "L044",
+        "L048"
+      ],
+      "status": "FEASIBLE",
+      "build_seconds": 0.809056399972178,
+      "solve_seconds": 4.2006577
+    }
+  ],
+  "bound": null,
+  "bound_scope": "none; neighborhood bounds are not global",
+  "initial_hint_objective": 36948
+}

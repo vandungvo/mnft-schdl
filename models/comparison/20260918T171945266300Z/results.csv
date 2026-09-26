@@ -1,0 +1,4 @@
+﻿method,seed,status,valid,objective,makespan,late_orders,weighted_tardiness,setup_minutes,maintenance_count,idle_minutes,safety_shortfall,activated_shifts,productive_utilization,algorithm_seconds,bound,gap,artifacts
+simulated_annealing,11,HEURISTIC_FEASIBLE,True,33345,12319,0,0,1314,15,15004,104,78,0.5133734249713631,6.006205299985595,,,simulated_annealing/results/20260918T171945266300Z/seed_11
+genetic_algorithm,11,HEURISTIC_FEASIBLE,True,33155,12330,0,0,1290,15,14875,104,78,0.5144175317185697,6.023844199953601,,,genetic_algorithm/results/20260918T171945266300Z/seed_11
+cp_lns,11,HEURISTIC_FEASIBLE,True,36694,12697,0,0,1404,15,16985,140,83,0.4837801245599783,6.095726600033231,,,cp_lns/results/20260918T171945266300Z/seed_11

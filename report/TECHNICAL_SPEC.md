@@ -1,7 +1,7 @@
-# Technical Specification — Explainable Scheduling Agent
+# Technical Specification — Reasonable Scheduling Agent
 
 **Đồ án:** CO5103 — Võ Văn Dũng | **Học kỳ:** HK261 (2026–2027) | **GVHD:** PGS.TS Võ Thị Ngọc Châu
-**Trạng thái:** Draft v2.5 — cập nhật theo `report/Report_so_bo_Do_an_CO5103_VoVanDung.md` (báo cáo sơ bộ), dựa trên các prototype đã kiểm chứng (`scheduling_poc*.py`, `production_planning_2weeks.py`, `detailed_day_schedule.py`). **Thay đổi so với v2:** Frontend = Next.js; DB dev = SQLite; Docker 2 service. **v2.1–v2.2:** UI đầy đủ + CRUD master data. **v2.3:** Phân module Master Data / Planning / Scheduling / Explanation. **v2.4:** Làm rõ horizon — **Planning = tháng/quý**, **Scheduling = 2 tuần** (chi tiết). **v2.5:** Bổ sung tài liệu tham khảo gần đây (2020–2025) + benchmark FJSP thứ 3 (Deliktaş et al., 2024) theo phản hồi GVHD sau báo cáo sơ bộ — xem `report/lit_review_draft.md` cho chi tiết nghiên cứu gốc. **v2.6:** Bổ sung tài liệu tham khảo số 12–19, lấp các khoảng trống trích dẫn còn lại (mô hình hoá FJSP, rolling horizon, đường găng/độ nhạy, lập kế hoạch phân cấp, khung XAI cho OR, rà soát tiếng Việt) — xem `report/lit_review_draft_2.md`.
+**Trạng thái:** Draft v2.5 — cập nhật theo `report/Report_so_bo_Do_an_CO5103_VoVanDung.md` (báo cáo sơ bộ), dựa trên các prototype đã kiểm chứng (`scheduling_poc*.py`, `production_planning_2weeks.py`, `detailed_day_schedule.py`). **Thay đổi so với v2:** Frontend = Next.js; DB dev = SQLite; Docker 2 service. **v2.1–v2.2:** UI đầy đủ + CRUD master data. **v2.3:** Phân module Master Data / Planning / Scheduling / Explanation. **v2.4:** Làm rõ horizon — **Planning = tháng/quý**, **Scheduling = 2 tuần** (chi tiết). **v2.5:** Bổ sung tài liệu tham khảo gần đây (2020–2025) + benchmark FJSP thứ 3 (Deliktaş et al., 2024) theo phản hồi GVHD sau báo cáo sơ bộ — xem `report/literature-review/lit_review_draft.md` cho chi tiết nghiên cứu gốc. **v2.6:** Bổ sung tài liệu tham khảo số 12–19, lấp các khoảng trống trích dẫn còn lại (mô hình hoá FJSP, rolling horizon, đường găng/độ nhạy, lập kế hoạch phân cấp, khung XAI cho OR, rà soát tiếng Việt) — xem `report/literature-review/lit_review_draft_2.md`.
 
 **Giả định khi lập tài liệu này** (chỉnh lại nếu sai): đồ án cá nhân (solo), còn khoảng **12–14 tuần** trong học kỳ, mục tiêu cuối là một ứng dụng demo chạy local (không cần hạ tầng cloud production).
 
@@ -9,16 +9,16 @@
 
 ## 1. Mục tiêu ứng dụng
 
-**Đề tài:** Xây dựng tác nhân lập lịch sản xuất có khả năng giải thích, ứng dụng trong ngành sản xuất linh kiện — trường hợp nghiên cứu: **sản xuất bánh xe** (dây chuyền đơn giản hoá gồm 2 dòng sản phẩm bánh trước/bánh sau, 4 công đoạn chính: **đúc → gia công CNC → sơn → kiểm tra chất lượng**).
+**Đề tài:** Xây dựng tác nhân lập lịch sản xuất tạo ra lịch hợp lý, ứng dụng trong ngành sản xuất linh kiện — trường hợp nghiên cứu: **sản xuất bánh xe** (dây chuyền đơn giản hoá gồm 2 dòng sản phẩm bánh trước/bánh sau, 4 công đoạn chính: **đúc → gia công CNC → sơn → kiểm tra chất lượng**).
 
 **Bối cảnh:** thay thế cách lập lịch thủ công bằng Excel rời rạc (dữ liệu phân mảnh giữa các bộ phận, mang tính "hộp đen", khó điều chỉnh khi có đơn gấp, phụ thuộc kinh nghiệm cá nhân) bằng một **ứng dụng web nội bộ** cho quản đốc/ban lãnh đạo.
 
-Đóng gói 2 tầng lập lịch đã kiểm chứng (**Production Planning** theo tháng/quý → **Production Scheduling** chi tiết horizon 2 tuần) cùng lớp giải thích thành luồng: nhập đơn hàng + tồn kho → xem kế hoạch sản xuất → hỏi "vì sao" → giả lập tình huống (đơn gấp, máy hỏng). Kiến trúc phân tầng này không phải lựa chọn tuỳ ý — đây là mô hình **hierarchical production planning** kinh điển trong OR (quyết định tầng tổng hợp ràng buộc đầu vào cho quyết định chi tiết hơn), do Hax & Meal (1975, tài liệu tham khảo số 16) đặt nền móng từ 50 năm trước.
+Đóng gói 2 tầng lập lịch đã kiểm chứng (**Production Planning** theo tháng/quý → **Production Scheduling** chi tiết horizon 2 tuần) cùng lớp diễn giải phụ trợ thành luồng: nhập đơn hàng + tồn kho → xem kế hoạch sản xuất → (tuỳ chọn) hỏi "vì sao" → giả lập tình huống (đơn gấp, máy hỏng). Kiến trúc phân tầng này không phải lựa chọn tuỳ ý — đây là mô hình **hierarchical production planning** kinh điển trong OR (quyết định tầng tổng hợp ràng buộc đầu vào cho quyết định chi tiết hơn), do Hax & Meal (1975, tài liệu tham khảo số 16) đặt nền móng từ 50 năm trước.
 
 Tác nhân cần đạt 4 khả năng (theo phát biểu bài toán trong báo cáo sơ bộ):
 
 1. Tự động sinh lịch sản xuất tối ưu hoặc gần tối ưu dựa trên đơn hàng và ràng buộc thực tế của nhà máy.
-2. Giải thích được lý do đằng sau mỗi quyết định lập lịch (không chỉ đưa kết quả cuối) để ban lãnh đạo giám sát, tin tưởng và can thiệp khi cần.
+2. Tạo ra lịch sản xuất hợp lý — tuân thủ đầy đủ ràng buộc vật lý/nghiệp vụ, cân đối có căn cứ giữa các mục tiêu cạnh tranh (hạn giao, hiệu suất máy, tồn kho) — để ban lãnh đạo tin tưởng sử dụng mà không cần rà tay lại.
 3. Phản ứng linh hoạt với sự kiện gián đoạn ngoài kế hoạch (đơn hàng gấp, máy hỏng) bằng cách giải lại lịch và so sánh với lịch gốc.
 4. Tối đa hoá hiệu suất sử dụng máy trong mỗi khung ca đã kích hoạt, giảm lãng phí nhân công và năng lượng.
 
@@ -38,6 +38,7 @@ Không mục tiêu: multi-tenant, scale lớn, real-time streaming — đây là
 | Ca làm việc + định mức chi phí nhân công theo ca | Quản lý ca làm việc (CRUD `shifts`) | **Đã đưa vào tuần 5–6** |
 | Đơn hàng (mã sản phẩm, số lượng, hạn giao) | Form nhập đơn hàng | Đã có — tuần 5–6 |
 | Tồn kho đầu kỳ + ngưỡng an toàn theo sản phẩm | Form nhập tồn kho | Đã có — tuần 5–6 |
+| Tồn kho bán thành phẩm theo sản phẩm và công đoạn (nguyên liệu công đoạn sau lấy từ tồn; dự trữ khi có công suất trống) | Phần của form nhập tồn kho | **Bổ sung 21/09/2026 (ngoài báo cáo mục 1.3)** — tuần 5–6 |
 | Lập kế hoạch sản xuất theo **tháng / quý** (aggregate) | Màn hình kế hoạch tổng hợp (aggregate) | Đã có — tuần 5–6 |
 | Lập lịch chi tiết horizon **2 tuần** (đúc→CNC→sơn→QC) | Gantt tầng 2 (detailed) | Đã có — tuần 7 |
 | Giải thích quyết định (đường găng, độ nhạy, hiệu suất máy) | Panel "Vì sao?" | Đã có — tuần 8 |
@@ -55,7 +56,7 @@ Vì chỉ một tập con máy được phép xử lý mỗi loại sản phẩm
 
 | Ràng buộc | Mô tả |
 |---|---|
-| Trình tự công đoạn | Công đoạn sau chỉ bắt đầu khi công đoạn trước hoàn thành (đúc → CNC → sơn → kiểm tra chất lượng) |
+| Trình tự công đoạn | Thứ tự đúc → CNC → sơn → kiểm tra chất lượng được bảo đảm qua dòng nguyên liệu: công đoạn sau chỉ bắt đầu khi tồn bán thành phẩm của công đoạn trước đủ lượng, không phải chờ toàn lô ở công đoạn trước hoàn thành |
 | Giới hạn công suất máy | Một máy chỉ xử lý một công đoạn tại một thời điểm |
 | Khả năng xử lý theo máy | Chỉ một tập con máy được phép xử lý một loại sản phẩm nhất định |
 | Thời gian chuyển đổi phụ thuộc trình tự | Thời gian chuyển đổi phụ thuộc cặp loại sản phẩm liền kề (A↔B) |
@@ -63,9 +64,10 @@ Vì chỉ một tập con máy được phép xử lý mỗi loại sản phẩm
 | Chu kỳ bảo trì khuôn | Khuôn có tuổi thọ sử dụng (số lần đúc tối đa), sau N lần đúc phải nghỉ bảo trì |
 | Hạn giao hàng | Mỗi đơn hàng có hạn giao hàng, vi phạm bị phạt (trễ hạn) |
 | Tồn kho an toàn | Sản lượng tích luỹ đến cuối mỗi giai đoạn phải đủ bù ngưỡng tồn kho an toàn theo từng loại sản phẩm |
+| Tồn kho bán thành phẩm | Mọi công đoạn sau lấy nguyên liệu từ tồn bán thành phẩm theo mã sản phẩm và công đoạn; tồn không âm và không vượt sức chứa (nếu khai báo); cho phép dự trữ khi công đoạn còn công suất trống |
 | Hiệu suất sử dụng máy | Khi máy đã bật (mở ca), phải tối thiểu hoá thời gian nhàn rỗi giữa các công đoạn |
 
-**Hàm mục tiêu** (đa mục tiêu có trọng số): tối thiểu hoá tổng có trọng số của makespan, độ trễ giao hàng, thời gian chuyển đổi giữa các loại sản phẩm, thời gian máy nhàn rỗi, và mức thiếu hụt so với ngưỡng tồn kho an toàn.
+**Hàm mục tiêu** (đa mục tiêu có trọng số): tối thiểu hoá tổng có trọng số của makespan, độ trễ giao hàng, thời gian chuyển đổi giữa các loại sản phẩm, thời gian máy nhàn rỗi, và mức thiếu hụt so với ngưỡng tồn kho an toàn; cùng chi phí sản xuất/lưu kho của lô và lượt dự trữ khi có dữ liệu (xem `report/problem-requirements/problem_requirements.md` mục 4.3).
 
 ### 2.1. Thuật toán: CP-SAT (Google OR-Tools)
 
@@ -82,9 +84,11 @@ Yêu cầu nghiệp vụ: một khi máy đã bật (mở ca, có nhân công tr
 2. Biến quyết định nhị phân "có nên bật máy trong ca này không?" — ràng buộc **mềm**: nếu bật mà không đạt hiệu suất mục tiêu thì bị phạt trong hàm mục tiêu (không bắt buộc cứng, để tránh bài toán bất khả thi khi thiếu đơn hàng lấp ca). Nếu không đủ việc, bộ giải có thể chọn không bật máy đó.
 3. Liên kết với quy mô lô tối thiểu: nếu một máy sắp bật cho việc nhỏ lẻ không lấp đầy ca, bộ giải nên ưu tiên dồn/hoãn công việc để gộp lô (miễn không vi phạm hạn giao hàng) — đánh đổi giữa hiệu suất máy và độ trễ giao hàng, thể hiện qua trọng số trong hàm mục tiêu.
 
-### 2.3. Lớp giải thích
+### 2.3. Lớp diễn giải hỗ trợ (không phải mục tiêu cốt lõi)
 
-| Loại giải thích | Cách thực hiện |
+Tận dụng sẵn CP-SAT (không tốn thêm nhiều effort) để giữ vài tính năng diễn giải phụ trợ, tăng độ tin cậy khi ban lãnh đạo cần tham khảo lý do — KHÔNG còn là mục tiêu #2 ngang hàng như bản trước (mục tiêu #2 nay là "lịch hợp lý", xem §1):
+
+| Loại diễn giải | Cách thực hiện |
 |---|---|
 | Phân tích độ nhạy | Nới lỏng từng ràng buộc, đo mức cải thiện tổng thời gian hoàn thành → xác định điểm nghẽn chính. Phương pháp gần trùng khớp nhất tìm được trong tài liệu: nới lỏng ràng buộc để xác định điểm nghẽn trong bài toán lập lịch có ràng buộc tài nguyên (Nedbálek & Novák, 2025 — ICORES, tài liệu tham khảo số 15) |
 | Đường găng (critical path) | Xác định chuỗi công đoạn quyết định tổng thời gian hoàn thành → trả lời "vì sao công việc X trễ". Phương pháp gốc: Kelley & Walker (1959), tài liệu tham khảo số 14 |
@@ -195,7 +199,7 @@ Việc này **không viết lại thuật toán** — chỉ tách phần dữ li
 | `changeover_matrix` | type_a, type_b, setup_time | Ma trận đổi khuôn/đổi loại sản phẩm |
 | `molds` | id, machine_id, product_type, max_cycles, used_cycles, maintenance_cycle_days | Khuôn: tuổi thọ sử dụng + chu kỳ bảo trì (ràng buộc mục 2, hàng "Chu kỳ bảo trì khuôn") |
 | `shifts` | id, start_time, end_time, labor_cost | Ca làm việc + định mức chi phí nhân công theo ca (dùng cho ràng buộc hiệu suất sử dụng máy, mục 2.2) |
-| `inventory_snapshot` | product_type, wip_qty, fg_qty, wip_min, fg_min, snapshot_date | Tồn kho tại 1 thời điểm |
+| `inventory_snapshot` | snapshot_date, product_type, stage (cast/cnc/paint/fg), qty, min_qty (chỉ fg: ngưỡng an toàn), capacity (rỗng = không giới hạn), holding_cost | Tồn kho tại 1 thời điểm, một dòng cho mỗi (sản phẩm, công đoạn); stage cast/cnc/paint là bán thành phẩm, fg là thành phẩm sau QC |
 | `schedule_runs` | id, run_type (aggregate/detailed), input_hash, created_at | Audit trail — mỗi lần bấm "Lập lịch" |
 | `schedule_run_results` | run_id, day, machine_id, job_name, start, end, shift_id | Kết quả chi tiết, dùng để vẽ Gantt và trace lại giải thích sau này mà không cần solve lại |
 
@@ -258,19 +262,19 @@ Vì không tiếp cận được dữ liệu thật của nhà máy, đề tài 
 2. **Bộ dữ liệu chuẩn công khai** cho bài toán lập lịch phân xưởng (Taillard, Lawrence — OR-Library) — dùng để kiểm chứng phần lõi thuật toán và so sánh chất lượng lời giải với nghiên cứu khác trong lĩnh vực.
 3. **Bộ benchmark FJSP công khai thứ 3** (Deliktaş et al., 2024 — tài liệu tham khảo số 10) có setup time phụ thuộc trình tự theo họ sản phẩm — bổ sung cho (2) trên đúng ràng buộc mà Taillard/Lawrence không có (xem §2.4).
 
-**Đã kiểm tra thêm** data.gov, data.gov.vn và Kaggle theo phản hồi GVHD: data.gov/data.gov.vn không có dataset cấp máy/công đoạn/đơn hàng phù hợp (chỉ có chỉ số vĩ mô/năng lực sản xuất); vài dataset JSP tổng hợp trên Kaggle được ghi nhận nhưng chưa kiểm chứng đủ để dùng chính thức. Chi tiết quá trình rà soát ở `report/lit_review_draft.md`.
+**Đã kiểm tra thêm** data.gov, data.gov.vn và Kaggle theo phản hồi GVHD: data.gov/data.gov.vn không có dataset cấp máy/công đoạn/đơn hàng phù hợp (chỉ có chỉ số vĩ mô/năng lực sản xuất); vài dataset JSP tổng hợp trên Kaggle được ghi nhận nhưng chưa kiểm chứng đủ để dùng chính thức. Chi tiết quá trình rà soát ở `report/literature-review/lit_review_draft.md`.
 
-**Đã kiểm tra thêm tài liệu học thuật tiếng Việt** về lập lịch sản xuất/phân xưởng: không tìm thấy công trình tiếng Việt nào cùng bài toán (đa máy, ràng buộc chuyển đổi/bảo trì/hiệu suất máy). Có 1 luận án tiến sĩ cùng trường (Trang, 2021 — tài liệu tham khảo số 19, ĐH Bách Khoa – ĐHQG-HCM) nhưng giải bài toán khác (lập lịch cá nhân, 1 máy) — chỉ dùng làm bằng chứng cho tiền lệ nghiên cứu lập lịch chất lượng quốc tế tại trường, không phải công trình liên quan trực tiếp. Chi tiết ở `report/lit_review_draft_2.md`.
+**Đã kiểm tra thêm tài liệu học thuật tiếng Việt** về lập lịch sản xuất/phân xưởng: không tìm thấy công trình tiếng Việt nào cùng bài toán (đa máy, ràng buộc chuyển đổi/bảo trì/hiệu suất máy). Có 1 luận án tiến sĩ cùng trường (Trang, 2021 — tài liệu tham khảo số 19, ĐH Bách Khoa – ĐHQG-HCM) nhưng giải bài toán khác (lập lịch cá nhân, 1 máy) — chỉ dùng làm bằng chứng cho tiền lệ nghiên cứu lập lịch chất lượng quốc tế tại trường, không phải công trình liên quan trực tiếp. Chi tiết ở `report/literature-review/lit_review_draft_2.md`.
 
-Bộ sinh dữ liệu cần điều chỉnh được tham số (số máy, số công việc, phân phối thời gian xử lý, tần suất đơn gấp) để tạo nhiều kịch bản kiểm thử, đánh giá độ ổn định của tác nhân.
+Bộ sinh dữ liệu cần điều chỉnh được tham số (số máy, số công việc, phân phối thời gian xử lý, tần suất đơn gấp, kích thước lô thường 25, tồn bán thành phẩm đầu kỳ và sức chứa) để tạo nhiều kịch bản kiểm thử, đánh giá độ ổn định của tác nhân.
 
 ---
 
 ## 10. Tiêu chí đánh giá thành công
 
-- Lịch sinh ra hợp lệ về mặt vật lý 100% (không vi phạm tồn kho, công suất máy, trình tự công đoạn) trên mọi kịch bản kiểm thử.
+- Lịch sinh ra hợp lệ về mặt vật lý 100% (không vi phạm tồn kho thành phẩm và bán thành phẩm, công suất máy, dòng nguyên liệu giữa các công đoạn) trên mọi kịch bản kiểm thử.
 - Hiệu suất sử dụng máy trong các ca đã bật đạt mục tiêu đề ra (ví dụ ≥ 90%), thể hiện cải thiện rõ so với kịch bản không có ràng buộc này.
-- Mỗi lịch sinh ra đều có giải thích tương ứng (điểm nghẽn, đường găng, tác động khi giả lập đơn gấp/máy hỏng) mà nhà quản lý đọc hiểu được mà không cần biết CP-SAT là gì.
+- (Phụ trợ) Mỗi lịch sinh ra có thể tra cứu diễn giải tương ứng (điểm nghẽn, đường găng, tác động khi giả lập đơn gấp/máy hỏng) mà nhà quản lý đọc hiểu được mà không cần biết CP-SAT là gì — không phải điều kiện thành công bắt buộc.
 - Thời gian giải nằm trong ngưỡng chấp nhận được cho 1 phiên làm việc, có cảnh báo rõ khi solver không kịp tìm lời giải tối ưu.
 - Chất lượng lời giải trên bộ dữ liệu chuẩn công khai không thua kém đáng kể so với kết quả tốt nhất đã công bố cho phần lõi thuật toán.
 

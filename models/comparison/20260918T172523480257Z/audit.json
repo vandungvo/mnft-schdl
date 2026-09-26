@@ -1,0 +1,10 @@
+{
+  "runs": 18,
+  "valid_schedules": 15,
+  "unknown_without_schedule": 3,
+  "same_input": true,
+  "same_source_snapshot": true,
+  "metrics_recomputed": true,
+  "report_links_valid": true,
+  "unit_tests_passed_before_run": 8
+}

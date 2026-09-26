@@ -1,0 +1,5 @@
+﻿method,seed,status,valid,objective,makespan,late_orders,weighted_tardiness,setup_minutes,maintenance_count,idle_minutes,safety_shortfall,activated_shifts,productive_utilization,algorithm_seconds,bound,gap,artifacts
+fifo,11,HEURISTIC_FEASIBLE,True,276999,12319,4,16108,1320,15,15260,192,79,0.508824366638201,0.0478954000000158,,,fifo/results/20260919T015058933143Z/seed_11
+edd,11,HEURISTIC_FEASIBLE,True,68017,12529,3,2120,1180,15,16788,168,82,0.488952850877193,0.04775289999997767,,,edd/results/20260919T015058933143Z/seed_11
+spt,11,HEURISTIC_FEASIBLE,True,167625,12431,4,8644,1518,15,17700,164,85,0.4741475019825535,0.04996510000000853,,,spt/results/20260919T015058933143Z/seed_11
+simulated_annealing,11,HEURISTIC_FEASIBLE,True,52879,12221,2,1280,1434,15,15156,100,79,0.5085397096498719,60.00373710000031,,,simulated_annealing/results/20260919T015058933143Z/seed_11

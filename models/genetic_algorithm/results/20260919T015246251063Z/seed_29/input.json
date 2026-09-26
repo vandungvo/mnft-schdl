@@ -1,0 +1,3913 @@
+{
+  "schema_version": 1,
+  "name": "wheel_factory_48_lots_2weeks",
+  "seed": 20260919,
+  "origin": "2026-09-21T00:00:00+07:00",
+  "time_unit": "minute",
+  "horizon": 20160,
+  "working_days": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "stages": [
+    "cast",
+    "cnc",
+    "paint",
+    "qc"
+  ],
+  "products": [
+    "F_SILVER",
+    "F_BLACK",
+    "R_SILVER",
+    "R_BLACK"
+  ],
+  "initial_inventory": {
+    "F_SILVER": 18,
+    "F_BLACK": 18,
+    "R_SILVER": 18,
+    "R_BLACK": 18
+  },
+  "safety_stock": {
+    "F_SILVER": 30,
+    "F_BLACK": 30,
+    "R_SILVER": 30,
+    "R_BLACK": 30
+  },
+  "checkpoints": [
+    1440,
+    2880,
+    4320,
+    5760,
+    7200,
+    8640,
+    10080,
+    11520,
+    12960,
+    14400,
+    15840,
+    17280,
+    18720,
+    20160
+  ],
+  "minimum_lot": 60,
+  "max_surplus": 144,
+  "machines": {
+    "CAST_F": {
+      "stage": "cast",
+      "minutes_per_unit": {
+        "F_SILVER": 1.05,
+        "F_BLACK": 1.05
+      },
+      "fixed_minutes": 5,
+      "initial_product": "F_SILVER",
+      "setup": {
+        "F_SILVER": {
+          "F_SILVER": 0,
+          "F_BLACK": 12,
+          "R_SILVER": 12,
+          "R_BLACK": 12
+        },
+        "F_BLACK": {
+          "F_SILVER": 12,
+          "F_BLACK": 0,
+          "R_SILVER": 12,
+          "R_BLACK": 12
+        },
+        "R_SILVER": {
+          "F_SILVER": 12,
+          "F_BLACK": 12,
+          "R_SILVER": 0,
+          "R_BLACK": 12
+        },
+        "R_BLACK": {
+          "F_SILVER": 12,
+          "F_BLACK": 12,
+          "R_SILVER": 12,
+          "R_BLACK": 0
+        },
+        "CLEAN": {
+          "F_SILVER": 16,
+          "F_BLACK": 16,
+          "R_SILVER": 16,
+          "R_BLACK": 16
+        }
+      },
+      "windows": [
+        {
+          "id": 0,
+          "shift": "D01_S1",
+          "start": 360,
+          "end": 600
+        },
+        {
+          "id": 1,
+          "shift": "D01_S1",
+          "start": 630,
+          "end": 840
+        },
+        {
+          "id": 2,
+          "shift": "D01_S2",
+          "start": 840,
+          "end": 1080
+        },
+        {
+          "id": 3,
+          "shift": "D01_S2",
+          "start": 1110,
+          "end": 1320
+        },
+        {
+          "id": 4,
+          "shift": "D02_S1",
+          "start": 1800,
+          "end": 2040
+        },
+        {
+          "id": 5,
+          "shift": "D02_S1",
+          "start": 2070,
+          "end": 2280
+        },
+        {
+          "id": 6,
+          "shift": "D02_S2",
+          "start": 2280,
+          "end": 2520
+        },
+        {
+          "id": 7,
+          "shift": "D02_S2",
+          "start": 2550,
+          "end": 2760
+        },
+        {
+          "id": 8,
+          "shift": "D03_S1",
+          "start": 3240,
+          "end": 3480
+        },
+        {
+          "id": 9,
+          "shift": "D03_S1",
+          "start": 3510,
+          "end": 3720
+        },
+        {
+          "id": 10,
+          "shift": "D03_S2",
+          "start": 3720,
+          "end": 3960
+        },
+        {
+          "id": 11,
+          "shift": "D03_S2",
+          "start": 3990,
+          "end": 4200
+        },
+        {
+          "id": 12,
+          "shift": "D04_S1",
+          "start": 4680,
+          "end": 4920
+        },
+        {
+          "id": 13,
+          "shift": "D04_S1",
+          "start": 4950,
+          "end": 5160
+        },
+        {
+          "id": 14,
+          "shift": "D04_S2",
+          "start": 5160,
+          "end": 5400
+        },
+        {
+          "id": 15,
+          "shift": "D04_S2",
+          "start": 5430,
+          "end": 5640
+        },
+        {
+          "id": 16,
+          "shift": "D05_S1",
+          "start": 6120,
+          "end": 6360
+        },
+        {
+          "id": 17,
+          "shift": "D05_S1",
+          "start": 6390,
+          "end": 6600
+        },
+        {
+          "id": 18,
+          "shift": "D05_S2",
+          "start": 6600,
+          "end": 6840
+        },
+        {
+          "id": 19,
+          "shift": "D05_S2",
+          "start": 6870,
+          "end": 7080
+        },
+        {
+          "id": 20,
+          "shift": "D08_S1",
+          "start": 10440,
+          "end": 10680
+        },
+        {
+          "id": 21,
+          "shift": "D08_S1",
+          "start": 10710,
+          "end": 10920
+        },
+        {
+          "id": 22,
+          "shift": "D08_S2",
+          "start": 10920,
+          "end": 11160
+        },
+        {
+          "id": 23,
+          "shift": "D08_S2",
+          "start": 11190,
+          "end": 11400
+        },
+        {
+          "id": 24,
+          "shift": "D09_S1",
+          "start": 11880,
+          "end": 12120
+        },
+        {
+          "id": 25,
+          "shift": "D09_S1",
+          "start": 12150,
+          "end": 12360
+        },
+        {
+          "id": 26,
+          "shift": "D09_S2",
+          "start": 12360,
+          "end": 12600
+        },
+        {
+          "id": 27,
+          "shift": "D09_S2",
+          "start": 12630,
+          "end": 12840
+        },
+        {
+          "id": 28,
+          "shift": "D10_S1",
+          "start": 13320,
+          "end": 13560
+        },
+        {
+          "id": 29,
+          "shift": "D10_S1",
+          "start": 13590,
+          "end": 13800
+        },
+        {
+          "id": 30,
+          "shift": "D10_S2",
+          "start": 13800,
+          "end": 14040
+        },
+        {
+          "id": 31,
+          "shift": "D10_S2",
+          "start": 14070,
+          "end": 14280
+        },
+        {
+          "id": 32,
+          "shift": "D11_S1",
+          "start": 14760,
+          "end": 15000
+        },
+        {
+          "id": 33,
+          "shift": "D11_S1",
+          "start": 15030,
+          "end": 15240
+        },
+        {
+          "id": 34,
+          "shift": "D11_S2",
+          "start": 15240,
+          "end": 15480
+        },
+        {
+          "id": 35,
+          "shift": "D11_S2",
+          "start": 15510,
+          "end": 15720
+        },
+        {
+          "id": 36,
+          "shift": "D12_S1",
+          "start": 16200,
+          "end": 16440
+        },
+        {
+          "id": 37,
+          "shift": "D12_S1",
+          "start": 16470,
+          "end": 16680
+        },
+        {
+          "id": 38,
+          "shift": "D12_S2",
+          "start": 16680,
+          "end": 16920
+        },
+        {
+          "id": 39,
+          "shift": "D12_S2",
+          "start": 16950,
+          "end": 17160
+        }
+      ],
+      "shifts": [
+        {
+          "id": "D01_S1",
+          "day": 0,
+          "start": 360,
+          "end": 840,
+          "available_minutes": 450
+        },
+        {
+          "id": "D01_S2",
+          "day": 0,
+          "start": 840,
+          "end": 1320,
+          "available_minutes": 450
+        },
+        {
+          "id": "D02_S1",
+          "day": 1,
+          "start": 1800,
+          "end": 2280,
+          "available_minutes": 450
+        },
+        {
+          "id": "D02_S2",
+          "day": 1,
+          "start": 2280,
+          "end": 2760,
+          "available_minutes": 450
+        },
+        {
+          "id": "D03_S1",
+          "day": 2,
+          "start": 3240,
+          "end": 3720,
+          "available_minutes": 450
+        },
+        {
+          "id": "D03_S2",
+          "day": 2,
+          "start": 3720,
+          "end": 4200,
+          "available_minutes": 450
+        },
+        {
+          "id": "D04_S1",
+          "day": 3,
+          "start": 4680,
+          "end": 5160,
+          "available_minutes": 450
+        },
+        {
+          "id": "D04_S2",
+          "day": 3,
+          "start": 5160,
+          "end": 5640,
+          "available_minutes": 450
+        },
+        {
+          "id": "D05_S1",
+          "day": 4,
+          "start": 6120,
+          "end": 6600,
+          "available_minutes": 450
+        },
+        {
+          "id": "D05_S2",
+          "day": 4,
+          "start": 6600,
+          "end": 7080,
+          "available_minutes": 450
+        },
+        {
+          "id": "D08_S1",
+          "day": 7,
+          "start": 10440,
+          "end": 10920,
+          "available_minutes": 450
+        },
+        {
+          "id": "D08_S2",
+          "day": 7,
+          "start": 10920,
+          "end": 11400,
+          "available_minutes": 450
+        },
+        {
+          "id": "D09_S1",
+          "day": 8,
+          "start": 11880,
+          "end": 12360,
+          "available_minutes": 450
+        },
+        {
+          "id": "D09_S2",
+          "day": 8,
+          "start": 12360,
+          "end": 12840,
+          "available_minutes": 450
+        },
+        {
+          "id": "D10_S1",
+          "day": 9,
+          "start": 13320,
+          "end": 13800,
+          "available_minutes": 450
+        },
+        {
+          "id": "D10_S2",
+          "day": 9,
+          "start": 13800,
+          "end": 14280,
+          "available_minutes": 450
+        },
+        {
+          "id": "D11_S1",
+          "day": 10,
+          "start": 14760,
+          "end": 15240,
+          "available_minutes": 450
+        },
+        {
+          "id": "D11_S2",
+          "day": 10,
+          "start": 15240,
+          "end": 15720,
+          "available_minutes": 450
+        },
+        {
+          "id": "D12_S1",
+          "day": 11,
+          "start": 16200,
+          "end": 16680,
+          "available_minutes": 450
+        },
+        {
+          "id": "D12_S2",
+          "day": 11,
+          "start": 16680,
+          "end": 17160,
+          "available_minutes": 450
+        }
+      ],
+      "downtime": [],
+      "mold": {
+        "id": "MOLD_F",
+        "cavities": 2,
+        "limit_cycles": 140,
+        "initial_cycles": 95,
+        "maintenance_minutes": 45,
+        "after_maintenance": "CLEAN"
+      }
+    },
+    "CAST_R": {
+      "stage": "cast",
+      "minutes_per_unit": {
+        "R_SILVER": 1.2,
+        "R_BLACK": 1.2
+      },
+      "fixed_minutes": 5,
+      "initial_product": "R_SILVER",
+      "setup": {
+        "F_SILVER": {
+          "F_SILVER": 0,
+          "F_BLACK": 12,
+          "R_SILVER": 12,
+          "R_BLACK": 12
+        },
+        "F_BLACK": {
+          "F_SILVER": 12,
+          "F_BLACK": 0,
+          "R_SILVER": 12,
+          "R_BLACK": 12
+        },
+        "R_SILVER": {
+          "F_SILVER": 12,
+          "F_BLACK": 12,
+          "R_SILVER": 0,
+          "R_BLACK": 12
+        },
+        "R_BLACK": {
+          "F_SILVER": 12,
+          "F_BLACK": 12,
+          "R_SILVER": 12,
+          "R_BLACK": 0
+        },
+        "CLEAN": {
+          "F_SILVER": 16,
+          "F_BLACK": 16,
+          "R_SILVER": 16,
+          "R_BLACK": 16
+        }
+      },
+      "windows": [
+        {
+          "id": 0,
+          "shift": "D01_S1",
+          "start": 360,
+          "end": 600
+        },
+        {
+          "id": 1,
+          "shift": "D01_S1",
+          "start": 630,
+          "end": 840
+        },
+        {
+          "id": 2,
+          "shift": "D01_S2",
+          "start": 840,
+          "end": 1080
+        },
+        {
+          "id": 3,
+          "shift": "D01_S2",
+          "start": 1110,
+          "end": 1320
+        },
+        {
+          "id": 4,
+          "shift": "D02_S1",
+          "start": 1800,
+          "end": 2040
+        },
+        {
+          "id": 5,
+          "shift": "D02_S1",
+          "start": 2070,
+          "end": 2280
+        },
+        {
+          "id": 6,
+          "shift": "D02_S2",
+          "start": 2280,
+          "end": 2520
+        },
+        {
+          "id": 7,
+          "shift": "D02_S2",
+          "start": 2550,
+          "end": 2760
+        },
+        {
+          "id": 8,
+          "shift": "D03_S1",
+          "start": 3240,
+          "end": 3480
+        },
+        {
+          "id": 9,
+          "shift": "D03_S1",
+          "start": 3510,
+          "end": 3720
+        },
+        {
+          "id": 10,
+          "shift": "D03_S2",
+          "start": 3720,
+          "end": 3960
+        },
+        {
+          "id": 11,
+          "shift": "D03_S2",
+          "start": 3990,
+          "end": 4200
+        },
+        {
+          "id": 12,
+          "shift": "D04_S1",
+          "start": 4680,
+          "end": 4920
+        },
+        {
+          "id": 13,
+          "shift": "D04_S1",
+          "start": 4950,
+          "end": 5160
+        },
+        {
+          "id": 14,
+          "shift": "D04_S2",
+          "start": 5160,
+          "end": 5400
+        },
+        {
+          "id": 15,
+          "shift": "D04_S2",
+          "start": 5430,
+          "end": 5640
+        },
+        {
+          "id": 16,
+          "shift": "D05_S1",
+          "start": 6120,
+          "end": 6360
+        },
+        {
+          "id": 17,
+          "shift": "D05_S1",
+          "start": 6390,
+          "end": 6600
+        },
+        {
+          "id": 18,
+          "shift": "D05_S2",
+          "start": 6600,
+          "end": 6840
+        },
+        {
+          "id": 19,
+          "shift": "D05_S2",
+          "start": 6870,
+          "end": 7080
+        },
+        {
+          "id": 20,
+          "shift": "D08_S1",
+          "start": 10440,
+          "end": 10680
+        },
+        {
+          "id": 21,
+          "shift": "D08_S1",
+          "start": 10710,
+          "end": 10920
+        },
+        {
+          "id": 22,
+          "shift": "D08_S2",
+          "start": 10920,
+          "end": 11160
+        },
+        {
+          "id": 23,
+          "shift": "D08_S2",
+          "start": 11190,
+          "end": 11400
+        },
+        {
+          "id": 24,
+          "shift": "D09_S1",
+          "start": 11880,
+          "end": 12120
+        },
+        {
+          "id": 25,
+          "shift": "D09_S1",
+          "start": 12150,
+          "end": 12360
+        },
+        {
+          "id": 26,
+          "shift": "D09_S2",
+          "start": 12360,
+          "end": 12600
+        },
+        {
+          "id": 27,
+          "shift": "D09_S2",
+          "start": 12630,
+          "end": 12840
+        },
+        {
+          "id": 28,
+          "shift": "D10_S1",
+          "start": 13320,
+          "end": 13560
+        },
+        {
+          "id": 29,
+          "shift": "D10_S1",
+          "start": 13590,
+          "end": 13800
+        },
+        {
+          "id": 30,
+          "shift": "D10_S2",
+          "start": 13800,
+          "end": 14040
+        },
+        {
+          "id": 31,
+          "shift": "D10_S2",
+          "start": 14070,
+          "end": 14280
+        },
+        {
+          "id": 32,
+          "shift": "D11_S1",
+          "start": 14760,
+          "end": 15000
+        },
+        {
+          "id": 33,
+          "shift": "D11_S1",
+          "start": 15030,
+          "end": 15240
+        },
+        {
+          "id": 34,
+          "shift": "D11_S2",
+          "start": 15240,
+          "end": 15480
+        },
+        {
+          "id": 35,
+          "shift": "D11_S2",
+          "start": 15510,
+          "end": 15720
+        },
+        {
+          "id": 36,
+          "shift": "D12_S1",
+          "start": 16200,
+          "end": 16440
+        },
+        {
+          "id": 37,
+          "shift": "D12_S1",
+          "start": 16470,
+          "end": 16680
+        },
+        {
+          "id": 38,
+          "shift": "D12_S2",
+          "start": 16680,
+          "end": 16920
+        },
+        {
+          "id": 39,
+          "shift": "D12_S2",
+          "start": 16950,
+          "end": 17160
+        }
+      ],
+      "shifts": [
+        {
+          "id": "D01_S1",
+          "day": 0,
+          "start": 360,
+          "end": 840,
+          "available_minutes": 450
+        },
+        {
+          "id": "D01_S2",
+          "day": 0,
+          "start": 840,
+          "end": 1320,
+          "available_minutes": 450
+        },
+        {
+          "id": "D02_S1",
+          "day": 1,
+          "start": 1800,
+          "end": 2280,
+          "available_minutes": 450
+        },
+        {
+          "id": "D02_S2",
+          "day": 1,
+          "start": 2280,
+          "end": 2760,
+          "available_minutes": 450
+        },
+        {
+          "id": "D03_S1",
+          "day": 2,
+          "start": 3240,
+          "end": 3720,
+          "available_minutes": 450
+        },
+        {
+          "id": "D03_S2",
+          "day": 2,
+          "start": 3720,
+          "end": 4200,
+          "available_minutes": 450
+        },
+        {
+          "id": "D04_S1",
+          "day": 3,
+          "start": 4680,
+          "end": 5160,
+          "available_minutes": 450
+        },
+        {
+          "id": "D04_S2",
+          "day": 3,
+          "start": 5160,
+          "end": 5640,
+          "available_minutes": 450
+        },
+        {
+          "id": "D05_S1",
+          "day": 4,
+          "start": 6120,
+          "end": 6600,
+          "available_minutes": 450
+        },
+        {
+          "id": "D05_S2",
+          "day": 4,
+          "start": 6600,
+          "end": 7080,
+          "available_minutes": 450
+        },
+        {
+          "id": "D08_S1",
+          "day": 7,
+          "start": 10440,
+          "end": 10920,
+          "available_minutes": 450
+        },
+        {
+          "id": "D08_S2",
+          "day": 7,
+          "start": 10920,
+          "end": 11400,
+          "available_minutes": 450
+        },
+        {
+          "id": "D09_S1",
+          "day": 8,
+          "start": 11880,
+          "end": 12360,
+          "available_minutes": 450
+        },
+        {
+          "id": "D09_S2",
+          "day": 8,
+          "start": 12360,
+          "end": 12840,
+          "available_minutes": 450
+        },
+        {
+          "id": "D10_S1",
+          "day": 9,
+          "start": 13320,
+          "end": 13800,
+          "available_minutes": 450
+        },
+        {
+          "id": "D10_S2",
+          "day": 9,
+          "start": 13800,
+          "end": 14280,
+          "available_minutes": 450
+        },
+        {
+          "id": "D11_S1",
+          "day": 10,
+          "start": 14760,
+          "end": 15240,
+          "available_minutes": 450
+        },
+        {
+          "id": "D11_S2",
+          "day": 10,
+          "start": 15240,
+          "end": 15720,
+          "available_minutes": 450
+        },
+        {
+          "id": "D12_S1",
+          "day": 11,
+          "start": 16200,
+          "end": 16680,
+          "available_minutes": 450
+        },
+        {
+          "id": "D12_S2",
+          "day": 11,
+          "start": 16680,
+          "end": 17160,
+          "available_minutes": 450
+        }
+      ],
+      "downtime": [],
+      "mold": {
+        "id": "MOLD_R",
+        "cavities": 2,
+        "limit_cycles": 140,
+        "initial_cycles": 115,
+        "maintenance_minutes": 45,
+        "after_maintenance": "CLEAN"
+      }
+    },
+    "CNC_1": {
+      "stage": "cnc",
+      "minutes_per_unit": {
+        "F_SILVER": 1.65,
+        "F_BLACK": 1.65,
+        "R_SILVER": 1.65
+      },
+      "fixed_minutes": 8,
+      "initial_product": "F_SILVER",
+      "setup": {
+        "F_SILVER": {
+          "F_SILVER": 0,
+          "F_BLACK": 18,
+          "R_SILVER": 18,
+          "R_BLACK": 18
+        },
+        "F_BLACK": {
+          "F_SILVER": 18,
+          "F_BLACK": 0,
+          "R_SILVER": 18,
+          "R_BLACK": 18
+        },
+        "R_SILVER": {
+          "F_SILVER": 18,
+          "F_BLACK": 18,
+          "R_SILVER": 0,
+          "R_BLACK": 18
+        },
+        "R_BLACK": {
+          "F_SILVER": 18,
+          "F_BLACK": 18,
+          "R_SILVER": 18,
+          "R_BLACK": 0
+        },
+        "CLEAN": {
+          "F_SILVER": 22,
+          "F_BLACK": 22,
+          "R_SILVER": 22,
+          "R_BLACK": 22
+        }
+      },
+      "windows": [
+        {
+          "id": 0,
+          "shift": "D01_S1",
+          "start": 360,
+          "end": 600
+        },
+        {
+          "id": 1,
+          "shift": "D01_S1",
+          "start": 630,
+          "end": 840
+        },
+        {
+          "id": 2,
+          "shift": "D01_S2",
+          "start": 840,
+          "end": 1080
+        },
+        {
+          "id": 3,
+          "shift": "D01_S2",
+          "start": 1110,
+          "end": 1320
+        },
+        {
+          "id": 4,
+          "shift": "D02_S1",
+          "start": 1800,
+          "end": 2040
+        },
+        {
+          "id": 5,
+          "shift": "D02_S1",
+          "start": 2070,
+          "end": 2280
+        },
+        {
+          "id": 6,
+          "shift": "D02_S2",
+          "start": 2280,
+          "end": 2520
+        },
+        {
+          "id": 7,
+          "shift": "D02_S2",
+          "start": 2550,
+          "end": 2760
+        },
+        {
+          "id": 8,
+          "shift": "D03_S1",
+          "start": 3240,
+          "end": 3480
+        },
+        {
+          "id": 9,
+          "shift": "D03_S1",
+          "start": 3510,
+          "end": 3720
+        },
+        {
+          "id": 10,
+          "shift": "D03_S2",
+          "start": 3900,
+          "end": 3960
+        },
+        {
+          "id": 11,
+          "shift": "D03_S2",
+          "start": 3990,
+          "end": 4200
+        },
+        {
+          "id": 12,
+          "shift": "D04_S1",
+          "start": 4680,
+          "end": 4920
+        },
+        {
+          "id": 13,
+          "shift": "D04_S1",
+          "start": 4950,
+          "end": 5160
+        },
+        {
+          "id": 14,
+          "shift": "D04_S2",
+          "start": 5160,
+          "end": 5400
+        },
+        {
+          "id": 15,
+          "shift": "D04_S2",
+          "start": 5430,
+          "end": 5640
+        },
+        {
+          "id": 16,
+          "shift": "D05_S1",
+          "start": 6120,
+          "end": 6360
+        },
+        {
+          "id": 17,
+          "shift": "D05_S1",
+          "start": 6390,
+          "end": 6600
+        },
+        {
+          "id": 18,
+          "shift": "D05_S2",
+          "start": 6600,
+          "end": 6840
+        },
+        {
+          "id": 19,
+          "shift": "D05_S2",
+          "start": 6870,
+          "end": 7080
+        },
+        {
+          "id": 20,
+          "shift": "D08_S1",
+          "start": 10440,
+          "end": 10680
+        },
+        {
+          "id": 21,
+          "shift": "D08_S1",
+          "start": 10710,
+          "end": 10920
+        },
+        {
+          "id": 22,
+          "shift": "D08_S2",
+          "start": 10920,
+          "end": 11160
+        },
+        {
+          "id": 23,
+          "shift": "D08_S2",
+          "start": 11190,
+          "end": 11400
+        },
+        {
+          "id": 24,
+          "shift": "D09_S1",
+          "start": 11880,
+          "end": 12120
+        },
+        {
+          "id": 25,
+          "shift": "D09_S1",
+          "start": 12150,
+          "end": 12360
+        },
+        {
+          "id": 26,
+          "shift": "D09_S2",
+          "start": 12360,
+          "end": 12600
+        },
+        {
+          "id": 27,
+          "shift": "D09_S2",
+          "start": 12630,
+          "end": 12840
+        },
+        {
+          "id": 28,
+          "shift": "D10_S1",
+          "start": 13320,
+          "end": 13560
+        },
+        {
+          "id": 29,
+          "shift": "D10_S1",
+          "start": 13590,
+          "end": 13800
+        },
+        {
+          "id": 30,
+          "shift": "D10_S2",
+          "start": 13800,
+          "end": 14040
+        },
+        {
+          "id": 31,
+          "shift": "D10_S2",
+          "start": 14070,
+          "end": 14280
+        },
+        {
+          "id": 32,
+          "shift": "D11_S1",
+          "start": 14760,
+          "end": 15000
+        },
+        {
+          "id": 33,
+          "shift": "D11_S1",
+          "start": 15030,
+          "end": 15240
+        },
+        {
+          "id": 34,
+          "shift": "D11_S2",
+          "start": 15240,
+          "end": 15480
+        },
+        {
+          "id": 35,
+          "shift": "D11_S2",
+          "start": 15510,
+          "end": 15720
+        },
+        {
+          "id": 36,
+          "shift": "D12_S1",
+          "start": 16200,
+          "end": 16440
+        },
+        {
+          "id": 37,
+          "shift": "D12_S1",
+          "start": 16470,
+          "end": 16680
+        },
+        {
+          "id": 38,
+          "shift": "D12_S2",
+          "start": 16680,
+          "end": 16920
+        },
+        {
+          "id": 39,
+          "shift": "D12_S2",
+          "start": 16950,
+          "end": 17160
+        }
+      ],
+      "shifts": [
+        {
+          "id": "D01_S1",
+          "day": 0,
+          "start": 360,
+          "end": 840,
+          "available_minutes": 450
+        },
+        {
+          "id": "D01_S2",
+          "day": 0,
+          "start": 840,
+          "end": 1320,
+          "available_minutes": 450
+        },
+        {
+          "id": "D02_S1",
+          "day": 1,
+          "start": 1800,
+          "end": 2280,
+          "available_minutes": 450
+        },
+        {
+          "id": "D02_S2",
+          "day": 1,
+          "start": 2280,
+          "end": 2760,
+          "available_minutes": 450
+        },
+        {
+          "id": "D03_S1",
+          "day": 2,
+          "start": 3240,
+          "end": 3720,
+          "available_minutes": 450
+        },
+        {
+          "id": "D03_S2",
+          "day": 2,
+          "start": 3720,
+          "end": 4200,
+          "available_minutes": 270
+        },
+        {
+          "id": "D04_S1",
+          "day": 3,
+          "start": 4680,
+          "end": 5160,
+          "available_minutes": 450
+        },
+        {
+          "id": "D04_S2",
+          "day": 3,
+          "start": 5160,
+          "end": 5640,
+          "available_minutes": 450
+        },
+        {
+          "id": "D05_S1",
+          "day": 4,
+          "start": 6120,
+          "end": 6600,
+          "available_minutes": 450
+        },
+        {
+          "id": "D05_S2",
+          "day": 4,
+          "start": 6600,
+          "end": 7080,
+          "available_minutes": 450
+        },
+        {
+          "id": "D08_S1",
+          "day": 7,
+          "start": 10440,
+          "end": 10920,
+          "available_minutes": 450
+        },
+        {
+          "id": "D08_S2",
+          "day": 7,
+          "start": 10920,
+          "end": 11400,
+          "available_minutes": 450
+        },
+        {
+          "id": "D09_S1",
+          "day": 8,
+          "start": 11880,
+          "end": 12360,
+          "available_minutes": 450
+        },
+        {
+          "id": "D09_S2",
+          "day": 8,
+          "start": 12360,
+          "end": 12840,
+          "available_minutes": 450
+        },
+        {
+          "id": "D10_S1",
+          "day": 9,
+          "start": 13320,
+          "end": 13800,
+          "available_minutes": 450
+        },
+        {
+          "id": "D10_S2",
+          "day": 9,
+          "start": 13800,
+          "end": 14280,
+          "available_minutes": 450
+        },
+        {
+          "id": "D11_S1",
+          "day": 10,
+          "start": 14760,
+          "end": 15240,
+          "available_minutes": 450
+        },
+        {
+          "id": "D11_S2",
+          "day": 10,
+          "start": 15240,
+          "end": 15720,
+          "available_minutes": 450
+        },
+        {
+          "id": "D12_S1",
+          "day": 11,
+          "start": 16200,
+          "end": 16680,
+          "available_minutes": 450
+        },
+        {
+          "id": "D12_S2",
+          "day": 11,
+          "start": 16680,
+          "end": 17160,
+          "available_minutes": 450
+        }
+      ],
+      "downtime": [
+        [
+          3720,
+          3900
+        ]
+      ]
+    },
+    "CNC_2": {
+      "stage": "cnc",
+      "minutes_per_unit": {
+        "F_SILVER": 1.85,
+        "F_BLACK": 1.85,
+        "R_SILVER": 1.85,
+        "R_BLACK": 1.85
+      },
+      "fixed_minutes": 8,
+      "initial_product": "F_SILVER",
+      "setup": {
+        "F_SILVER": {
+          "F_SILVER": 0,
+          "F_BLACK": 18,
+          "R_SILVER": 18,
+          "R_BLACK": 18
+        },
+        "F_BLACK": {
+          "F_SILVER": 18,
+          "F_BLACK": 0,
+          "R_SILVER": 18,
+          "R_BLACK": 18
+        },
+        "R_SILVER": {
+          "F_SILVER": 18,
+          "F_BLACK": 18,
+          "R_SILVER": 0,
+          "R_BLACK": 18
+        },
+        "R_BLACK": {
+          "F_SILVER": 18,
+          "F_BLACK": 18,
+          "R_SILVER": 18,
+          "R_BLACK": 0
+        },
+        "CLEAN": {
+          "F_SILVER": 22,
+          "F_BLACK": 22,
+          "R_SILVER": 22,
+          "R_BLACK": 22
+        }
+      },
+      "windows": [
+        {
+          "id": 0,
+          "shift": "D01_S1",
+          "start": 360,
+          "end": 600
+        },
+        {
+          "id": 1,
+          "shift": "D01_S1",
+          "start": 630,
+          "end": 840
+        },
+        {
+          "id": 2,
+          "shift": "D01_S2",
+          "start": 840,
+          "end": 1080
+        },
+        {
+          "id": 3,
+          "shift": "D01_S2",
+          "start": 1110,
+          "end": 1320
+        },
+        {
+          "id": 4,
+          "shift": "D02_S1",
+          "start": 1800,
+          "end": 2040
+        },
+        {
+          "id": 5,
+          "shift": "D02_S1",
+          "start": 2070,
+          "end": 2280
+        },
+        {
+          "id": 6,
+          "shift": "D02_S2",
+          "start": 2280,
+          "end": 2520
+        },
+        {
+          "id": 7,
+          "shift": "D02_S2",
+          "start": 2550,
+          "end": 2760
+        },
+        {
+          "id": 8,
+          "shift": "D03_S1",
+          "start": 3240,
+          "end": 3480
+        },
+        {
+          "id": 9,
+          "shift": "D03_S1",
+          "start": 3510,
+          "end": 3720
+        },
+        {
+          "id": 10,
+          "shift": "D03_S2",
+          "start": 3720,
+          "end": 3960
+        },
+        {
+          "id": 11,
+          "shift": "D03_S2",
+          "start": 3990,
+          "end": 4200
+        },
+        {
+          "id": 12,
+          "shift": "D04_S1",
+          "start": 4680,
+          "end": 4920
+        },
+        {
+          "id": 13,
+          "shift": "D04_S1",
+          "start": 4950,
+          "end": 5160
+        },
+        {
+          "id": 14,
+          "shift": "D04_S2",
+          "start": 5160,
+          "end": 5400
+        },
+        {
+          "id": 15,
+          "shift": "D04_S2",
+          "start": 5430,
+          "end": 5640
+        },
+        {
+          "id": 16,
+          "shift": "D05_S1",
+          "start": 6120,
+          "end": 6360
+        },
+        {
+          "id": 17,
+          "shift": "D05_S1",
+          "start": 6390,
+          "end": 6600
+        },
+        {
+          "id": 18,
+          "shift": "D05_S2",
+          "start": 6600,
+          "end": 6840
+        },
+        {
+          "id": 19,
+          "shift": "D05_S2",
+          "start": 6870,
+          "end": 7080
+        },
+        {
+          "id": 20,
+          "shift": "D08_S1",
+          "start": 10440,
+          "end": 10680
+        },
+        {
+          "id": 21,
+          "shift": "D08_S1",
+          "start": 10710,
+          "end": 10920
+        },
+        {
+          "id": 22,
+          "shift": "D08_S2",
+          "start": 10920,
+          "end": 11160
+        },
+        {
+          "id": 23,
+          "shift": "D08_S2",
+          "start": 11190,
+          "end": 11400
+        },
+        {
+          "id": 24,
+          "shift": "D09_S1",
+          "start": 11880,
+          "end": 12120
+        },
+        {
+          "id": 25,
+          "shift": "D09_S1",
+          "start": 12150,
+          "end": 12360
+        },
+        {
+          "id": 26,
+          "shift": "D09_S2",
+          "start": 12360,
+          "end": 12600
+        },
+        {
+          "id": 27,
+          "shift": "D09_S2",
+          "start": 12630,
+          "end": 12840
+        },
+        {
+          "id": 28,
+          "shift": "D10_S1",
+          "start": 13320,
+          "end": 13560
+        },
+        {
+          "id": 29,
+          "shift": "D10_S1",
+          "start": 13590,
+          "end": 13800
+        },
+        {
+          "id": 30,
+          "shift": "D10_S2",
+          "start": 13800,
+          "end": 14040
+        },
+        {
+          "id": 31,
+          "shift": "D10_S2",
+          "start": 14070,
+          "end": 14280
+        },
+        {
+          "id": 32,
+          "shift": "D11_S1",
+          "start": 14760,
+          "end": 15000
+        },
+        {
+          "id": 33,
+          "shift": "D11_S1",
+          "start": 15030,
+          "end": 15240
+        },
+        {
+          "id": 34,
+          "shift": "D11_S2",
+          "start": 15240,
+          "end": 15480
+        },
+        {
+          "id": 35,
+          "shift": "D11_S2",
+          "start": 15510,
+          "end": 15720
+        },
+        {
+          "id": 36,
+          "shift": "D12_S1",
+          "start": 16200,
+          "end": 16440
+        },
+        {
+          "id": 37,
+          "shift": "D12_S1",
+          "start": 16470,
+          "end": 16680
+        },
+        {
+          "id": 38,
+          "shift": "D12_S2",
+          "start": 16680,
+          "end": 16920
+        },
+        {
+          "id": 39,
+          "shift": "D12_S2",
+          "start": 16950,
+          "end": 17160
+        }
+      ],
+      "shifts": [
+        {
+          "id": "D01_S1",
+          "day": 0,
+          "start": 360,
+          "end": 840,
+          "available_minutes": 450
+        },
+        {
+          "id": "D01_S2",
+          "day": 0,
+          "start": 840,
+          "end": 1320,
+          "available_minutes": 450
+        },
+        {
+          "id": "D02_S1",
+          "day": 1,
+          "start": 1800,
+          "end": 2280,
+          "available_minutes": 450
+        },
+        {
+          "id": "D02_S2",
+          "day": 1,
+          "start": 2280,
+          "end": 2760,
+          "available_minutes": 450
+        },
+        {
+          "id": "D03_S1",
+          "day": 2,
+          "start": 3240,
+          "end": 3720,
+          "available_minutes": 450
+        },
+        {
+          "id": "D03_S2",
+          "day": 2,
+          "start": 3720,
+          "end": 4200,
+          "available_minutes": 450
+        },
+        {
+          "id": "D04_S1",
+          "day": 3,
+          "start": 4680,
+          "end": 5160,
+          "available_minutes": 450
+        },
+        {
+          "id": "D04_S2",
+          "day": 3,
+          "start": 5160,
+          "end": 5640,
+          "available_minutes": 450
+        },
+        {
+          "id": "D05_S1",
+          "day": 4,
+          "start": 6120,
+          "end": 6600,
+          "available_minutes": 450
+        },
+        {
+          "id": "D05_S2",
+          "day": 4,
+          "start": 6600,
+          "end": 7080,
+          "available_minutes": 450
+        },
+        {
+          "id": "D08_S1",
+          "day": 7,
+          "start": 10440,
+          "end": 10920,
+          "available_minutes": 450
+        },
+        {
+          "id": "D08_S2",
+          "day": 7,
+          "start": 10920,
+          "end": 11400,
+          "available_minutes": 450
+        },
+        {
+          "id": "D09_S1",
+          "day": 8,
+          "start": 11880,
+          "end": 12360,
+          "available_minutes": 450
+        },
+        {
+          "id": "D09_S2",
+          "day": 8,
+          "start": 12360,
+          "end": 12840,
+          "available_minutes": 450
+        },
+        {
+          "id": "D10_S1",
+          "day": 9,
+          "start": 13320,
+          "end": 13800,
+          "available_minutes": 450
+        },
+        {
+          "id": "D10_S2",
+          "day": 9,
+          "start": 13800,
+          "end": 14280,
+          "available_minutes": 450
+        },
+        {
+          "id": "D11_S1",
+          "day": 10,
+          "start": 14760,
+          "end": 15240,
+          "available_minutes": 450
+        },
+        {
+          "id": "D11_S2",
+          "day": 10,
+          "start": 15240,
+          "end": 15720,
+          "available_minutes": 450
+        },
+        {
+          "id": "D12_S1",
+          "day": 11,
+          "start": 16200,
+          "end": 16680,
+          "available_minutes": 450
+        },
+        {
+          "id": "D12_S2",
+          "day": 11,
+          "start": 16680,
+          "end": 17160,
+          "available_minutes": 450
+        }
+      ],
+      "downtime": []
+    },
+    "PAINT_1": {
+      "stage": "paint",
+      "minutes_per_unit": {
+        "F_SILVER": 0.7,
+        "F_BLACK": 0.7,
+        "R_SILVER": 0.7,
+        "R_BLACK": 0.7
+      },
+      "fixed_minutes": 30,
+      "initial_product": "F_SILVER",
+      "setup": {
+        "F_SILVER": {
+          "F_SILVER": 0,
+          "F_BLACK": 12,
+          "R_SILVER": 0,
+          "R_BLACK": 12
+        },
+        "F_BLACK": {
+          "F_SILVER": 24,
+          "F_BLACK": 0,
+          "R_SILVER": 24,
+          "R_BLACK": 0
+        },
+        "R_SILVER": {
+          "F_SILVER": 0,
+          "F_BLACK": 12,
+          "R_SILVER": 0,
+          "R_BLACK": 12
+        },
+        "R_BLACK": {
+          "F_SILVER": 24,
+          "F_BLACK": 0,
+          "R_SILVER": 24,
+          "R_BLACK": 0
+        },
+        "CLEAN": {
+          "F_SILVER": 24,
+          "F_BLACK": 24,
+          "R_SILVER": 24,
+          "R_BLACK": 24
+        }
+      },
+      "windows": [
+        {
+          "id": 0,
+          "shift": "D01_S1",
+          "start": 360,
+          "end": 600
+        },
+        {
+          "id": 1,
+          "shift": "D01_S1",
+          "start": 630,
+          "end": 840
+        },
+        {
+          "id": 2,
+          "shift": "D01_S2",
+          "start": 840,
+          "end": 1080
+        },
+        {
+          "id": 3,
+          "shift": "D01_S2",
+          "start": 1110,
+          "end": 1320
+        },
+        {
+          "id": 4,
+          "shift": "D02_S1",
+          "start": 1800,
+          "end": 2040
+        },
+        {
+          "id": 5,
+          "shift": "D02_S1",
+          "start": 2070,
+          "end": 2280
+        },
+        {
+          "id": 6,
+          "shift": "D02_S2",
+          "start": 2280,
+          "end": 2520
+        },
+        {
+          "id": 7,
+          "shift": "D02_S2",
+          "start": 2550,
+          "end": 2760
+        },
+        {
+          "id": 8,
+          "shift": "D03_S1",
+          "start": 3240,
+          "end": 3480
+        },
+        {
+          "id": 9,
+          "shift": "D03_S1",
+          "start": 3510,
+          "end": 3720
+        },
+        {
+          "id": 10,
+          "shift": "D03_S2",
+          "start": 3720,
+          "end": 3960
+        },
+        {
+          "id": 11,
+          "shift": "D03_S2",
+          "start": 3990,
+          "end": 4200
+        },
+        {
+          "id": 12,
+          "shift": "D04_S1",
+          "start": 4680,
+          "end": 4920
+        },
+        {
+          "id": 13,
+          "shift": "D04_S1",
+          "start": 4950,
+          "end": 5160
+        },
+        {
+          "id": 14,
+          "shift": "D04_S2",
+          "start": 5160,
+          "end": 5400
+        },
+        {
+          "id": 15,
+          "shift": "D04_S2",
+          "start": 5430,
+          "end": 5640
+        },
+        {
+          "id": 16,
+          "shift": "D05_S1",
+          "start": 6120,
+          "end": 6360
+        },
+        {
+          "id": 17,
+          "shift": "D05_S1",
+          "start": 6390,
+          "end": 6600
+        },
+        {
+          "id": 18,
+          "shift": "D05_S2",
+          "start": 6600,
+          "end": 6840
+        },
+        {
+          "id": 19,
+          "shift": "D05_S2",
+          "start": 6870,
+          "end": 7080
+        },
+        {
+          "id": 20,
+          "shift": "D08_S1",
+          "start": 10710,
+          "end": 10920
+        },
+        {
+          "id": 21,
+          "shift": "D08_S2",
+          "start": 10920,
+          "end": 11160
+        },
+        {
+          "id": 22,
+          "shift": "D08_S2",
+          "start": 11190,
+          "end": 11400
+        },
+        {
+          "id": 23,
+          "shift": "D09_S1",
+          "start": 11880,
+          "end": 12120
+        },
+        {
+          "id": 24,
+          "shift": "D09_S1",
+          "start": 12150,
+          "end": 12360
+        },
+        {
+          "id": 25,
+          "shift": "D09_S2",
+          "start": 12360,
+          "end": 12600
+        },
+        {
+          "id": 26,
+          "shift": "D09_S2",
+          "start": 12630,
+          "end": 12840
+        },
+        {
+          "id": 27,
+          "shift": "D10_S1",
+          "start": 13320,
+          "end": 13560
+        },
+        {
+          "id": 28,
+          "shift": "D10_S1",
+          "start": 13590,
+          "end": 13800
+        },
+        {
+          "id": 29,
+          "shift": "D10_S2",
+          "start": 13800,
+          "end": 14040
+        },
+        {
+          "id": 30,
+          "shift": "D10_S2",
+          "start": 14070,
+          "end": 14280
+        },
+        {
+          "id": 31,
+          "shift": "D11_S1",
+          "start": 14760,
+          "end": 15000
+        },
+        {
+          "id": 32,
+          "shift": "D11_S1",
+          "start": 15030,
+          "end": 15240
+        },
+        {
+          "id": 33,
+          "shift": "D11_S2",
+          "start": 15240,
+          "end": 15480
+        },
+        {
+          "id": 34,
+          "shift": "D11_S2",
+          "start": 15510,
+          "end": 15720
+        },
+        {
+          "id": 35,
+          "shift": "D12_S1",
+          "start": 16200,
+          "end": 16440
+        },
+        {
+          "id": 36,
+          "shift": "D12_S1",
+          "start": 16470,
+          "end": 16680
+        },
+        {
+          "id": 37,
+          "shift": "D12_S2",
+          "start": 16680,
+          "end": 16920
+        },
+        {
+          "id": 38,
+          "shift": "D12_S2",
+          "start": 16950,
+          "end": 17160
+        }
+      ],
+      "shifts": [
+        {
+          "id": "D01_S1",
+          "day": 0,
+          "start": 360,
+          "end": 840,
+          "available_minutes": 450
+        },
+        {
+          "id": "D01_S2",
+          "day": 0,
+          "start": 840,
+          "end": 1320,
+          "available_minutes": 450
+        },
+        {
+          "id": "D02_S1",
+          "day": 1,
+          "start": 1800,
+          "end": 2280,
+          "available_minutes": 450
+        },
+        {
+          "id": "D02_S2",
+          "day": 1,
+          "start": 2280,
+          "end": 2760,
+          "available_minutes": 450
+        },
+        {
+          "id": "D03_S1",
+          "day": 2,
+          "start": 3240,
+          "end": 3720,
+          "available_minutes": 450
+        },
+        {
+          "id": "D03_S2",
+          "day": 2,
+          "start": 3720,
+          "end": 4200,
+          "available_minutes": 450
+        },
+        {
+          "id": "D04_S1",
+          "day": 3,
+          "start": 4680,
+          "end": 5160,
+          "available_minutes": 450
+        },
+        {
+          "id": "D04_S2",
+          "day": 3,
+          "start": 5160,
+          "end": 5640,
+          "available_minutes": 450
+        },
+        {
+          "id": "D05_S1",
+          "day": 4,
+          "start": 6120,
+          "end": 6600,
+          "available_minutes": 450
+        },
+        {
+          "id": "D05_S2",
+          "day": 4,
+          "start": 6600,
+          "end": 7080,
+          "available_minutes": 450
+        },
+        {
+          "id": "D08_S1",
+          "day": 7,
+          "start": 10440,
+          "end": 10920,
+          "available_minutes": 210
+        },
+        {
+          "id": "D08_S2",
+          "day": 7,
+          "start": 10920,
+          "end": 11400,
+          "available_minutes": 450
+        },
+        {
+          "id": "D09_S1",
+          "day": 8,
+          "start": 11880,
+          "end": 12360,
+          "available_minutes": 450
+        },
+        {
+          "id": "D09_S2",
+          "day": 8,
+          "start": 12360,
+          "end": 12840,
+          "available_minutes": 450
+        },
+        {
+          "id": "D10_S1",
+          "day": 9,
+          "start": 13320,
+          "end": 13800,
+          "available_minutes": 450
+        },
+        {
+          "id": "D10_S2",
+          "day": 9,
+          "start": 13800,
+          "end": 14280,
+          "available_minutes": 450
+        },
+        {
+          "id": "D11_S1",
+          "day": 10,
+          "start": 14760,
+          "end": 15240,
+          "available_minutes": 450
+        },
+        {
+          "id": "D11_S2",
+          "day": 10,
+          "start": 15240,
+          "end": 15720,
+          "available_minutes": 450
+        },
+        {
+          "id": "D12_S1",
+          "day": 11,
+          "start": 16200,
+          "end": 16680,
+          "available_minutes": 450
+        },
+        {
+          "id": "D12_S2",
+          "day": 11,
+          "start": 16680,
+          "end": 17160,
+          "available_minutes": 450
+        }
+      ],
+      "downtime": [
+        [
+          10440,
+          10680
+        ]
+      ]
+    },
+    "PAINT_2": {
+      "stage": "paint",
+      "minutes_per_unit": {
+        "F_SILVER": 0.85,
+        "F_BLACK": 0.85,
+        "R_SILVER": 0.85,
+        "R_BLACK": 0.85
+      },
+      "fixed_minutes": 30,
+      "initial_product": "F_SILVER",
+      "setup": {
+        "F_SILVER": {
+          "F_SILVER": 0,
+          "F_BLACK": 12,
+          "R_SILVER": 0,
+          "R_BLACK": 12
+        },
+        "F_BLACK": {
+          "F_SILVER": 24,
+          "F_BLACK": 0,
+          "R_SILVER": 24,
+          "R_BLACK": 0
+        },
+        "R_SILVER": {
+          "F_SILVER": 0,
+          "F_BLACK": 12,
+          "R_SILVER": 0,
+          "R_BLACK": 12
+        },
+        "R_BLACK": {
+          "F_SILVER": 24,
+          "F_BLACK": 0,
+          "R_SILVER": 24,
+          "R_BLACK": 0
+        },
+        "CLEAN": {
+          "F_SILVER": 24,
+          "F_BLACK": 24,
+          "R_SILVER": 24,
+          "R_BLACK": 24
+        }
+      },
+      "windows": [
+        {
+          "id": 0,
+          "shift": "D01_S1",
+          "start": 360,
+          "end": 600
+        },
+        {
+          "id": 1,
+          "shift": "D01_S1",
+          "start": 630,
+          "end": 840
+        },
+        {
+          "id": 2,
+          "shift": "D01_S2",
+          "start": 840,
+          "end": 1080
+        },
+        {
+          "id": 3,
+          "shift": "D01_S2",
+          "start": 1110,
+          "end": 1320
+        },
+        {
+          "id": 4,
+          "shift": "D02_S1",
+          "start": 1800,
+          "end": 2040
+        },
+        {
+          "id": 5,
+          "shift": "D02_S1",
+          "start": 2070,
+          "end": 2280
+        },
+        {
+          "id": 6,
+          "shift": "D02_S2",
+          "start": 2280,
+          "end": 2520
+        },
+        {
+          "id": 7,
+          "shift": "D02_S2",
+          "start": 2550,
+          "end": 2760
+        },
+        {
+          "id": 8,
+          "shift": "D03_S1",
+          "start": 3240,
+          "end": 3480
+        },
+        {
+          "id": 9,
+          "shift": "D03_S1",
+          "start": 3510,
+          "end": 3720
+        },
+        {
+          "id": 10,
+          "shift": "D03_S2",
+          "start": 3720,
+          "end": 3960
+        },
+        {
+          "id": 11,
+          "shift": "D03_S2",
+          "start": 3990,
+          "end": 4200
+        },
+        {
+          "id": 12,
+          "shift": "D04_S1",
+          "start": 4680,
+          "end": 4920
+        },
+        {
+          "id": 13,
+          "shift": "D04_S1",
+          "start": 4950,
+          "end": 5160
+        },
+        {
+          "id": 14,
+          "shift": "D04_S2",
+          "start": 5160,
+          "end": 5400
+        },
+        {
+          "id": 15,
+          "shift": "D04_S2",
+          "start": 5430,
+          "end": 5640
+        },
+        {
+          "id": 16,
+          "shift": "D05_S1",
+          "start": 6120,
+          "end": 6360
+        },
+        {
+          "id": 17,
+          "shift": "D05_S1",
+          "start": 6390,
+          "end": 6600
+        },
+        {
+          "id": 18,
+          "shift": "D05_S2",
+          "start": 6600,
+          "end": 6840
+        },
+        {
+          "id": 19,
+          "shift": "D05_S2",
+          "start": 6870,
+          "end": 7080
+        },
+        {
+          "id": 20,
+          "shift": "D08_S1",
+          "start": 10440,
+          "end": 10680
+        },
+        {
+          "id": 21,
+          "shift": "D08_S1",
+          "start": 10710,
+          "end": 10920
+        },
+        {
+          "id": 22,
+          "shift": "D08_S2",
+          "start": 10920,
+          "end": 11160
+        },
+        {
+          "id": 23,
+          "shift": "D08_S2",
+          "start": 11190,
+          "end": 11400
+        },
+        {
+          "id": 24,
+          "shift": "D09_S1",
+          "start": 11880,
+          "end": 12120
+        },
+        {
+          "id": 25,
+          "shift": "D09_S1",
+          "start": 12150,
+          "end": 12360
+        },
+        {
+          "id": 26,
+          "shift": "D09_S2",
+          "start": 12360,
+          "end": 12600
+        },
+        {
+          "id": 27,
+          "shift": "D09_S2",
+          "start": 12630,
+          "end": 12840
+        },
+        {
+          "id": 28,
+          "shift": "D10_S1",
+          "start": 13320,
+          "end": 13560
+        },
+        {
+          "id": 29,
+          "shift": "D10_S1",
+          "start": 13590,
+          "end": 13800
+        },
+        {
+          "id": 30,
+          "shift": "D10_S2",
+          "start": 13800,
+          "end": 14040
+        },
+        {
+          "id": 31,
+          "shift": "D10_S2",
+          "start": 14070,
+          "end": 14280
+        },
+        {
+          "id": 32,
+          "shift": "D11_S1",
+          "start": 14760,
+          "end": 15000
+        },
+        {
+          "id": 33,
+          "shift": "D11_S1",
+          "start": 15030,
+          "end": 15240
+        },
+        {
+          "id": 34,
+          "shift": "D11_S2",
+          "start": 15240,
+          "end": 15480
+        },
+        {
+          "id": 35,
+          "shift": "D11_S2",
+          "start": 15510,
+          "end": 15720
+        },
+        {
+          "id": 36,
+          "shift": "D12_S1",
+          "start": 16200,
+          "end": 16440
+        },
+        {
+          "id": 37,
+          "shift": "D12_S1",
+          "start": 16470,
+          "end": 16680
+        },
+        {
+          "id": 38,
+          "shift": "D12_S2",
+          "start": 16680,
+          "end": 16920
+        },
+        {
+          "id": 39,
+          "shift": "D12_S2",
+          "start": 16950,
+          "end": 17160
+        }
+      ],
+      "shifts": [
+        {
+          "id": "D01_S1",
+          "day": 0,
+          "start": 360,
+          "end": 840,
+          "available_minutes": 450
+        },
+        {
+          "id": "D01_S2",
+          "day": 0,
+          "start": 840,
+          "end": 1320,
+          "available_minutes": 450
+        },
+        {
+          "id": "D02_S1",
+          "day": 1,
+          "start": 1800,
+          "end": 2280,
+          "available_minutes": 450
+        },
+        {
+          "id": "D02_S2",
+          "day": 1,
+          "start": 2280,
+          "end": 2760,
+          "available_minutes": 450
+        },
+        {
+          "id": "D03_S1",
+          "day": 2,
+          "start": 3240,
+          "end": 3720,
+          "available_minutes": 450
+        },
+        {
+          "id": "D03_S2",
+          "day": 2,
+          "start": 3720,
+          "end": 4200,
+          "available_minutes": 450
+        },
+        {
+          "id": "D04_S1",
+          "day": 3,
+          "start": 4680,
+          "end": 5160,
+          "available_minutes": 450
+        },
+        {
+          "id": "D04_S2",
+          "day": 3,
+          "start": 5160,
+          "end": 5640,
+          "available_minutes": 450
+        },
+        {
+          "id": "D05_S1",
+          "day": 4,
+          "start": 6120,
+          "end": 6600,
+          "available_minutes": 450
+        },
+        {
+          "id": "D05_S2",
+          "day": 4,
+          "start": 6600,
+          "end": 7080,
+          "available_minutes": 450
+        },
+        {
+          "id": "D08_S1",
+          "day": 7,
+          "start": 10440,
+          "end": 10920,
+          "available_minutes": 450
+        },
+        {
+          "id": "D08_S2",
+          "day": 7,
+          "start": 10920,
+          "end": 11400,
+          "available_minutes": 450
+        },
+        {
+          "id": "D09_S1",
+          "day": 8,
+          "start": 11880,
+          "end": 12360,
+          "available_minutes": 450
+        },
+        {
+          "id": "D09_S2",
+          "day": 8,
+          "start": 12360,
+          "end": 12840,
+          "available_minutes": 450
+        },
+        {
+          "id": "D10_S1",
+          "day": 9,
+          "start": 13320,
+          "end": 13800,
+          "available_minutes": 450
+        },
+        {
+          "id": "D10_S2",
+          "day": 9,
+          "start": 13800,
+          "end": 14280,
+          "available_minutes": 450
+        },
+        {
+          "id": "D11_S1",
+          "day": 10,
+          "start": 14760,
+          "end": 15240,
+          "available_minutes": 450
+        },
+        {
+          "id": "D11_S2",
+          "day": 10,
+          "start": 15240,
+          "end": 15720,
+          "available_minutes": 450
+        },
+        {
+          "id": "D12_S1",
+          "day": 11,
+          "start": 16200,
+          "end": 16680,
+          "available_minutes": 450
+        },
+        {
+          "id": "D12_S2",
+          "day": 11,
+          "start": 16680,
+          "end": 17160,
+          "available_minutes": 450
+        }
+      ],
+      "downtime": []
+    },
+    "QC_1": {
+      "stage": "qc",
+      "minutes_per_unit": {
+        "F_SILVER": 0.65,
+        "F_BLACK": 0.65,
+        "R_SILVER": 0.65,
+        "R_BLACK": 0.65
+      },
+      "fixed_minutes": 8,
+      "initial_product": "F_SILVER",
+      "setup": {
+        "F_SILVER": {
+          "F_SILVER": 0,
+          "F_BLACK": 4,
+          "R_SILVER": 4,
+          "R_BLACK": 4
+        },
+        "F_BLACK": {
+          "F_SILVER": 4,
+          "F_BLACK": 0,
+          "R_SILVER": 4,
+          "R_BLACK": 4
+        },
+        "R_SILVER": {
+          "F_SILVER": 4,
+          "F_BLACK": 4,
+          "R_SILVER": 0,
+          "R_BLACK": 4
+        },
+        "R_BLACK": {
+          "F_SILVER": 4,
+          "F_BLACK": 4,
+          "R_SILVER": 4,
+          "R_BLACK": 0
+        },
+        "CLEAN": {
+          "F_SILVER": 8,
+          "F_BLACK": 8,
+          "R_SILVER": 8,
+          "R_BLACK": 8
+        }
+      },
+      "windows": [
+        {
+          "id": 0,
+          "shift": "D01_S1",
+          "start": 360,
+          "end": 600
+        },
+        {
+          "id": 1,
+          "shift": "D01_S1",
+          "start": 630,
+          "end": 840
+        },
+        {
+          "id": 2,
+          "shift": "D01_S2",
+          "start": 840,
+          "end": 1080
+        },
+        {
+          "id": 3,
+          "shift": "D01_S2",
+          "start": 1110,
+          "end": 1320
+        },
+        {
+          "id": 4,
+          "shift": "D02_S1",
+          "start": 1800,
+          "end": 2040
+        },
+        {
+          "id": 5,
+          "shift": "D02_S1",
+          "start": 2070,
+          "end": 2280
+        },
+        {
+          "id": 6,
+          "shift": "D02_S2",
+          "start": 2280,
+          "end": 2520
+        },
+        {
+          "id": 7,
+          "shift": "D02_S2",
+          "start": 2550,
+          "end": 2760
+        },
+        {
+          "id": 8,
+          "shift": "D03_S1",
+          "start": 3240,
+          "end": 3480
+        },
+        {
+          "id": 9,
+          "shift": "D03_S1",
+          "start": 3510,
+          "end": 3720
+        },
+        {
+          "id": 10,
+          "shift": "D03_S2",
+          "start": 3720,
+          "end": 3960
+        },
+        {
+          "id": 11,
+          "shift": "D03_S2",
+          "start": 3990,
+          "end": 4200
+        },
+        {
+          "id": 12,
+          "shift": "D04_S1",
+          "start": 4680,
+          "end": 4920
+        },
+        {
+          "id": 13,
+          "shift": "D04_S1",
+          "start": 4950,
+          "end": 5160
+        },
+        {
+          "id": 14,
+          "shift": "D04_S2",
+          "start": 5160,
+          "end": 5400
+        },
+        {
+          "id": 15,
+          "shift": "D04_S2",
+          "start": 5430,
+          "end": 5640
+        },
+        {
+          "id": 16,
+          "shift": "D05_S1",
+          "start": 6120,
+          "end": 6360
+        },
+        {
+          "id": 17,
+          "shift": "D05_S1",
+          "start": 6390,
+          "end": 6600
+        },
+        {
+          "id": 18,
+          "shift": "D05_S2",
+          "start": 6600,
+          "end": 6840
+        },
+        {
+          "id": 19,
+          "shift": "D05_S2",
+          "start": 6870,
+          "end": 7080
+        },
+        {
+          "id": 20,
+          "shift": "D08_S1",
+          "start": 10440,
+          "end": 10680
+        },
+        {
+          "id": 21,
+          "shift": "D08_S1",
+          "start": 10710,
+          "end": 10920
+        },
+        {
+          "id": 22,
+          "shift": "D08_S2",
+          "start": 10920,
+          "end": 11160
+        },
+        {
+          "id": 23,
+          "shift": "D08_S2",
+          "start": 11190,
+          "end": 11400
+        },
+        {
+          "id": 24,
+          "shift": "D09_S1",
+          "start": 11880,
+          "end": 12120
+        },
+        {
+          "id": 25,
+          "shift": "D09_S1",
+          "start": 12150,
+          "end": 12360
+        },
+        {
+          "id": 26,
+          "shift": "D09_S2",
+          "start": 12360,
+          "end": 12600
+        },
+        {
+          "id": 27,
+          "shift": "D09_S2",
+          "start": 12630,
+          "end": 12840
+        },
+        {
+          "id": 28,
+          "shift": "D10_S1",
+          "start": 13320,
+          "end": 13560
+        },
+        {
+          "id": 29,
+          "shift": "D10_S1",
+          "start": 13590,
+          "end": 13800
+        },
+        {
+          "id": 30,
+          "shift": "D10_S2",
+          "start": 13800,
+          "end": 14040
+        },
+        {
+          "id": 31,
+          "shift": "D10_S2",
+          "start": 14070,
+          "end": 14280
+        },
+        {
+          "id": 32,
+          "shift": "D11_S1",
+          "start": 14760,
+          "end": 15000
+        },
+        {
+          "id": 33,
+          "shift": "D11_S1",
+          "start": 15030,
+          "end": 15240
+        },
+        {
+          "id": 34,
+          "shift": "D11_S2",
+          "start": 15240,
+          "end": 15480
+        },
+        {
+          "id": 35,
+          "shift": "D11_S2",
+          "start": 15510,
+          "end": 15720
+        },
+        {
+          "id": 36,
+          "shift": "D12_S1",
+          "start": 16200,
+          "end": 16440
+        },
+        {
+          "id": 37,
+          "shift": "D12_S1",
+          "start": 16470,
+          "end": 16680
+        },
+        {
+          "id": 38,
+          "shift": "D12_S2",
+          "start": 16680,
+          "end": 16920
+        },
+        {
+          "id": 39,
+          "shift": "D12_S2",
+          "start": 16950,
+          "end": 17160
+        }
+      ],
+      "shifts": [
+        {
+          "id": "D01_S1",
+          "day": 0,
+          "start": 360,
+          "end": 840,
+          "available_minutes": 450
+        },
+        {
+          "id": "D01_S2",
+          "day": 0,
+          "start": 840,
+          "end": 1320,
+          "available_minutes": 450
+        },
+        {
+          "id": "D02_S1",
+          "day": 1,
+          "start": 1800,
+          "end": 2280,
+          "available_minutes": 450
+        },
+        {
+          "id": "D02_S2",
+          "day": 1,
+          "start": 2280,
+          "end": 2760,
+          "available_minutes": 450
+        },
+        {
+          "id": "D03_S1",
+          "day": 2,
+          "start": 3240,
+          "end": 3720,
+          "available_minutes": 450
+        },
+        {
+          "id": "D03_S2",
+          "day": 2,
+          "start": 3720,
+          "end": 4200,
+          "available_minutes": 450
+        },
+        {
+          "id": "D04_S1",
+          "day": 3,
+          "start": 4680,
+          "end": 5160,
+          "available_minutes": 450
+        },
+        {
+          "id": "D04_S2",
+          "day": 3,
+          "start": 5160,
+          "end": 5640,
+          "available_minutes": 450
+        },
+        {
+          "id": "D05_S1",
+          "day": 4,
+          "start": 6120,
+          "end": 6600,
+          "available_minutes": 450
+        },
+        {
+          "id": "D05_S2",
+          "day": 4,
+          "start": 6600,
+          "end": 7080,
+          "available_minutes": 450
+        },
+        {
+          "id": "D08_S1",
+          "day": 7,
+          "start": 10440,
+          "end": 10920,
+          "available_minutes": 450
+        },
+        {
+          "id": "D08_S2",
+          "day": 7,
+          "start": 10920,
+          "end": 11400,
+          "available_minutes": 450
+        },
+        {
+          "id": "D09_S1",
+          "day": 8,
+          "start": 11880,
+          "end": 12360,
+          "available_minutes": 450
+        },
+        {
+          "id": "D09_S2",
+          "day": 8,
+          "start": 12360,
+          "end": 12840,
+          "available_minutes": 450
+        },
+        {
+          "id": "D10_S1",
+          "day": 9,
+          "start": 13320,
+          "end": 13800,
+          "available_minutes": 450
+        },
+        {
+          "id": "D10_S2",
+          "day": 9,
+          "start": 13800,
+          "end": 14280,
+          "available_minutes": 450
+        },
+        {
+          "id": "D11_S1",
+          "day": 10,
+          "start": 14760,
+          "end": 15240,
+          "available_minutes": 450
+        },
+        {
+          "id": "D11_S2",
+          "day": 10,
+          "start": 15240,
+          "end": 15720,
+          "available_minutes": 450
+        },
+        {
+          "id": "D12_S1",
+          "day": 11,
+          "start": 16200,
+          "end": 16680,
+          "available_minutes": 450
+        },
+        {
+          "id": "D12_S2",
+          "day": 11,
+          "start": 16680,
+          "end": 17160,
+          "available_minutes": 450
+        }
+      ],
+      "downtime": []
+    }
+  },
+  "orders": [
+    {
+      "id": "O001",
+      "product": "F_SILVER",
+      "release": 360,
+      "due": 2760,
+      "priority": 2,
+      "urgent": false,
+      "quantity": 164,
+      "initial_allocated": 12,
+      "lot_allocations": {
+        "L001": 84,
+        "L002": 68
+      }
+    },
+    {
+      "id": "O002",
+      "product": "R_BLACK",
+      "release": 360,
+      "due": 4200,
+      "priority": 2,
+      "urgent": false,
+      "quantity": 104,
+      "initial_allocated": 12,
+      "lot_allocations": {
+        "L003": 92
+      }
+    },
+    {
+      "id": "O003",
+      "product": "R_SILVER",
+      "release": 360,
+      "due": 4200,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 68,
+      "initial_allocated": 12,
+      "lot_allocations": {
+        "L004": 56
+      }
+    },
+    {
+      "id": "O004",
+      "product": "F_BLACK",
+      "release": 360,
+      "due": 4200,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 128,
+      "initial_allocated": 12,
+      "lot_allocations": {
+        "L005": 60,
+        "L006": 56
+      }
+    },
+    {
+      "id": "O005",
+      "product": "F_BLACK",
+      "release": 360,
+      "due": 2760,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 92,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L007": 92
+      }
+    },
+    {
+      "id": "O006",
+      "product": "F_SILVER",
+      "release": 360,
+      "due": 2760,
+      "priority": 2,
+      "urgent": false,
+      "quantity": 92,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L008": 92
+      }
+    },
+    {
+      "id": "O007",
+      "product": "R_BLACK",
+      "release": 1800,
+      "due": 4200,
+      "priority": 2,
+      "urgent": false,
+      "quantity": 140,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L009": 60,
+        "L010": 80
+      }
+    },
+    {
+      "id": "O008",
+      "product": "R_SILVER",
+      "release": 1800,
+      "due": 2280,
+      "priority": 4,
+      "urgent": true,
+      "quantity": 68,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L011": 68
+      }
+    },
+    {
+      "id": "O009",
+      "product": "R_SILVER",
+      "release": 1800,
+      "due": 4200,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 80,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L012": 80
+      }
+    },
+    {
+      "id": "O010",
+      "product": "F_BLACK",
+      "release": 1800,
+      "due": 4200,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 116,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L013": 60,
+        "L014": 56
+      }
+    },
+    {
+      "id": "O011",
+      "product": "F_SILVER",
+      "release": 1800,
+      "due": 4200,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 68,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L015": 68
+      }
+    },
+    {
+      "id": "O012",
+      "product": "R_BLACK",
+      "release": 1800,
+      "due": 4200,
+      "priority": 2,
+      "urgent": false,
+      "quantity": 56,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L016": 56
+      }
+    },
+    {
+      "id": "O013",
+      "product": "R_BLACK",
+      "release": 3240,
+      "due": 7080,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 164,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L017": 84,
+        "L018": 80
+      }
+    },
+    {
+      "id": "O014",
+      "product": "R_SILVER",
+      "release": 3240,
+      "due": 7080,
+      "priority": 2,
+      "urgent": false,
+      "quantity": 92,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L019": 92
+      }
+    },
+    {
+      "id": "O015",
+      "product": "F_BLACK",
+      "release": 3240,
+      "due": 5640,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 56,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L020": 56
+      }
+    },
+    {
+      "id": "O016",
+      "product": "F_SILVER",
+      "release": 3240,
+      "due": 5640,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 140,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L021": 72,
+        "L022": 68
+      }
+    },
+    {
+      "id": "O017",
+      "product": "F_SILVER",
+      "release": 3240,
+      "due": 3720,
+      "priority": 4,
+      "urgent": true,
+      "quantity": 92,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L023": 92
+      }
+    },
+    {
+      "id": "O018",
+      "product": "R_BLACK",
+      "release": 3240,
+      "due": 5640,
+      "priority": 2,
+      "urgent": false,
+      "quantity": 68,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L024": 68
+      }
+    },
+    {
+      "id": "O019",
+      "product": "R_SILVER",
+      "release": 4680,
+      "due": 11400,
+      "priority": 2,
+      "urgent": false,
+      "quantity": 164,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L025": 96,
+        "L026": 68
+      }
+    },
+    {
+      "id": "O020",
+      "product": "F_BLACK",
+      "release": 4680,
+      "due": 7080,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 80,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L027": 80
+      }
+    },
+    {
+      "id": "O021",
+      "product": "F_BLACK",
+      "release": 4680,
+      "due": 7080,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 92,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L028": 92
+      }
+    },
+    {
+      "id": "O022",
+      "product": "F_SILVER",
+      "release": 4680,
+      "due": 7080,
+      "priority": 2,
+      "urgent": false,
+      "quantity": 116,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L029": 60,
+        "L030": 56
+      }
+    },
+    {
+      "id": "O023",
+      "product": "R_BLACK",
+      "release": 4680,
+      "due": 11400,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 56,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L031": 56
+      }
+    },
+    {
+      "id": "O024",
+      "product": "R_SILVER",
+      "release": 4680,
+      "due": 7080,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 68,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L032": 68
+      }
+    },
+    {
+      "id": "O025",
+      "product": "R_SILVER",
+      "release": 6120,
+      "due": 11400,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 176,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L033": 84,
+        "L034": 92
+      }
+    },
+    {
+      "id": "O026",
+      "product": "F_BLACK",
+      "release": 6120,
+      "due": 6600,
+      "priority": 4,
+      "urgent": true,
+      "quantity": 68,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L035": 68
+      }
+    },
+    {
+      "id": "O027",
+      "product": "F_SILVER",
+      "release": 6120,
+      "due": 11400,
+      "priority": 2,
+      "urgent": false,
+      "quantity": 56,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L036": 56
+      }
+    },
+    {
+      "id": "O028",
+      "product": "R_BLACK",
+      "release": 6120,
+      "due": 12840,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 128,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L037": 60,
+        "L038": 68
+      }
+    },
+    {
+      "id": "O029",
+      "product": "R_BLACK",
+      "release": 6120,
+      "due": 12840,
+      "priority": 2,
+      "urgent": false,
+      "quantity": 68,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L039": 68
+      }
+    },
+    {
+      "id": "O030",
+      "product": "R_SILVER",
+      "release": 6120,
+      "due": 11400,
+      "priority": 2,
+      "urgent": false,
+      "quantity": 80,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L040": 80
+      }
+    },
+    {
+      "id": "O031",
+      "product": "F_BLACK",
+      "release": 10440,
+      "due": 14280,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 188,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L041": 96,
+        "L042": 92
+      }
+    },
+    {
+      "id": "O032",
+      "product": "F_SILVER",
+      "release": 10440,
+      "due": 10920,
+      "priority": 4,
+      "urgent": true,
+      "quantity": 56,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L043": 56
+      }
+    },
+    {
+      "id": "O033",
+      "product": "F_SILVER",
+      "release": 10440,
+      "due": 14280,
+      "priority": 2,
+      "urgent": false,
+      "quantity": 56,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L044": 56
+      }
+    },
+    {
+      "id": "O034",
+      "product": "R_BLACK",
+      "release": 10440,
+      "due": 14280,
+      "priority": 2,
+      "urgent": false,
+      "quantity": 116,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L045": 60,
+        "L046": 56
+      }
+    },
+    {
+      "id": "O035",
+      "product": "R_SILVER",
+      "release": 10440,
+      "due": 14280,
+      "priority": 1,
+      "urgent": false,
+      "quantity": 80,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L047": 80
+      }
+    },
+    {
+      "id": "O036",
+      "product": "F_BLACK",
+      "release": 10440,
+      "due": 12840,
+      "priority": 2,
+      "urgent": false,
+      "quantity": 56,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L048": 56
+      }
+    }
+  ],
+  "lots": [
+    {
+      "id": "L001",
+      "order": "O001",
+      "product": "F_SILVER",
+      "quantity": 84,
+      "release": 360
+    },
+    {
+      "id": "L002",
+      "order": "O001",
+      "product": "F_SILVER",
+      "quantity": 72,
+      "release": 360
+    },
+    {
+      "id": "L003",
+      "order": "O002",
+      "product": "R_BLACK",
+      "quantity": 96,
+      "release": 360
+    },
+    {
+      "id": "L004",
+      "order": "O003",
+      "product": "R_SILVER",
+      "quantity": 60,
+      "release": 360
+    },
+    {
+      "id": "L005",
+      "order": "O004",
+      "product": "F_BLACK",
+      "quantity": 60,
+      "release": 360
+    },
+    {
+      "id": "L006",
+      "order": "O004",
+      "product": "F_BLACK",
+      "quantity": 60,
+      "release": 360
+    },
+    {
+      "id": "L007",
+      "order": "O005",
+      "product": "F_BLACK",
+      "quantity": 96,
+      "release": 360
+    },
+    {
+      "id": "L008",
+      "order": "O006",
+      "product": "F_SILVER",
+      "quantity": 96,
+      "release": 360
+    },
+    {
+      "id": "L009",
+      "order": "O007",
+      "product": "R_BLACK",
+      "quantity": 60,
+      "release": 1800
+    },
+    {
+      "id": "L010",
+      "order": "O007",
+      "product": "R_BLACK",
+      "quantity": 84,
+      "release": 1800
+    },
+    {
+      "id": "L011",
+      "order": "O008",
+      "product": "R_SILVER",
+      "quantity": 72,
+      "release": 1800
+    },
+    {
+      "id": "L012",
+      "order": "O009",
+      "product": "R_SILVER",
+      "quantity": 84,
+      "release": 1800
+    },
+    {
+      "id": "L013",
+      "order": "O010",
+      "product": "F_BLACK",
+      "quantity": 60,
+      "release": 1800
+    },
+    {
+      "id": "L014",
+      "order": "O010",
+      "product": "F_BLACK",
+      "quantity": 60,
+      "release": 1800
+    },
+    {
+      "id": "L015",
+      "order": "O011",
+      "product": "F_SILVER",
+      "quantity": 72,
+      "release": 1800
+    },
+    {
+      "id": "L016",
+      "order": "O012",
+      "product": "R_BLACK",
+      "quantity": 60,
+      "release": 1800
+    },
+    {
+      "id": "L017",
+      "order": "O013",
+      "product": "R_BLACK",
+      "quantity": 84,
+      "release": 3240
+    },
+    {
+      "id": "L018",
+      "order": "O013",
+      "product": "R_BLACK",
+      "quantity": 84,
+      "release": 3240
+    },
+    {
+      "id": "L019",
+      "order": "O014",
+      "product": "R_SILVER",
+      "quantity": 96,
+      "release": 3240
+    },
+    {
+      "id": "L020",
+      "order": "O015",
+      "product": "F_BLACK",
+      "quantity": 60,
+      "release": 3240
+    },
+    {
+      "id": "L021",
+      "order": "O016",
+      "product": "F_SILVER",
+      "quantity": 72,
+      "release": 3240
+    },
+    {
+      "id": "L022",
+      "order": "O016",
+      "product": "F_SILVER",
+      "quantity": 72,
+      "release": 3240
+    },
+    {
+      "id": "L023",
+      "order": "O017",
+      "product": "F_SILVER",
+      "quantity": 96,
+      "release": 3240
+    },
+    {
+      "id": "L024",
+      "order": "O018",
+      "product": "R_BLACK",
+      "quantity": 72,
+      "release": 3240
+    },
+    {
+      "id": "L025",
+      "order": "O019",
+      "product": "R_SILVER",
+      "quantity": 96,
+      "release": 4680
+    },
+    {
+      "id": "L026",
+      "order": "O019",
+      "product": "R_SILVER",
+      "quantity": 72,
+      "release": 4680
+    },
+    {
+      "id": "L027",
+      "order": "O020",
+      "product": "F_BLACK",
+      "quantity": 84,
+      "release": 4680
+    },
+    {
+      "id": "L028",
+      "order": "O021",
+      "product": "F_BLACK",
+      "quantity": 96,
+      "release": 4680
+    },
+    {
+      "id": "L029",
+      "order": "O022",
+      "product": "F_SILVER",
+      "quantity": 60,
+      "release": 4680
+    },
+    {
+      "id": "L030",
+      "order": "O022",
+      "product": "F_SILVER",
+      "quantity": 60,
+      "release": 4680
+    },
+    {
+      "id": "L031",
+      "order": "O023",
+      "product": "R_BLACK",
+      "quantity": 60,
+      "release": 4680
+    },
+    {
+      "id": "L032",
+      "order": "O024",
+      "product": "R_SILVER",
+      "quantity": 72,
+      "release": 4680
+    },
+    {
+      "id": "L033",
+      "order": "O025",
+      "product": "R_SILVER",
+      "quantity": 84,
+      "release": 6120
+    },
+    {
+      "id": "L034",
+      "order": "O025",
+      "product": "R_SILVER",
+      "quantity": 96,
+      "release": 6120
+    },
+    {
+      "id": "L035",
+      "order": "O026",
+      "product": "F_BLACK",
+      "quantity": 72,
+      "release": 6120
+    },
+    {
+      "id": "L036",
+      "order": "O027",
+      "product": "F_SILVER",
+      "quantity": 60,
+      "release": 6120
+    },
+    {
+      "id": "L037",
+      "order": "O028",
+      "product": "R_BLACK",
+      "quantity": 60,
+      "release": 6120
+    },
+    {
+      "id": "L038",
+      "order": "O028",
+      "product": "R_BLACK",
+      "quantity": 72,
+      "release": 6120
+    },
+    {
+      "id": "L039",
+      "order": "O029",
+      "product": "R_BLACK",
+      "quantity": 72,
+      "release": 6120
+    },
+    {
+      "id": "L040",
+      "order": "O030",
+      "product": "R_SILVER",
+      "quantity": 84,
+      "release": 6120
+    },
+    {
+      "id": "L041",
+      "order": "O031",
+      "product": "F_BLACK",
+      "quantity": 96,
+      "release": 10440
+    },
+    {
+      "id": "L042",
+      "order": "O031",
+      "product": "F_BLACK",
+      "quantity": 96,
+      "release": 10440
+    },
+    {
+      "id": "L043",
+      "order": "O032",
+      "product": "F_SILVER",
+      "quantity": 60,
+      "release": 10440
+    },
+    {
+      "id": "L044",
+      "order": "O033",
+      "product": "F_SILVER",
+      "quantity": 60,
+      "release": 10440
+    },
+    {
+      "id": "L045",
+      "order": "O034",
+      "product": "R_BLACK",
+      "quantity": 60,
+      "release": 10440
+    },
+    {
+      "id": "L046",
+      "order": "O034",
+      "product": "R_BLACK",
+      "quantity": 60,
+      "release": 10440
+    },
+    {
+      "id": "L047",
+      "order": "O035",
+      "product": "R_SILVER",
+      "quantity": 84,
+      "release": 10440
+    },
+    {
+      "id": "L048",
+      "order": "O036",
+      "product": "F_BLACK",
+      "quantity": 60,
+      "release": 10440
+    }
+  ],
+  "weights": {
+    "makespan": 1,
+    "weighted_tardiness": 15,
+    "setup_minutes": 3,
+    "idle_minutes": 1,
+    "safety_shortfall": 20
+  },
+  "assumptions": [
+    "Synthetic engineering assumptions, not measured factory data.",
+    "Fixed lots and fixed order allocation; no partial shipment; ship as soon as all allocated lots finish QC.",
+    "Dedicated fixed front/rear molds; finish variants share geometry. No mold transport.",
+    "Maintenance is mandatory just before the next lot would exceed cycles; no discretionary early maintenance.",
+    "Maintenance + setup + processing form one contiguous block inside an availability window for ALL methods.",
+    "Block cannot cross a break or shift boundary; conservative restriction beyond the general requirements.",
+    "Shifts are activated iff occupied. Setup, maintenance and processing all count as occupied time.",
+    "Urgent releases and downtime known at planning time; this is an offline comparison, not online rescheduling.",
+    "No WIP at origin; material available at release; no scrap, transport times or labor capacity."
+  ]
+}

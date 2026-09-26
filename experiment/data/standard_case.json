@@ -1,0 +1,210 @@
+{
+  "schema_version": "experiment-btp-1",
+  "name": "standard_case",
+  "description": "Ca chuẩn 3 ngày: 2 sản phẩm, 4 công đoạn, lô 25, tồn bán thành phẩm đầu kỳ, khuôn cần bảo trì, ca tùy chọn, công suất đúc còn trống để dự trữ bán thành phẩm. Dữ liệu tổng hợp, không phải số đo nhà máy.",
+  "origin": "2026-09-21T06:00:00+07:00",
+  "time_unit": "minute",
+  "horizon": 4320,
+  "stages": ["cast", "cnc", "paint", "qc"],
+  "btp_stages": ["cast", "cnc", "paint"],
+  "lot_size": 25,
+  "products": {
+    "F_SILVER": {"label": "Bánh trước bạc"},
+    "R_BLACK": {"label": "Bánh sau đen"}
+  },
+  "shifts": [
+    {"id": "D1_S1", "day": 1, "start": 0,    "end": 480,  "breaks": [[240, 270]],   "fixed_on": true,  "open_cost": 0},
+    {"id": "D1_S2", "day": 1, "start": 480,  "end": 960,  "breaks": [[720, 750]],   "fixed_on": false, "open_cost": 40},
+    {"id": "D1_S3", "day": 1, "start": 960,  "end": 1440, "breaks": [[1200, 1230]], "fixed_on": false, "open_cost": 60},
+    {"id": "D2_S1", "day": 2, "start": 1440, "end": 1920, "breaks": [[1680, 1710]], "fixed_on": true,  "open_cost": 0},
+    {"id": "D2_S2", "day": 2, "start": 1920, "end": 2400, "breaks": [[2160, 2190]], "fixed_on": false, "open_cost": 40},
+    {"id": "D2_S3", "day": 2, "start": 2400, "end": 2880, "breaks": [[2640, 2670]], "fixed_on": false, "open_cost": 60},
+    {"id": "D3_S1", "day": 3, "start": 2880, "end": 3360, "breaks": [[3120, 3150]], "fixed_on": true,  "open_cost": 0},
+    {"id": "D3_S2", "day": 3, "start": 3360, "end": 3840, "breaks": [[3600, 3630]], "fixed_on": false, "open_cost": 40},
+    {"id": "D3_S3", "day": 3, "start": 3840, "end": 4320, "breaks": [[4080, 4110]], "fixed_on": false, "open_cost": 60}
+  ],
+  "checkpoints": [1440, 2880, 4320],
+  "machines": {
+    "CAST_1": {
+      "stage": "cast",
+      "eligible": ["F_SILVER", "R_BLACK"],
+      "fixed_minutes": 5,
+      "minutes_per_unit": {"F_SILVER": 1.05, "R_BLACK": 1.05},
+      "initial_state": "F_SILVER",
+      "setup": {
+        "F_SILVER": {"F_SILVER": 0, "R_BLACK": 12},
+        "R_BLACK": {"F_SILVER": 12, "R_BLACK": 0},
+        "CLEAN": {"F_SILVER": 16, "R_BLACK": 16}
+      }
+    },
+    "CAST_2": {
+      "stage": "cast",
+      "eligible": ["F_SILVER", "R_BLACK"],
+      "fixed_minutes": 5,
+      "minutes_per_unit": {"F_SILVER": 1.10, "R_BLACK": 1.10},
+      "initial_state": "R_BLACK",
+      "setup": {
+        "F_SILVER": {"F_SILVER": 0, "R_BLACK": 12},
+        "R_BLACK": {"F_SILVER": 12, "R_BLACK": 0},
+        "CLEAN": {"F_SILVER": 16, "R_BLACK": 16}
+      }
+    },
+    "CNC_1": {
+      "stage": "cnc",
+      "eligible": ["F_SILVER", "R_BLACK"],
+      "fixed_minutes": 8,
+      "minutes_per_unit": {"F_SILVER": 1.65, "R_BLACK": 1.65},
+      "initial_state": "F_SILVER",
+      "setup": {
+        "F_SILVER": {"F_SILVER": 0, "R_BLACK": 10},
+        "R_BLACK": {"F_SILVER": 10, "R_BLACK": 0},
+        "CLEAN": {"F_SILVER": 12, "R_BLACK": 12}
+      }
+    },
+    "CNC_2": {
+      "stage": "cnc",
+      "eligible": ["F_SILVER", "R_BLACK"],
+      "fixed_minutes": 8,
+      "minutes_per_unit": {"F_SILVER": 1.85, "R_BLACK": 1.85},
+      "initial_state": "R_BLACK",
+      "setup": {
+        "F_SILVER": {"F_SILVER": 0, "R_BLACK": 10},
+        "R_BLACK": {"F_SILVER": 10, "R_BLACK": 0},
+        "CLEAN": {"F_SILVER": 12, "R_BLACK": 12}
+      }
+    },
+    "PAINT_1": {
+      "stage": "paint",
+      "eligible": ["F_SILVER", "R_BLACK"],
+      "fixed_minutes": 6,
+      "minutes_per_unit": {"F_SILVER": 1.20, "R_BLACK": 1.20},
+      "initial_state": "CLEAN",
+      "setup": {
+        "F_SILVER": {"F_SILVER": 0, "R_BLACK": 12},
+        "R_BLACK": {"F_SILVER": 24, "R_BLACK": 0},
+        "CLEAN": {"F_SILVER": 24, "R_BLACK": 24}
+      }
+    },
+    "QC_1": {
+      "stage": "qc",
+      "eligible": ["F_SILVER", "R_BLACK"],
+      "fixed_minutes": 3,
+      "minutes_per_unit": {"F_SILVER": 0.5, "R_BLACK": 0.5},
+      "initial_state": "F_SILVER",
+      "setup": {
+        "F_SILVER": {"F_SILVER": 0, "R_BLACK": 0},
+        "R_BLACK": {"F_SILVER": 0, "R_BLACK": 0},
+        "CLEAN": {"F_SILVER": 0, "R_BLACK": 0}
+      }
+    }
+  },
+  "downtimes": [
+    {"machine": "CNC_1", "start": 1500, "end": 1560, "reason": "bảo dưỡng định kỳ đã biết trước"}
+  ],
+  "molds": {
+    "MOLD_F": {
+      "product": "F_SILVER",
+      "cavities": 4,
+      "max_cycles": 60,
+      "used_cycles": 30,
+      "maintenance_minutes": 45,
+      "post_maintenance_state": "CLEAN",
+      "compatible_machines": ["CAST_1", "CAST_2"]
+    },
+    "MOLD_R": {
+      "product": "R_BLACK",
+      "cavities": 4,
+      "max_cycles": 60,
+      "used_cycles": 50,
+      "maintenance_minutes": 45,
+      "post_maintenance_state": "CLEAN",
+      "compatible_machines": ["CAST_1", "CAST_2"]
+    }
+  },
+  "inventory": {
+    "finished": {
+      "initial": {"F_SILVER": 20, "R_BLACK": 10},
+      "safety": {"F_SILVER": 20, "R_BLACK": 20},
+      "capacity": {"F_SILVER": 150, "R_BLACK": 150},
+      "holding_cost_per_unit_day": 0.5
+    },
+    "btp": {
+      "initial": {
+        "F_SILVER": {"cast": 25, "cnc": 0, "paint": 0},
+        "R_BLACK": {"cast": 0, "cnc": 25, "paint": 0}
+      },
+      "capacity": {"default": null, "overrides": {}},
+      "holding_cost_per_unit_day": {"cast": 0.2, "cnc": 0.3, "paint": 0.4}
+    }
+  },
+  "running_at_t0": [],
+  "orders": [
+    {"id": "O001", "product": "F_SILVER", "release": 0,   "due": 720,  "priority": 3, "quantity": 45, "initial_allocated": 20, "lot_allocations": {"L01": 25}},
+    {"id": "O002", "product": "F_SILVER", "release": 0,   "due": 2400, "priority": 2, "quantity": 75, "initial_allocated": 0,  "lot_allocations": {"L02": 25, "L03": 25, "L04": 25}},
+    {"id": "O003", "product": "R_BLACK",  "release": 0,   "due": 2400, "priority": 2, "quantity": 60, "initial_allocated": 10, "lot_allocations": {"L05": 25, "L06": 25}},
+    {"id": "O004", "product": "R_BLACK",  "release": 480, "due": 3840, "priority": 1, "quantity": 60, "initial_allocated": 0,  "lot_allocations": {"L07": 25, "L08": 25, "L09": 10}}
+  ],
+  "lots": [
+    {"id": "L01", "type": "required", "product": "F_SILVER", "quantity": 25, "release": 0},
+    {"id": "L02", "type": "required", "product": "F_SILVER", "quantity": 25, "release": 0},
+    {"id": "L03", "type": "required", "product": "F_SILVER", "quantity": 25, "release": 0},
+    {"id": "L04", "type": "required", "product": "F_SILVER", "quantity": 25, "release": 0},
+    {"id": "L05", "type": "required", "product": "R_BLACK",  "quantity": 25, "release": 0},
+    {"id": "L06", "type": "required", "product": "R_BLACK",  "quantity": 25, "release": 0},
+    {"id": "L07", "type": "required", "product": "R_BLACK",  "quantity": 25, "release": 480},
+    {"id": "L08", "type": "required", "product": "R_BLACK",  "quantity": 25, "release": 480},
+    {"id": "L09", "type": "required", "product": "R_BLACK",  "quantity": 25, "release": 480},
+    {"id": "L10", "type": "optional", "product": "F_SILVER", "quantity": 25, "release": 0},
+    {"id": "L11", "type": "optional", "product": "F_SILVER", "quantity": 25, "release": 0},
+    {"id": "L12", "type": "optional", "product": "R_BLACK",  "quantity": 25, "release": 0},
+    {"id": "L13", "type": "optional", "product": "R_BLACK",  "quantity": 25, "release": 0}
+  ],
+  "reserve_policy": {
+    "allowed_products": ["F_SILVER", "R_BLACK"],
+    "max_surplus_finished": 65,
+    "max_surplus_btp": 75,
+    "optional_run_cost": {"cast": 20, "cnc": 25, "paint": 20, "qc": 10},
+    "two_tier": true
+  },
+  "weights": {
+    "makespan": 1,
+    "weighted_tardiness": 15,
+    "setup_minutes": 3,
+    "idle_minutes": 1,
+    "safety_shortfall": 20,
+    "optional_run_cost": 1,
+    "holding_cost": 1,
+    "shift_open_cost": 1
+  },
+  "assumptions": [
+    "Dữ liệu tổng hợp để thử mô hình, không phải số đo nhà máy.",
+    "Thời điểm 0 là 06:00 thứ Hai 21/09/2026; một ngày sản xuất gồm 3 ca 8 giờ: S1 06–14, S2 14–22, S3 22–06; mỗi ca nghỉ 30 phút giữa ca.",
+    "Ca S1 bắt buộc bật ở mọi máy; S2 và S3 là ca tùy chọn có chi phí mở ca cho mỗi máy.",
+    "Một lô là một lần sản xuất 25 sản phẩm; lô giữ danh tính ở lượt QC để gán đơn. Lô tùy chọn (L10–L13) chỉ dùng cho dự trữ thành phẩm hoặc bán thành phẩm.",
+    "Nguyên liệu công đoạn sau lấy từ tồn bán thành phẩm theo mã sản phẩm và công đoạn; sức chứa null nghĩa là không giới hạn.",
+    "Nguyên liệu bị rút tại thời điểm bắt đầu setup của lượt; hoàn tất được ghi nhận trước tiêu thụ nếu cùng thời điểm.",
+    "Đúc lấy nguyên liệu thô, giả định luôn đủ. Không có phế phẩm, hỏng, hạn dùng, vận chuyển hay giới hạn nhân công.",
+    "Khuôn chỉ dùng ở công đoạn đúc; một lượt đúc = ceil(lượng lô / số lòng) chu kỳ; bảo trì chiếm khuôn và máy, sau bảo trì trạng thái máy là CLEAN.",
+    "Giao đủ từng đơn, không giao từng phần; đơn giao khi mọi lô được gán hoàn tất QC và đơn đã release.",
+    "Thời lượng gia công = ceil(fixed_minutes + lượng lô × minutes_per_unit); khi cài đặt nên dùng số nguyên (nhân 100) để tránh lỗi làm tròn dấu phẩy động.",
+    "Không có sự cố ngoài downtime đã biết; chưa có lượt đang chạy tại t = 0 (running_at_t0 rỗng)."
+  ],
+  "reference_values": {
+    "note": "Giá trị suy ra từ dữ liệu ở trên, dùng để kiểm tay và kiểm hồi quy. Không phải đầu vào của solver.",
+    "processing_minutes_per_lot_25": {"CAST_1": 32, "CAST_2": 33, "CNC_1": 50, "CNC_2": 55, "PAINT_1": 36, "QC_1": 16},
+    "mold_cycles_per_lot_25": 7,
+    "available_minutes_per_shift": 450,
+    "total_demand": {"F_SILVER": 120, "R_BLACK": 120},
+    "required_lot_units": {"F_SILVER": 100, "R_BLACK": 125},
+    "required_surplus_finished": 15,
+    "minimum_runs_from_flow": {
+      "F_SILVER": {"cast": 3, "cnc": 4, "paint": 4, "qc": 4},
+      "R_BLACK": {"cast": 4, "cnc": 4, "paint": 5, "qc": 5},
+      "total": {"cast": 7, "cnc": 8, "paint": 9, "qc": 9}
+    },
+    "forced_mold_maintenance": {
+      "MOLD_F": "không bắt buộc: 3 lượt đúc tối thiểu, 30 + 3 × 7 = 51 ≤ 60; tối đa 4 lượt đúc không cần bảo trì (58)",
+      "MOLD_R": "bắt buộc ít nhất 1 lần: tối thiểu 4 lượt đúc, 50 + 4 × 7 = 78 > 60"
+    }
+  }
+}

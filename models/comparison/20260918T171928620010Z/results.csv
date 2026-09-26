@@ -1,0 +1,6 @@
+﻿method,seed,status,valid,objective,makespan,late_orders,weighted_tardiness,setup_minutes,maintenance_count,idle_minutes,safety_shortfall,activated_shifts,productive_utilization,algorithm_seconds,bound,gap,artifacts
+fifo,11,HEURISTIC_FEASIBLE,True,35379,12319,0,0,1320,15,15260,192,79,0.508824366638201,0.03625370003283024,,,fifo/results/20260918T171928620010Z/seed_11
+edd,11,HEURISTIC_FEASIBLE,True,36948,12540,0,0,1376,15,17480,140,84,0.4775013376136972,0.03729820006992668,,,edd/results/20260918T171928620010Z/seed_11
+spt,11,HEURISTIC_FEASIBLE,True,37965,12431,0,0,1518,15,17700,164,85,0.4741475019825535,0.03598919999785721,,,spt/results/20260918T171928620010Z/seed_11
+cp_sat_hint,11,HEURISTIC_FALLBACK,True,36948,12540,0,0,1376,15,17480,140,84,0.4775013376136972,6.160084699979052,,,cp_sat_hint/results/20260918T171928620010Z/seed_11
+cp_sat,11,UNKNOWN,False,,,,,,,,,,,3.916255799937062,,,cp_sat/results/20260918T171928620010Z/seed_11

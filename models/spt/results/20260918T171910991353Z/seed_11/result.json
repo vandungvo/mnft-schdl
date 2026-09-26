@@ -1,0 +1,25 @@
+{
+  "method": "spt",
+  "seed": 11,
+  "run_id": "20260918T171910991353Z",
+  "input_sha256": "66e736ed320d9dcb33d09b2dee9e12fd1493af79e4f538b3f8e0f51725ba8d4c",
+  "budget_seconds": 5.0,
+  "algorithm_seconds": 0.08369770005811006,
+  "environment": {
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "ortools": "9.15.6755",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 23 Model 104 Stepping 1, AuthenticAMD",
+    "workers": 1
+  },
+  "status": "NO_SOLUTION_FOUND",
+  "bound": null,
+  "history": [],
+  "validation": {
+    "valid": false,
+    "errors": [
+      "No schedule returned"
+    ]
+  },
+  "total_seconds": 0.0849257999798283
+}
