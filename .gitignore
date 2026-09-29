@@ -19,6 +19,9 @@ data/*.db
 data/*.db-*
 backend/data/
 
+# Token tracking runtime data (per-machine telemetry, not source)
+.claude/token-tracking/
+
 # Node / Next.js
 node_modules/
 .next/

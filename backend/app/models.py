@@ -50,6 +50,8 @@ class MasterDataset(Base):
     checkpoints: Mapped[list] = mapped_column(JSON)
     minimum_lot: Mapped[int] = mapped_column(Integer)
     max_surplus: Mapped[int] = mapped_column(Integer)
+    max_surplus_btp: Mapped[int] = mapped_column(Integer)
+    transfer_minutes: Mapped[int] = mapped_column(Integer)
     weights: Mapped[dict] = mapped_column(JSON)
     assumptions: Mapped[list] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
@@ -69,6 +71,15 @@ class MasterDataset(Base):
     lots: Mapped[list[MasterLot]] = relationship(
         back_populates="dataset", cascade="all, delete-orphan"
     )
+    btp_inventory: Mapped[list[MasterBtpInventory]] = relationship(
+        back_populates="dataset", cascade="all, delete-orphan"
+    )
+    btp_codes: Mapped[list[MasterBtpCode]] = relationship(
+        back_populates="dataset", cascade="all, delete-orphan"
+    )
+    btp_routing: Mapped[list[MasterBtpRouting]] = relationship(
+        back_populates="dataset", cascade="all, delete-orphan"
+    )
 
 
 class MasterProduct(Base):
@@ -80,11 +91,65 @@ class MasterProduct(Base):
         ForeignKey("master_datasets.id", ondelete="CASCADE"), index=True
     )
     code: Mapped[str] = mapped_column(String(100))
+    color: Mapped[str] = mapped_column(String(40))
+    line: Mapped[str] = mapped_column(String(10))
     initial_inventory: Mapped[int] = mapped_column(Integer)
     safety_stock: Mapped[int] = mapped_column(Integer)
     sort_index: Mapped[int] = mapped_column(Integer)
 
     dataset: Mapped[MasterDataset] = relationship(back_populates="products")
+
+
+class MasterBtpCode(Base):
+    """Catalog of semi-finished (BTP) codes — a free-standing identity, distinct from
+    finished product codes, that one or more (product, stage) routings can share."""
+
+    __tablename__ = "master_btp_codes"
+    __table_args__ = (UniqueConstraint("dataset_id", "code"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    dataset_id: Mapped[str] = mapped_column(
+        ForeignKey("master_datasets.id", ondelete="CASCADE"), index=True
+    )
+    code: Mapped[str] = mapped_column(String(100))
+    sort_index: Mapped[int] = mapped_column(Integer)
+
+    dataset: Mapped[MasterDataset] = relationship(back_populates="btp_codes")
+
+
+class MasterBtpRouting(Base):
+    """Which BTP code a (product, stage in {cast,cnc,paint}) resolves to (A09)."""
+
+    __tablename__ = "master_btp_routing"
+    __table_args__ = (UniqueConstraint("dataset_id", "product_code", "stage"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    dataset_id: Mapped[str] = mapped_column(
+        ForeignKey("master_datasets.id", ondelete="CASCADE"), index=True
+    )
+    product_code: Mapped[str] = mapped_column(String(100))
+    stage: Mapped[str] = mapped_column(String(40))
+    btp_code: Mapped[str] = mapped_column(String(100))
+
+    dataset: Mapped[MasterDataset] = relationship(back_populates="btp_routing")
+
+
+class MasterBtpInventory(Base):
+    """Semi-finished (BTP) stock, keyed by BTP code (shared across whichever
+    (product, stage) pairs route to it — see MasterBtpRouting)."""
+
+    __tablename__ = "master_btp_inventory"
+    __table_args__ = (UniqueConstraint("dataset_id", "btp_code"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    dataset_id: Mapped[str] = mapped_column(
+        ForeignKey("master_datasets.id", ondelete="CASCADE"), index=True
+    )
+    btp_code: Mapped[str] = mapped_column(String(100))
+    initial_qty: Mapped[int] = mapped_column(Integer)
+    capacity: Mapped[int | None] = mapped_column(Integer)
+
+    dataset: Mapped[MasterDataset] = relationship(back_populates="btp_inventory")
 
 
 class MasterMachine(Base):

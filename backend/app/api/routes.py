@@ -19,6 +19,10 @@ from ..repository import ScheduleRunRepository
 from ..schemas import (
     AuditEventList,
     AuditEventResponse,
+    BtpCodeCreate,
+    BtpCodeRename,
+    BtpInventoryUpsert,
+    BtpRoutingSet,
     HealthResponse,
     MachineReplace,
     MasterDatasetDetail,
@@ -264,6 +268,125 @@ def delete_product(
         "master_dataset",
         dataset_id,
         details={"code": product_code, "revision": dataset.revision},
+    )
+    return dataset
+
+
+@router.post(
+    "/master-data/datasets/{dataset_id}/btp-codes",
+    response_model=MasterDatasetDetail,
+    response_model_exclude_none=True,
+    tags=["master-data"],
+)
+def create_btp_code(
+    dataset_id: str, payload: BtpCodeCreate, session: DbSession
+) -> MasterDatasetDetail:
+    dataset = MasterDataService(session).create_btp_code(dataset_id, **payload.model_dump())
+    AuditService(session).record(
+        "btp_code.created", "master_dataset", dataset_id,
+        details={"code": payload.code, "revision": dataset.revision},
+    )
+    return dataset
+
+
+@router.patch(
+    "/master-data/datasets/{dataset_id}/btp-codes/{btp_code}",
+    response_model=MasterDatasetDetail,
+    response_model_exclude_none=True,
+    tags=["master-data"],
+)
+def rename_btp_code(
+    dataset_id: str, btp_code: str, payload: BtpCodeRename, session: DbSession
+) -> MasterDatasetDetail:
+    dataset = MasterDataService(session).rename_btp_code(
+        dataset_id, btp_code, expected_revision=payload.expected_revision, new_code=payload.code
+    )
+    AuditService(session).record(
+        "btp_code.renamed", "master_dataset", dataset_id,
+        details={"code": btp_code, "new_code": payload.code, "revision": dataset.revision},
+    )
+    return dataset
+
+
+@router.delete(
+    "/master-data/datasets/{dataset_id}/btp-codes/{btp_code}",
+    response_model=MasterDatasetDetail,
+    response_model_exclude_none=True,
+    tags=["master-data"],
+)
+def delete_btp_code(
+    dataset_id: str,
+    btp_code: str,
+    session: DbSession,
+    expected_revision: Annotated[int, Query(gt=0)],
+) -> MasterDatasetDetail:
+    dataset = MasterDataService(session).delete_btp_code(
+        dataset_id, btp_code, expected_revision=expected_revision
+    )
+    AuditService(session).record(
+        "btp_code.deleted", "master_dataset", dataset_id,
+        details={"code": btp_code, "revision": dataset.revision},
+    )
+    return dataset
+
+
+@router.put(
+    "/master-data/datasets/{dataset_id}/btp-codes/{btp_code}/inventory",
+    response_model=MasterDatasetDetail,
+    response_model_exclude_none=True,
+    tags=["master-data"],
+)
+def upsert_btp_inventory(
+    dataset_id: str, btp_code: str, payload: BtpInventoryUpsert, session: DbSession
+) -> MasterDatasetDetail:
+    dataset = MasterDataService(session).upsert_btp_inventory(
+        dataset_id, btp_code, **payload.model_dump()
+    )
+    AuditService(session).record(
+        "btp_inventory.updated", "master_dataset", dataset_id,
+        details={"code": btp_code, "revision": dataset.revision},
+    )
+    return dataset
+
+
+@router.delete(
+    "/master-data/datasets/{dataset_id}/btp-codes/{btp_code}/inventory",
+    response_model=MasterDatasetDetail,
+    response_model_exclude_none=True,
+    tags=["master-data"],
+)
+def delete_btp_inventory(
+    dataset_id: str,
+    btp_code: str,
+    session: DbSession,
+    expected_revision: Annotated[int, Query(gt=0)],
+) -> MasterDatasetDetail:
+    dataset = MasterDataService(session).delete_btp_inventory(
+        dataset_id, btp_code, expected_revision=expected_revision
+    )
+    AuditService(session).record(
+        "btp_inventory.deleted", "master_dataset", dataset_id,
+        details={"code": btp_code, "revision": dataset.revision},
+    )
+    return dataset
+
+
+@router.put(
+    "/master-data/datasets/{dataset_id}/products/{product_code}/routing/{stage}",
+    response_model=MasterDatasetDetail,
+    response_model_exclude_none=True,
+    tags=["master-data"],
+)
+def set_btp_routing(
+    dataset_id: str, product_code: str, stage: str, payload: BtpRoutingSet, session: DbSession
+) -> MasterDatasetDetail:
+    dataset = MasterDataService(session).set_btp_routing(
+        dataset_id, product_code, stage,
+        expected_revision=payload.expected_revision, btp_code=payload.btp_code,
+    )
+    AuditService(session).record(
+        "btp_routing.updated", "master_dataset", dataset_id,
+        details={"code": product_code, "stage": stage, "btp_code": payload.btp_code, "revision": dataset.revision},
     )
     return dataset
 

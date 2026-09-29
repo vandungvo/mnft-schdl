@@ -1,6 +1,6 @@
 # Mô hình đề xuất và kế hoạch đánh giá thuật toán
 
-**Ngày:** 18/09/2026; cập nhật 21/09/2026 theo yêu cầu A09–A10, R12 (nguyên liệu công đoạn sau lấy từ tồn bán thành phẩm, mục 3.2 và 3.7). Đi cùng [khảo sát phương pháp](scheduling_methods_and_recommendation.md). Nội dung dưới đây là thiết kế đề xuất, chưa phải mô hình đã cài đặt hoặc kết quả thực nghiệm.
+**Ngày:** 18/09/2026; cập nhật 21/09/2026 theo yêu cầu A09–A10, R12 (nguyên liệu công đoạn sau lấy từ tồn bán thành phẩm, mục 3.2 và 3.7); cập nhật 27/09/2026 thêm độ trễ chuyển tiếp BTP cố định `xfer` (mục 3.7). Đi cùng [khảo sát phương pháp](scheduling_methods_and_recommendation.md). Nội dung dưới đây là thiết kế đề xuất, chưa phải mô hình đã cài đặt hoặc kết quả thực nghiệm.
 
 ## 1. Những điểm cần thống nhất trong yêu cầu
 
@@ -62,6 +62,7 @@ Không cho phép sản xuất thừa vô hạn để làm đẹp utilization. Đ
 | `I_pt, h_pt` | Tồn kho sản phẩm p và thiếu hụt safety stock tại mốc t |
 | `C_j, T_j` | Thời điểm giao đủ đơn j và độ trễ |
 | `Lvl_pk(t)` | Tồn bán thành phẩm sản phẩm p sau công đoạn k tại thời điểm t |
+| `xfer` | Độ trễ chuyển tiếp BTP cố định giữa 2 công đoạn liền kề (10 phút, dùng chung cho đúc→CNC, CNC→sơn, sơn→QC) |
 
 Đây là khung mô hình; chỉ các máy/khuôn đủ điều kiện mới có biến lựa chọn. Khi thời lượng phụ thuộc lượng lô biến đổi, phải bổ sung miền lượng và quan hệ thời lượng; MVP tránh phức tạp này bằng cách cố định lượng từng cấu hình.
 
@@ -142,12 +143,16 @@ Nguyên liệu của công đoạn sau lấy từ tồn bán thành phẩm (BTP)
 
 ```text
 Lvl[p,k](t) = I0[p,k]
-            + sum(q[o] * present[o] * (E[o] <= t) for o at stage k,   product p)
-            - sum(q[o] * present[o] * (W[o] <= t) for o at stage k+1, product p, not running at t=0)
+            + sum(q[o] * present[o] * (E[o] + xfer <= t) for o at stage k,   product p)
+            - sum(q[o] * present[o] * (W[o] <= t)        for o at stage k+1, product p, not running at t=0)
 0 <= Lvl[p,k](t) <= cap[p,k]          # cap không khai báo = không giới hạn
 ```
 
-`W[o]` là thời điểm rút nguyên liệu (bắt đầu setup nếu có, ngược lại bắt đầu gia công). Mức tồn chỉ đổi tại các sự kiện nên kiểm tại sự kiện là đủ; CP-SAT có ràng buộc reservoir cho dạng này, cần thử ngữ nghĩa sự kiện đồng thời trước khi dựa vào. Hoàn tất được ghi nhận trước tiêu thụ nếu cùng thời điểm.
+`W[o]` là thời điểm rút nguyên liệu (bắt đầu setup nếu có, ngược lại bắt đầu gia công). `xfer` là độ
+trễ chuyển tiếp BTP cố định (10 phút, dùng chung mọi cặp công đoạn liền kề) — bán thành phẩm chỉ
+được coi là "đã nhập" tồn tại `E[o] + xfer`, không phải ngay tại `E[o]`. Mức tồn chỉ đổi tại các sự
+kiện nên kiểm tại sự kiện là đủ; CP-SAT có ràng buộc reservoir cho dạng này, cần thử ngữ nghĩa sự
+kiện đồng thời trước khi dựa vào. Hoàn tất cộng `xfer` được ghi nhận trước tiêu thụ nếu cùng thời điểm.
 
 Hệ quả cần kiểm thử: (1) lượt công đoạn sau bắt đầu trước khi lượt cùng lô ở công đoạn trước xong, nếu tồn đủ; (2) lượt tùy chọn được chọn để dự trữ khi công đoạn còn công suất trống; (3) dự trữ không làm xấu độ trễ hoặc safety stock so với tầng phục vụ (mục 4.1). Công thức đầy đủ ở [mathematical_model.md](mathematical_model.md), ràng buộc C7b.
 

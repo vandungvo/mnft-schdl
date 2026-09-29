@@ -24,6 +24,6 @@ OUT="$DATA_DIR/skill-events.jsonl"
 mkdir -p "$DATA_DIR"
 
 # Doc stdin (JSON hook) va xu ly bang Python; truyen path output qua argv.
-python3 "$ROOT/.claude/scripts/token-track/_skill_hook.py" "$OUT" || true
+python "$ROOT/.claude/scripts/token-track/_skill_hook.py" "$OUT" || true
 
 exit 0

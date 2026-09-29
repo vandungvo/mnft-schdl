@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 
 import { ErrorState, SkeletonCards, SkeletonTable } from "@/components/ui-states";
 import { getProductionPlan } from "@/lib/api";
-import { formatDateTime, formatDuration, formatInputName, minuteToDate } from "@/lib/format";
+import { formatDateTime, formatDuration, formatInputName, minuteToDate, stageLabel } from "@/lib/format";
 
 const warningLabels: Record<string, string> = {
   "At least one stage exceeds its calendar capacity lower bound.": "Ít nhất một công đoạn vượt ngưỡng công suất lịch làm việc.",
@@ -20,8 +20,6 @@ const assumptionLabels: Record<string, string> = {
   "Rough-cut capacity uses per-stage minimum feasible processing time and ignores sequence-dependent setup.": "Công suất sơ bộ dùng thời gian xử lý khả thi tối thiểu theo công đoạn và chưa tính chuẩn bị theo trình tự.",
   "Detailed scheduling remains the source of truth for machine, shift, maintenance, and changeover feasibility.": "Lịch chi tiết là nguồn chính xác cho tính khả thi về máy, ca, bảo trì và chuyển đổi.",
 };
-
-const stageLabels: Record<string, string> = { cast: "Đúc", cnc: "CNC", paint: "Sơn", qc: "Kiểm tra chất lượng" };
 
 function dateLabel(origin: string, minutes: number) {
   return new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium" }).format(minuteToDate(origin, minutes));
@@ -54,7 +52,7 @@ export default function ProductionPlanDetailPage() {
 
       <section className="panel data-section"><div className="panel-heading"><div><span className="eyebrow">CÔNG SUẤT SƠ BỘ</span><h2>Tải công suất theo công đoạn</h2></div></div><div className="capacity-grid">{plan.result.stages.map((stage) => {
         const percent = (stage.load_ratio ?? 0) * 100;
-        return <article className="capacity-card" key={stage.stage}><div><strong>{stageLabels[stage.stage] ?? stage.stage}</strong><span className={stage.overloaded ? "error-label" : ""}>{stage.load_ratio === null ? "Không có công suất" : `${percent.toFixed(1)}%`}</span></div><div className="capacity-track"><i className={stage.overloaded ? "capacity-over" : ""} style={{ width: `${Math.min(percent, 100)}%` }} /></div><small>{formatDuration(stage.required_minutes)} cần / {formatDuration(stage.available_minutes)} có sẵn · {stage.lot_count} lô</small></article>;
+        return <article className="capacity-card" key={stage.stage}><div><strong>{stageLabel(stage.stage)}</strong><span className={stage.overloaded ? "error-label" : ""}>{stage.load_ratio === null ? "Không có công suất" : `${percent.toFixed(1)}%`}</span></div><div className="capacity-track"><i className={stage.overloaded ? "capacity-over" : ""} style={{ width: `${Math.min(percent, 100)}%` }} /></div><small>{formatDuration(stage.required_minutes)} cần / {formatDuration(stage.available_minutes)} có sẵn · {stage.lot_count} lô</small></article>;
       })}</div></section>
 
       <section className="panel data-section">

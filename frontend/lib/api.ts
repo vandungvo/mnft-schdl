@@ -175,7 +175,7 @@ export function replaceMasterDataset(id: string, input: unknown, expectedRevisio
 export function updateMasterProduct(
   datasetId: string,
   productCode: string,
-  payload: { expected_revision: number; initial_inventory: number; safety_stock: number },
+  payload: { expected_revision: number; color: string; line: string; initial_inventory: number; safety_stock: number },
 ): Promise<MasterDatasetDetail> {
   return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/products/${encodeURIComponent(productCode)}`, {
     method: "PATCH",
@@ -185,7 +185,7 @@ export function updateMasterProduct(
 
 export function createMasterProduct(
   datasetId: string,
-  payload: { expected_revision: number; code: string; initial_inventory: number; safety_stock: number },
+  payload: { expected_revision: number; code: string; color: string; line: string; initial_inventory: number; safety_stock: number },
 ): Promise<MasterDatasetDetail> {
   return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/products`, {
     method: "POST",
@@ -195,6 +195,58 @@ export function createMasterProduct(
 
 export function deleteMasterProduct(datasetId: string, productCode: string, expectedRevision: number): Promise<MasterDatasetDetail> {
   return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/products/${encodeURIComponent(productCode)}?expected_revision=${expectedRevision}`, { method: "DELETE" });
+}
+
+export function createBtpCode(
+  datasetId: string,
+  payload: { expected_revision: number; code: string },
+): Promise<MasterDatasetDetail> {
+  return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/btp-codes`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function renameBtpCode(
+  datasetId: string,
+  btpCode: string,
+  payload: { expected_revision: number; code: string },
+): Promise<MasterDatasetDetail> {
+  return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/btp-codes/${encodeURIComponent(btpCode)}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteBtpCode(datasetId: string, btpCode: string, expectedRevision: number): Promise<MasterDatasetDetail> {
+  return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/btp-codes/${encodeURIComponent(btpCode)}?expected_revision=${expectedRevision}`, { method: "DELETE" });
+}
+
+export function upsertBtpInventory(
+  datasetId: string,
+  btpCode: string,
+  payload: { expected_revision: number; initial_qty: number; capacity: number | null },
+): Promise<MasterDatasetDetail> {
+  return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/btp-codes/${encodeURIComponent(btpCode)}/inventory`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteBtpInventory(datasetId: string, btpCode: string, expectedRevision: number): Promise<MasterDatasetDetail> {
+  return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/btp-codes/${encodeURIComponent(btpCode)}/inventory?expected_revision=${expectedRevision}`, { method: "DELETE" });
+}
+
+export function setBtpRouting(
+  datasetId: string,
+  productCode: string,
+  stage: string,
+  payload: { expected_revision: number; btp_code: string },
+): Promise<MasterDatasetDetail> {
+  return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/products/${encodeURIComponent(productCode)}/routing/${encodeURIComponent(stage)}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
 }
 
 export function updateMasterOrder(

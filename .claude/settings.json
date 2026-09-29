@@ -24,7 +24,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "python3 .claude/scripts/token-track/token-statusline.py"
+    "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/token-track/token-statusline.py\""
   },
   "hooks": {
     "SessionStart": [
@@ -32,7 +32,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/session-init.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/session-init.sh\""
           }
         ]
       }
@@ -43,7 +43,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/block-push.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/block-push.sh\""
           }
         ]
       },
@@ -52,7 +52,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/scripts/token-track/token-skill-hook.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/scripts/token-track/token-skill-hook.sh\""
           }
         ]
       }
@@ -62,7 +62,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 .claude/scripts/token-track/token-turn-summary.py"
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/token-track/token-turn-summary.py\""
           }
         ]
       }
@@ -73,19 +73,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/auto-changelog.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/auto-changelog.sh\""
           },
           {
             "type": "command",
-            "command": ".claude/hooks/status-transition.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/status-transition.sh\""
           },
           {
             "type": "command",
-            "command": ".claude/hooks/post-edit-stale.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-stale.sh\""
           },
           {
             "type": "command",
-            "command": ".claude/hooks/kg-refresh.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/kg-refresh.sh\""
           }
         ]
       },
@@ -94,7 +94,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/scripts/token-track/token-skill-hook.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/scripts/token-track/token-skill-hook.sh\""
           }
         ]
       }

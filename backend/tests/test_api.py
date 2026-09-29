@@ -471,7 +471,13 @@ def test_entity_edits_are_validated_and_use_optimistic_revision(client, scheduli
 
     product_update = client.patch(
         f"/api/v1/master-data/datasets/{dataset_id}/products/F_SILVER",
-        json={"expected_revision": 1, "initial_inventory": 50, "safety_stock": 35},
+        json={
+            "expected_revision": 1,
+            "color": "SILVER",
+            "line": "F",
+            "initial_inventory": 50,
+            "safety_stock": 35,
+        },
     )
     assert product_update.status_code == 200, product_update.text
     assert product_update.json()["revision"] == 2
@@ -479,7 +485,13 @@ def test_entity_edits_are_validated_and_use_optimistic_revision(client, scheduli
 
     stale = client.patch(
         f"/api/v1/master-data/datasets/{dataset_id}/products/F_SILVER",
-        json={"expected_revision": 1, "initial_inventory": 60, "safety_stock": 35},
+        json={
+            "expected_revision": 1,
+            "color": "SILVER",
+            "line": "F",
+            "initial_inventory": 60,
+            "safety_stock": 35,
+        },
     )
     assert stale.status_code == 409
     assert stale.json()["error"]["code"] == "REVISION_CONFLICT"
@@ -525,6 +537,8 @@ def test_entity_edits_are_validated_and_use_optimistic_revision(client, scheduli
         json={
             "expected_revision": 3,
             "code": "  unused_sku ",
+            "color": "BLACK",
+            "line": "F",
             "initial_inventory": 0,
             "safety_stock": 0,
         },
@@ -532,9 +546,72 @@ def test_entity_edits_are_validated_and_use_optimistic_revision(client, scheduli
     assert created.status_code == 200, created.text
     assert created.json()["revision"] == 4
     assert "UNUSED_SKU" in created.json()["input"]["products"]
+    assert created.json()["input"]["product_color"]["UNUSED_SKU"] == "BLACK"
+
+    assert created.json()["input"]["btp_routing"]["UNUSED_SKU"]["cast"] == "UNUSED_SKU_CAST"
+
+    btp_created = client.post(
+        f"/api/v1/master-data/datasets/{dataset_id}/btp-codes",
+        json={"expected_revision": 4, "code": "shared_cast"},
+    )
+    assert btp_created.status_code == 200, btp_created.text
+    assert btp_created.json()["revision"] == 5
+    assert "SHARED_CAST" in btp_created.json()["input"]["btp_codes"]
+
+    # initial_qty stays 0: the dataset's max_surplus_btp is 0, so any nonzero
+    # declared BTP stock would (correctly) fail the aggregate-cap contract check.
+    btp_inventory_set = client.put(
+        f"/api/v1/master-data/datasets/{dataset_id}/btp-codes/SHARED_CAST/inventory",
+        json={"expected_revision": 5, "initial_qty": 0, "capacity": 40},
+    )
+    assert btp_inventory_set.status_code == 200, btp_inventory_set.text
+    assert btp_inventory_set.json()["revision"] == 6
+    assert btp_inventory_set.json()["input"]["inventory_btp"]["SHARED_CAST"] == 0
+    assert btp_inventory_set.json()["input"]["btp_capacity"]["SHARED_CAST"] == 40
+
+    # Route UNUSED_SKU's cast stage AND F_SILVER's cast stage to the SAME shared
+    # code — the A09 scenario (one BTP code serving multiple finished products).
+    route_unused_sku = client.put(
+        f"/api/v1/master-data/datasets/{dataset_id}/products/UNUSED_SKU/routing/cast",
+        json={"expected_revision": 6, "btp_code": "SHARED_CAST"},
+    )
+    assert route_unused_sku.status_code == 200, route_unused_sku.text
+    assert route_unused_sku.json()["revision"] == 7
+    assert route_unused_sku.json()["input"]["btp_routing"]["UNUSED_SKU"]["cast"] == "SHARED_CAST"
+
+    route_f_silver = client.put(
+        f"/api/v1/master-data/datasets/{dataset_id}/products/F_SILVER/routing/cast",
+        json={"expected_revision": 7, "btp_code": "SHARED_CAST"},
+    )
+    assert route_f_silver.status_code == 200, route_f_silver.text
+    assert route_f_silver.json()["revision"] == 8
+    assert route_f_silver.json()["input"]["btp_routing"]["F_SILVER"]["cast"] == "SHARED_CAST"
+
+    btp_delete_blocked = client.delete(
+        f"/api/v1/master-data/datasets/{dataset_id}/btp-codes/SHARED_CAST",
+        params={"expected_revision": 8},
+    )
+    assert btp_delete_blocked.status_code == 409
+    assert btp_delete_blocked.json()["error"]["code"] == "BTP_CODE_IN_USE"
+
+    btp_renamed = client.patch(
+        f"/api/v1/master-data/datasets/{dataset_id}/btp-codes/SHARED_CAST",
+        json={"expected_revision": 8, "code": "shared_cast_v2"},
+    )
+    assert btp_renamed.status_code == 200, btp_renamed.text
+    assert btp_renamed.json()["revision"] == 9
+    renamed_input = btp_renamed.json()["input"]
+    assert "SHARED_CAST_V2" in renamed_input["btp_codes"]
+    assert renamed_input["btp_routing"]["UNUSED_SKU"]["cast"] == "SHARED_CAST_V2"
+    assert renamed_input["btp_routing"]["F_SILVER"]["cast"] == "SHARED_CAST_V2"
+    assert renamed_input["inventory_btp"]["SHARED_CAST_V2"] == 0
+
     deleted = client.delete(
         f"/api/v1/master-data/datasets/{dataset_id}/products/UNUSED_SKU",
-        params={"expected_revision": 4},
+        params={"expected_revision": 9},
     )
     assert deleted.status_code == 200, deleted.text
-    assert deleted.json()["revision"] == 5
+    assert deleted.json()["revision"] == 10
+    # F_SILVER's own routing to the shared code (untouched by UNUSED_SKU's
+    # deletion) proves the code survives losing one of its two routers.
+    assert deleted.json()["input"]["btp_routing"]["F_SILVER"]["cast"] == "SHARED_CAST_V2"

@@ -243,6 +243,8 @@ code { color: #334155; font-size: 12px; }
 .data-section input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
 .create-row { background: #f7fbfa; }
 .create-row td { border-top: 1px solid #cde5e1; }
+.btp-cell { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 210px; }
+.btp-cell input[type="number"] { min-width: 78px; }
 .planning-form { display: grid; grid-template-columns: minmax(240px, 2fr) minmax(150px, 1fr) minmax(190px, 1fr) auto; align-items: end; gap: 16px; padding: 20px; margin-bottom: 34px; }
 .planning-period span { display: block; color: #475569; font-size: 12px; font-weight: 750; margin-bottom: 5px; }
 .planning-period strong, .planning-period small { display: block; }

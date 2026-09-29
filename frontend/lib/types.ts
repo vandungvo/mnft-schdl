@@ -146,8 +146,22 @@ export interface SchedulingInputDocument {
   working_days: number[];
   stages: string[];
   products: string[];
+  product_color: Record<string, string>;
+  product_line: Record<string, string>;
   initial_inventory: Record<string, number>;
   safety_stock: Record<string, number>;
+  /** BTP (semi-finished) code catalog — a free-standing identity, distinct from
+   * finished product codes, that one or more (product, stage) routings can share. */
+  btp_codes: string[];
+  /** {product: {stage: btp_code}} — which BTP code a (product, stage in cast/cnc/paint) resolves to. */
+  btp_routing: Record<string, Record<string, string>>;
+  /** Flat by BTP code. */
+  inventory_btp: Record<string, number>;
+  /** Sparse: a missing btp_code entry means unlimited capacity. */
+  btp_capacity: Record<string, number>;
+  max_surplus_btp: number;
+  /** Fixed handoff lag: BTP is only usable downstream this many minutes after the producing run ends. */
+  transfer_minutes: number;
   checkpoints: number[];
   minimum_lot: number;
   max_surplus: number;

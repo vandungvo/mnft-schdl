@@ -118,7 +118,8 @@ Lượt của cùng một lô **không có quan hệ thứ tự trực tiếp** 
 | Biến | Ý nghĩa |
 |---|---|
 | Lvl_pk(t) | Mức tồn BTP (p, k) tại thời điểm t, xác định ở C7b |
-| φ_od = z_o ∧ [E_o ≤ e_d] | Lượt o đã hoàn tất tính đến cuối ngày d |
+| τ | Độ trễ chuyển tiếp BTP cố định giữa 2 công đoạn liền kề (10 phút, dùng chung mọi cặp) |
+| φ_od = z_o ∧ [E_o + τ ≤ e_d] | Lượt o đã hoàn tất (kèm độ trễ chuyển tiếp) tính đến cuối ngày d |
 | ψ_od = z_o ∧ [W_o ≤ e_d] | Lượt o đã rút nguyên liệu tính đến cuối ngày d |
 | ψ_jd = [D_j ≤ e_d] | Đơn j đã giao tính đến cuối ngày d |
 | Lvl_pkd, I_pd | Tồn BTP (p, k) và tồn thành phẩm p cuối ngày d |
@@ -233,7 +234,7 @@ Tồn không âm được bảo đảm về bản chất vì mỗi đơn chỉ g
 Với mỗi sản phẩm p và công đoạn k ∈ {1, 2, 3}, với mọi t ∈ [0, H]:
 
 ```
-Lvl_pk(t) = I0_pk + Σ_{o: k(o)=k,   prod(o)=p} q_o · z_o · [E_o ≤ t]        (nhập khi lượt công đoạn k hoàn tất)
+Lvl_pk(t) = I0_pk + Σ_{o: k(o)=k,   prod(o)=p} q_o · z_o · [E_o + τ ≤ t]    (nhập khi lượt công đoạn k hoàn tất, cộng độ trễ chuyển tiếp τ)
                   − Σ_{o: k(o)=k+1, prod(o)=p, o∉O^0} q_o · z_o · [W_o ≤ t]   (rút khi lượt công đoạn k+1 bắt đầu)
 0 ≤ Lvl_pk(t) ≤ cap_pk
 Σ_{p,k} Lvl_pk(H) ≤ Λ^BTP
@@ -241,7 +242,8 @@ Lvl_pk(t) = I0_pk + Σ_{o: k(o)=k,   prod(o)=p} q_o · z_o · [E_o ≤ t]       
 
 - Lượt QC (k+1 = 4) rút từ tồn (p, 3); lượt đúc (k = 1) không rút BTP vì lấy nguyên liệu thô, giả định đủ.
 - Các lượt o ∈ O^0 chỉ nhập, không rút (đã rút trước t = 0 và đã được trừ trong I0_pk).
-- Mức tồn chỉ đổi tại các sự kiện E_o và W_o, nên kiểm tại các sự kiện là đủ. Sự kiện cùng thời điểm được gộp, khớp quy ước "hoàn tất được ghi nhận trước tiêu thụ". Cài đặt có thể dùng ràng buộc reservoir của CP-SAT (cộng tại E_o, trừ tại W_o, có khai báo lượt có mặt); **chưa kiểm phiên bản OR-Tools và ngữ nghĩa sự kiện đồng thời**, cần thử trên ví dụ nhỏ.
+- τ là hằng số toàn cục (10 phút), dùng chung cho mọi cặp công đoạn liền kề (đúc→CNC, CNC→sơn, sơn→QC) — mô hình độ trễ vật lý bê/chuyển BTP, không phải tài nguyên vận chuyển tường minh (không tranh chấp, không định tuyến).
+- Mức tồn chỉ đổi tại các sự kiện E_o + τ và W_o, nên kiểm tại các sự kiện là đủ. Sự kiện cùng thời điểm được gộp, khớp quy ước "hoàn tất cộng τ được ghi nhận trước tiêu thụ". Cài đặt có thể dùng ràng buộc reservoir của CP-SAT (cộng tại E_o + τ, trừ tại W_o, có khai báo lượt có mặt); **chưa kiểm phiên bản OR-Tools và ngữ nghĩa sự kiện đồng thời**, cần thử trên ví dụ nhỏ.
 - Tồn tại cuối mỗi ngày phục vụ chi phí lưu:
 
 ```

@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 3,
   "name": "wheel_factory_48_lots_2weeks",
   "seed": 20260919,
   "origin": "2026-09-21T00:00:00+07:00",
@@ -29,6 +29,18 @@
     "R_SILVER",
     "R_BLACK"
   ],
+  "product_color": {
+    "F_SILVER": "SILVER",
+    "F_BLACK": "BLACK",
+    "R_SILVER": "SILVER",
+    "R_BLACK": "BLACK"
+  },
+  "product_line": {
+    "F_SILVER": "F",
+    "F_BLACK": "F",
+    "R_SILVER": "R",
+    "R_BLACK": "R"
+  },
   "initial_inventory": {
     "F_SILVER": 18,
     "F_BLACK": 18,
@@ -41,6 +53,46 @@
     "R_SILVER": 30,
     "R_BLACK": 30
   },
+  "btp_codes": [
+    "F_SILVER_CAST",
+    "F_SILVER_CNC",
+    "F_SILVER_PAINT",
+    "F_BLACK_CAST",
+    "F_BLACK_CNC",
+    "F_BLACK_PAINT",
+    "R_SILVER_CAST",
+    "R_SILVER_CNC",
+    "R_SILVER_PAINT",
+    "R_BLACK_CAST",
+    "R_BLACK_CNC",
+    "R_BLACK_PAINT"
+  ],
+  "btp_routing": {
+    "F_SILVER": {
+      "cast": "F_SILVER_CAST",
+      "cnc": "F_SILVER_CNC",
+      "paint": "F_SILVER_PAINT"
+    },
+    "F_BLACK": {
+      "cast": "F_BLACK_CAST",
+      "cnc": "F_BLACK_CNC",
+      "paint": "F_BLACK_PAINT"
+    },
+    "R_SILVER": {
+      "cast": "R_SILVER_CAST",
+      "cnc": "R_SILVER_CNC",
+      "paint": "R_SILVER_PAINT"
+    },
+    "R_BLACK": {
+      "cast": "R_BLACK_CAST",
+      "cnc": "R_BLACK_CNC",
+      "paint": "R_BLACK_PAINT"
+    }
+  },
+  "inventory_btp": {},
+  "btp_capacity": {},
+  "max_surplus_btp": 0,
+  "transfer_minutes": 10,
   "checkpoints": [
     1440,
     2880,
@@ -3908,6 +3960,7 @@
     "Block cannot cross a break or shift boundary; conservative restriction beyond the general requirements.",
     "Shifts are activated iff occupied. Setup, maintenance and processing all count as occupied time.",
     "Urgent releases and downtime known at planning time; this is an offline comparison, not online rescheduling.",
-    "No WIP at origin; material available at release; no scrap, transport times or labor capacity."
+    "No WIP at origin; material available at release; no scrap or labor capacity.",
+    "Fixed 10-minute transfer lag between adjacent stages (cast->cnc->paint->qc) before BTP is available downstream; no explicit transportation resource/routing modeled."
   ]
 }

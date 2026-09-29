@@ -1,7 +1,45 @@
 from __future__ import annotations
 
 from collections import Counter, defaultdict
-from .instance import duration, eligible, setup, STAGES
+from .instance import BTP_STAGES, duration, eligible, setup, STAGES
+
+
+def _btp_violations(data, schedule):
+    """R12: reservoir per BTP code (A09: one or more (product, stage in
+    {cast,cnc,paint}) routings can share a code); A09/A10 ordering.
+
+    Production credits at a run's end E_o plus the fixed transfer_minutes handoff
+    lag, into the code its OWN (product, stage) routes to; the next stage's run of
+    ANY lot whose (product, prior-stage) routes to the SAME code debits at its
+    block-start W_o (setup start if any, else processing start). Same-instant
+    events are merged (completion counted before consumption nets out).
+    """
+    lots = {l["id"]: l for l in data["lots"]}
+    routing = data["btp_routing"]
+    transfer_minutes = data.get("transfer_minutes", 0)
+    events = []
+    for r in schedule:
+        product = lots[r["lot"]]["product"]
+        quantity = lots[r["lot"]]["quantity"]
+        if r["stage"] in BTP_STAGES:
+            code = routing[product][r["stage"]]
+            events.append((r["end"] + transfer_minutes, 0, code, quantity))
+        stage_index = STAGES.index(r["stage"])
+        if stage_index > 0:
+            prev_stage = STAGES[stage_index - 1]
+            code = routing[product][prev_stage]
+            events.append((r["block_start"], 1, code, -quantity))
+    events.sort(key=lambda e: (e[0], e[1]))
+    level = {code: data.get("inventory_btp", {}).get(code, 0) for code in data.get("btp_codes", [])}
+    errors = []
+    for time, _kind, code, delta in events:
+        level[code] = level.get(code, 0) + delta
+        if level[code] < 0:
+            errors.append(f"BTP {code}: negative inventory at t={time}")
+        cap = data.get("btp_capacity", {}).get(code)
+        if cap is not None and level[code] > cap:
+            errors.append(f"BTP {code}: exceeds capacity at t={time}")
+    return errors
 
 
 def inventory_and_deliveries(data, schedule):
@@ -82,7 +120,6 @@ def validate(data, schedule):
     counts = Counter((r["lot"], r["stage"]) for r in schedule)
     if set(counts) != expected or any(v != 1 for v in counts.values()):
         return {"valid": False, "errors": ["Missing, duplicate or unexpected operations."]}
-    lookup = {(r["lot"], r["stage"]): r for r in schedule}
     for r in schedule:
         lot = lots[r["lot"]]
         mid = r["machine"]
@@ -94,11 +131,11 @@ def validate(data, schedule):
         if r["end"]-r["start"] != duration(data, lot, mid):
             errors.append(prefix + ": wrong duration")
         k = STAGES.index(r["stage"])
-        ready = lot["release"] if k == 0 else lookup[r["lot"], STAGES[k-1]]["end"]
         setup_start = r["start"]-r["setup_minutes"]
-        # This experiment's maintenance block also waits for predecessor readiness.
-        if r["block_start"] < ready:
-            errors.append(prefix + ": precedence/release violation")
+        # Same-lot cross-stage precedence is no longer required (A10): stages only
+        # connect through BTP stock, checked separately in _btp_violations below.
+        if k == 0 and r["block_start"] < lot["release"]:
+            errors.append(prefix + ": release violation")
         if setup_start-r["block_start"] != r["maintenance_minutes"]:
             errors.append(prefix + ": inconsistent prep timestamps")
         if not any(w["shift"] == r["shift"] and w["id"] == r["window"]
@@ -156,6 +193,7 @@ def validate(data, schedule):
     deliveries, ledger, _ = inventory_and_deliveries(data, schedule)
     if any(e["inventory"] < 0 for e in ledger):
         errors.append("Negative physical inventory")
+    errors.extend(_btp_violations(data, schedule))
     for order, delivery in zip(data["orders"], deliveries):
         if "deadline" in order and delivery["time"] > order["deadline"]:
             errors.append("Hard deadline violated")

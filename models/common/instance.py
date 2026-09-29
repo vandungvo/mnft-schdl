@@ -9,6 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INPUT = ROOT / "input" / "wheel_factory.json"
 STAGES = ("cast", "cnc", "paint", "qc")
+BTP_STAGES = STAGES[:-1]  # cast, cnc, paint: stages that hold semi-finished (BTP) stock
 
 
 def save_json(path, obj):
@@ -81,6 +82,35 @@ def check_input(data):
     assert all(0 < allocated[lid] <= l["quantity"] for lid,l in lots.items())
     assert all(initial[p] <= data["initial_inventory"][p] for p in initial)
     assert sum(l["quantity"]-allocated[lid] for lid,l in lots.items()) <= data["max_surplus"]
+    assert data.get("transfer_minutes", 0) >= 0, "transfer_minutes must be non-negative"
+    # BTP (semi-finished) catalog + routing (A09): a btp_code is a free-standing
+    # identity, distinct from finished product codes, that one or more
+    # (product, stage in {cast,cnc,paint}) routings can share.
+    btp_codes_list = data.get("btp_codes", [])
+    assert len(set(btp_codes_list)) == len(btp_codes_list), "Duplicate BTP codes"
+    btp_codes = set(btp_codes_list)
+    btp_routing = data.get("btp_routing", {})
+    for p in data["products"]:
+        assert p in data.get("product_color", {}), f"Missing catalog color for product '{p}'"
+        assert p in data.get("product_line", {}), f"Missing catalog line for product '{p}'"
+        for s in BTP_STAGES:
+            code = btp_routing.get(p, {}).get(s)
+            assert code is not None, f"Missing BTP routing for ({p}, {s})"
+            assert code in btp_codes, f"BTP routing ({p}, {s}) references unknown code '{code}'"
+    inventory_btp = data.get("inventory_btp", {})
+    btp_capacity = data.get("btp_capacity", {})
+    for code, qty in inventory_btp.items():
+        assert code in btp_codes, f"inventory_btp references unknown BTP code '{code}'"
+        assert qty >= 0
+    for code, cap in btp_capacity.items():
+        assert code in btp_codes, f"btp_capacity references unknown BTP code '{code}'"
+        assert cap > 0
+    # Every lot runs every stage (mandatory-lot model); a given lot's own stage-k
+    # production always resolves to the SAME code as its own stage-(k+1)
+    # consumption (both via btp_routing[lot.product][stage_k]), so no schedule can
+    # create BTP surplus beyond declared initial stock, even when products share a
+    # code — summing per-code (not per-product) avoids double counting shared codes.
+    assert sum(inventory_btp.values()) <= data.get("max_surplus_btp", 0)
 
 
 def build(seed=20260919):
@@ -172,10 +202,15 @@ def build(seed=20260919):
                        "priority": 4 if urgent else rng.choice([1, 1, 2]), "urgent": urgent,
                        "quantity": sum(allocated) + initial, "initial_allocated": initial,
                        "lot_allocations": dict(zip(order_lots, allocated))})
-    data = {"schema_version": 1, "name": "wheel_factory_48_lots_2weeks", "seed": seed,
+    data = {"schema_version": 3, "name": "wheel_factory_48_lots_2weeks", "seed": seed,
             "origin": "2026-09-21T00:00:00+07:00", "time_unit": "minute", "horizon": 14 * 1440,
             "working_days": days, "stages": list(STAGES), "products": products,
+            "product_color": {p: p.split("_")[1] for p in products},
+            "product_line": {p: p.split("_")[0] for p in products},
             "initial_inventory": {p: 18 for p in products}, "safety_stock": {p: 30 for p in products},
+            "btp_codes": [f"{p}_{s.upper()}" for p in products for s in BTP_STAGES],
+            "btp_routing": {p: {s: f"{p}_{s.upper()}" for s in BTP_STAGES} for p in products},
+            "inventory_btp": {}, "btp_capacity": {}, "max_surplus_btp": 0, "transfer_minutes": 10,
             "checkpoints": [(d+1)*1440 for d in range(14)], "minimum_lot": 60,
             "max_surplus": 144, "machines": machines, "orders": orders, "lots": lots,
             "weights": {"makespan": 1, "weighted_tardiness": 15, "setup_minutes": 3,
@@ -189,7 +224,9 @@ def build(seed=20260919):
                 "Block cannot cross a break or shift boundary; conservative restriction beyond the general requirements.",
                 "Shifts are activated iff occupied. Setup, maintenance and processing all count as occupied time.",
                 "Urgent releases and downtime known at planning time; this is an offline comparison, not online rescheduling.",
-                "No WIP at origin; material available at release; no scrap, transport times or labor capacity."]}
+                "No WIP at origin; material available at release; no scrap or labor capacity.",
+                "Fixed 10-minute transfer lag between adjacent stages (cast->cnc->paint->qc) before "
+                "BTP is available downstream; no explicit transportation resource/routing modeled."]}
     return data
 
 

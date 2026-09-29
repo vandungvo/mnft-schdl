@@ -10,7 +10,7 @@ import { RunStatusBadge } from "@/components/run-status";
 import { useToast } from "@/components/toast-provider";
 import { ErrorState, SkeletonCards, SkeletonTable } from "@/components/ui-states";
 import { apiErrorMessage, getScheduleRun, retryScheduleRun } from "@/lib/api";
-import { formatDateTime, formatDuration, formatInputName, solverStatusLabel } from "@/lib/format";
+import { formatDateTime, formatDuration, formatInputName, solverStatusLabel, stageLabel } from "@/lib/format";
 import type { ScheduleRunDetail } from "@/lib/types";
 
 const metricLabels: Record<string, string> = {
@@ -84,7 +84,7 @@ export default function RunDetailPage() {
       {run.status === "FAILED" && <div className="alert alert-error"><strong>{run.error_code ?? "Lập lịch thất bại"}</strong><br />{run.error_message}</div>}
       {retry.isError && <div className="alert alert-error" role="alert">{apiErrorMessage(retry.error, "Không thể tạo lần chạy lại.")}</div>}
 
-      {run.status === "SUCCEEDED" && <><Metrics run={run} /><article className="panel schedule-panel"><div className="panel-heading"><div><span className="eyebrow">LỊCH ĐÃ KIỂM TRA</span><h2>Gantt theo máy</h2><p>Chọn một thanh để xem thời điểm và thông tin vận hành.</p></div><div className="validation-mark">✓ {run.validation?.operations_checked ?? run.operations.length} công đoạn hợp lệ</div></div><div className="legend"><span><i className="legend-cast" />Đúc</span><span><i className="legend-cnc" />CNC</span><span><i className="legend-paint" />Sơn</span><span><i className="legend-qc" />Kiểm tra</span><span><i className="legend-setup" />Chuẩn bị / bảo trì</span></div><GanttChart operations={run.operations} horizonMinutes={run.horizon_minutes} timeOrigin={run.time_origin} /></article></>}
+      {run.status === "SUCCEEDED" && <><Metrics run={run} /><article className="panel schedule-panel"><div className="panel-heading"><div><span className="eyebrow">LỊCH ĐÃ KIỂM TRA</span><h2>Gantt theo máy</h2><p>Chọn một thanh để xem thời điểm và thông tin vận hành.</p></div><div className="validation-mark">✓ {run.validation?.operations_checked ?? run.operations.length} công đoạn hợp lệ</div></div><div className="legend"><span><i className="legend-cast" />{stageLabel("cast")}</span><span><i className="legend-cnc" />{stageLabel("cnc")}</span><span><i className="legend-paint" />{stageLabel("paint")}</span><span><i className="legend-qc" />{stageLabel("qc")}</span><span><i className="legend-setup" />Chuẩn bị / bảo trì</span></div><GanttChart operations={run.operations} horizonMinutes={run.horizon_minutes} timeOrigin={run.time_origin} /></article></>}
 
       <article className="panel metadata-panel">
         <h2>Khả năng tái lập</h2>

@@ -33,6 +33,12 @@ export function solverStatusLabel(value: string | null): string {
   return value ? labels[value] ?? value.replace(/_/g, " ").toLowerCase() : "—";
 }
 
+const STAGE_LABELS: Record<string, string> = { cast: "Đúc", cnc: "CNC", paint: "Sơn", qc: "Kiểm tra chất lượng" };
+
+export function stageLabel(value: string): string {
+  return STAGE_LABELS[value] ?? value;
+}
+
 export function minuteToDate(origin: string, minute: number): Date {
   return new Date(new Date(origin).getTime() + minute * 60_000);
 }

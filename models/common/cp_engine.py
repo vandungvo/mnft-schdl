@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import time
 from ortools.sat.python import cp_model
-from .instance import STAGES, duration, eligible, setup
+from .instance import BTP_STAGES, STAGES, duration, eligible, setup
 
 
 def solve(data, seconds=30, seed=11, hint=None, fixed_lots=None):
@@ -34,7 +34,8 @@ def solve(data, seconds=30, seed=11, hint=None, fixed_lots=None):
             if stage != "cast":
                 model.add(maintenance == 0)
                 model.add(used == 0)
-            model.add(b >= (lot["release"] if k == 0 else op[lid, STAGES[k-1]]["e"]))
+            if k == 0:
+                model.add(b >= lot["release"])
             choices = []
             for mid in eligible(data, lot, stage):
                 spec = data["machines"][mid]
@@ -63,6 +64,31 @@ def solve(data, seconds=30, seed=11, hint=None, fixed_lots=None):
                     opens.setdefault((mid,window["shift"]), []).append(z)
                 model.add(sum(wins) == x)
             model.add_exactly_one(choices)
+    # C7b: BTP (semi-finished) reservoir per BTP code (A09: a code is a free-standing
+    # identity that one or more (product, stage in {cast,cnc,paint}) can share). A
+    # stage-k run credits qty at E_o + transfer_minutes (fixed handoff lag) into the
+    # code its OWN (product, stage) routes to; the stage-(k+1) run of ANY lot whose
+    # (product, prior-stage) routes to the SAME code debits qty at its block-start
+    # W_o. No same-lot precedence remains (A10): interleaving across lots — and now
+    # across products sharing a code — is allowed.
+    transfer_minutes = data.get("transfer_minutes", 0)
+    routing = data["btp_routing"]
+    events_by_code = {code: [] for code in data["btp_codes"]}
+    for lot in lots:
+        for k, stage in enumerate(BTP_STAGES):
+            code = routing[lot["product"]][stage]
+            events_by_code[code].append((op[lot["id"], stage]["e"] + transfer_minutes, lot["quantity"]))
+            next_stage = STAGES[k+1]
+            events_by_code[code].append((op[lot["id"], next_stage]["b"], -lot["quantity"]))
+    for code, events in events_by_code.items():
+        initial = data.get("inventory_btp", {}).get(code, 0)
+        times = [0] + [t for t, _ in events]
+        level_changes = [initial] + [d for _, d in events]
+        cap = data.get("btp_capacity", {}).get(code)
+        # Safe upper bound when uncapped: the level can never exceed everything
+        # ever credited (initial stock plus all production events for this code).
+        max_level = cap if cap is not None else initial + sum(d for _, d in events if d > 0)
+        model.add_reservoir_constraint(times, level_changes, 0, max(max_level, 0))
     arcs_record = {}
     for mid, nodes in candidates.items():
         machine = data["machines"][mid]

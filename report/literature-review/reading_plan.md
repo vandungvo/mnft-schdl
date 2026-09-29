@@ -21,8 +21,8 @@ Phân biệt điều tác giả bài báo đã chứng minh, giả định của
 | Xong | Bước | Nội dung | Đầu ra cần giữ lại | Ngày hoàn thành |
 |---|---|---|---|---|
 | [x] | 0 | Đọc yêu cầu, lập ví dụ nhỏ | Bảng thuật ngữ và lịch vẽ tay ban đầu | 21/09/2026 |
-| [ ] | 1 | Bài tiếng Việt về FJSP | Bảng đầu vào – quyết định – ràng buộc – mục tiêu | |
-| [ ] | 2 | Tổng quan FJSP và phân loại flow shop | Một đoạn định vị bài toán bánh xe | |
+| [x] | 1 | Bài tiếng Việt về FJSP | Bảng đầu vào – quyết định – ràng buộc – mục tiêu | 27/09/2026 |
+| [x] | 2 | Tổng quan FJSP và phân loại flow shop | Một đoạn định vị bài toán bánh xe | 27/09/2026 |
 | [ ] | 3 | PyJobShop và mô hình CP | Mô hình tối thiểu cho ví dụ nhỏ | |
 | [ ] | 4 | Scheduling với khuôn | Lịch có setup/khuôn và bảng khác biệt giả định | |
 | [ ] | 5 | Tái lập lịch | Quy tắc giữ/sửa lịch sau một sự kiện | |
@@ -53,9 +53,9 @@ Nhánh tùy chọn sau phần cốt lõi:
 
 Tập trung vào phát biểu bài toán, giả định, biến quyết định, ràng buộc, hàm mục tiêu và ví dụ. Lượt đầu có thể đọc lướt chi tiết giải thuật di truyền (GA).
 
-- [ ] Lập bảng bốn nhóm: dữ liệu đầu vào, quyết định, ràng buộc, mục tiêu.
-- [ ] Chọn hai ràng buộc và diễn giải từng ký hiệu bằng ngôn ngữ sản xuất.
-- [ ] Ghi rõ điểm khác đồ án: tăng ca/thuê ngoài trong bài và ca bật/khuôn trong yêu cầu của mình.
+- [x] Lập bảng bốn nhóm: dữ liệu đầu vào, quyết định, ràng buộc, mục tiêu.
+- [x] Chọn hai ràng buộc và diễn giải từng ký hiệu bằng ngôn ngữ sản xuất.
+- [x] Ghi rõ điểm khác đồ án: tăng ca/thuê ngoài trong bài và ca bật/khuôn trong yêu cầu của mình.
 
 **Câu hỏi cần trả lời:** từ câu “hai công đoạn không được dùng cùng máy đồng thời”, làm sao chuyển thành điều kiện của mô hình?
 
@@ -67,10 +67,10 @@ Tập trung vào phát biểu bài toán, giả định, biến quyết định,
 
 **Đọc bổ sung:** phần định nghĩa trong Ruiz & Vázquez-Rodríguez (2010), *The hybrid flow shop scheduling problem* — LR02. [DOI](https://doi.org/10.1016/j.ejor.2009.09.024).
 
-- [ ] Giải thích khác biệt JSP, FJSP và hybrid flow shop bằng ví dụ.
-- [ ] Phân biệt makespan với độ trễ giao hàng.
-- [ ] Liệt kê phần nào trong yêu cầu là bài toán lõi, phần nào là mở rộng nghiệp vụ.
-- [ ] Viết một đoạn định vị tuyến đúc → CNC → sơn → QC của đồ án.
+- [x] Giải thích khác biệt JSP, FJSP và hybrid flow shop bằng ví dụ.
+- [x] Phân biệt makespan với độ trễ giao hàng.
+- [x] Liệt kê phần nào trong yêu cầu là bài toán lõi, phần nào là mở rộng nghiệp vụ.
+- [x] Viết một đoạn định vị tuyến đúc → CNC → sơn → QC của đồ án.
 
 **Câu hỏi cần trả lời:** vì sao có nhiều máy để chọn chưa đủ để phân biệt job shop với flow shop?
 
@@ -222,3 +222,5 @@ Nếu cần triển khai lớp phụ trợ, đọc [De Bock et al. — LR19](htt
 | Ngày | Bước / bài | Đã hiểu hoặc hoàn thành | Còn vướng | Việc tiếp theo |
 |---|---|---|---|---|
 | 21/09/2026 | Bước 0 | Đọc mục 3–4 yêu cầu, lập thuật ngữ và ví dụ nhỏ | | Bước 1: đọc LR25, ghi chú tại [notes/LR25_nguyen_hong_phuc_2026.md](notes/LR25_nguyen_hong_phuc_2026.md) |
+| 27/09/2026 | Bước 1 | Đọc LR25, lập bảng 4 nhóm (đầu vào/quyết định/ràng buộc/mục tiêu), diễn giải 2 ràng buộc, ghi điểm khác đồ án | | Bước 2: đọc LR01 (FJSP review) + LR02 (hybrid flow shop) |
+| 27/09/2026 | Bước 2 | Đọc LR01 + LR02, phân biệt JSP/FJSP/hybrid flow shop, makespan vs độ trễ giao hàng, định vị tuyến đúc→CNC→sơn→QC | | Bước 3: đọc LR08 (PyJobShop), dựng mô hình CP tối thiểu cho ví dụ nhỏ |

@@ -16,6 +16,9 @@ from .models import (
     MachineDowntime,
     MachineShift,
     MachineWindow,
+    MasterBtpCode,
+    MasterBtpInventory,
+    MasterBtpRouting,
     MasterDataset,
     MasterLot,
     MasterLotAllocation,
@@ -31,6 +34,15 @@ from .schemas import (
     MasterDatasetSummary,
     SchedulingInput,
 )
+
+BTP_STAGES = ("cast", "cnc", "paint")
+
+
+def _routing_by_product(rows: list[MasterBtpRouting]) -> dict[str, dict[str, str]]:
+    grouped: dict[str, dict[str, str]] = {}
+    for row in rows:
+        grouped.setdefault(row.product_code, {})[row.stage] = row.btp_code
+    return grouped
 
 
 class MasterDataService:
@@ -55,6 +67,9 @@ class MasterDataService:
             self.session.add(dataset)
             self.session.flush()
             self._import_products(dataset.id, raw)
+            self._import_btp_codes(dataset.id, raw)
+            self._import_btp_routing(dataset.id, raw)
+            self._import_btp_inventory(dataset.id, raw)
             self._import_machines(dataset.id, raw)
             self._import_demand(dataset.id, raw)
             self.session.commit()
@@ -116,12 +131,18 @@ class MasterDataService:
             dataset.machines.clear()
             dataset.orders.clear()
             dataset.lots.clear()
+            dataset.btp_inventory.clear()
+            dataset.btp_routing.clear()
+            dataset.btp_codes.clear()
             self.session.flush()
             dataset.source_hash = source_hash
             dataset.revision = expected_revision + 1
             dataset.updated_at = utc_now()
             self._apply_metadata(dataset, scheduling_input)
             self._import_products(dataset.id, raw)
+            self._import_btp_codes(dataset.id, raw)
+            self._import_btp_routing(dataset.id, raw)
+            self._import_btp_inventory(dataset.id, raw)
             self._import_machines(dataset.id, raw)
             self._import_demand(dataset.id, raw)
             self.session.commit()
@@ -137,6 +158,8 @@ class MasterDataService:
         *,
         expected_revision: int,
         code: str,
+        color: str,
+        line: str,
         initial_inventory: int,
         safety_stock: int,
     ) -> MasterDatasetDetail:
@@ -146,8 +169,18 @@ class MasterDataService:
                     "PRODUCT_ALREADY_EXISTS", f"Product '{code}' already exists", status_code=409
                 )
             raw["products"].append(code)
+            raw["product_color"][code] = color
+            raw["product_line"][code] = line
             raw["initial_inventory"][code] = initial_inventory
             raw["safety_stock"][code] = safety_stock
+            # New product starts with its own dedicated BTP codes (no assumed
+            # sharing) — user can consolidate/re-route via the routing UI later.
+            raw["btp_routing"][code] = {}
+            for stage in BTP_STAGES:
+                btp_code = f"{code}_{stage.upper()}"
+                if btp_code not in raw["btp_codes"]:
+                    raw["btp_codes"].append(btp_code)
+                raw["btp_routing"][code][stage] = btp_code
 
         return self._mutate(dataset_id, expected_revision, mutate)
 
@@ -157,11 +190,15 @@ class MasterDataService:
         code: str,
         *,
         expected_revision: int,
+        color: str,
+        line: str,
         initial_inventory: int,
         safety_stock: int,
     ) -> MasterDatasetDetail:
         def mutate(raw: dict[str, Any]) -> None:
             self._require_code(raw["products"], code, "PRODUCT_NOT_FOUND")
+            raw["product_color"][code] = color
+            raw["product_line"][code] = line
             raw["initial_inventory"][code] = initial_inventory
             raw["safety_stock"][code] = safety_stock
 
@@ -187,8 +224,109 @@ class MasterDataService:
                     status_code=409,
                 )
             raw["products"].remove(code)
+            raw["product_color"].pop(code, None)
+            raw["product_line"].pop(code, None)
             raw["initial_inventory"].pop(code)
             raw["safety_stock"].pop(code)
+            raw["btp_routing"].pop(code, None)
+
+        return self._mutate(dataset_id, expected_revision, mutate)
+
+    def create_btp_code(
+        self, dataset_id: str, *, expected_revision: int, code: str
+    ) -> MasterDatasetDetail:
+        def mutate(raw: dict[str, Any]) -> None:
+            if code in raw["btp_codes"]:
+                raise ApplicationError(
+                    "BTP_CODE_ALREADY_EXISTS", f"BTP code '{code}' already exists", status_code=409
+                )
+            raw["btp_codes"].append(code)
+
+        return self._mutate(dataset_id, expected_revision, mutate)
+
+    def rename_btp_code(
+        self, dataset_id: str, code: str, *, expected_revision: int, new_code: str
+    ) -> MasterDatasetDetail:
+        def mutate(raw: dict[str, Any]) -> None:
+            self._require_code(raw["btp_codes"], code, "BTP_CODE_NOT_FOUND")
+            if new_code != code and new_code in raw["btp_codes"]:
+                raise ApplicationError(
+                    "BTP_CODE_ALREADY_EXISTS", f"BTP code '{new_code}' already exists", status_code=409
+                )
+            raw["btp_codes"] = [new_code if item == code else item for item in raw["btp_codes"]]
+            for stage_map in raw["btp_routing"].values():
+                for stage, mapped in list(stage_map.items()):
+                    if mapped == code:
+                        stage_map[stage] = new_code
+            if code in raw["inventory_btp"]:
+                raw["inventory_btp"][new_code] = raw["inventory_btp"].pop(code)
+            if code in raw["btp_capacity"]:
+                raw["btp_capacity"][new_code] = raw["btp_capacity"].pop(code)
+
+        return self._mutate(dataset_id, expected_revision, mutate)
+
+    def delete_btp_code(
+        self, dataset_id: str, code: str, *, expected_revision: int
+    ) -> MasterDatasetDetail:
+        def mutate(raw: dict[str, Any]) -> None:
+            self._require_code(raw["btp_codes"], code, "BTP_CODE_NOT_FOUND")
+            used = any(
+                mapped == code for stage_map in raw["btp_routing"].values() for mapped in stage_map.values()
+            )
+            if used:
+                raise ApplicationError(
+                    "BTP_CODE_IN_USE",
+                    f"BTP code '{code}' is referenced by a product/stage routing",
+                    status_code=409,
+                )
+            raw["btp_codes"].remove(code)
+            raw["inventory_btp"].pop(code, None)
+            raw["btp_capacity"].pop(code, None)
+
+        return self._mutate(dataset_id, expected_revision, mutate)
+
+    def set_btp_routing(
+        self, dataset_id: str, product_code: str, stage: str, *, expected_revision: int, btp_code: str
+    ) -> MasterDatasetDetail:
+        def mutate(raw: dict[str, Any]) -> None:
+            self._require_code(raw["products"], product_code, "PRODUCT_NOT_FOUND")
+            if stage not in BTP_STAGES:
+                raise ApplicationError(
+                    "BTP_STAGE_INVALID",
+                    f"'{stage}' is not a semi-finished stage (expected one of {BTP_STAGES})",
+                    status_code=422,
+                )
+            self._require_code(raw["btp_codes"], btp_code, "BTP_CODE_NOT_FOUND")
+            raw["btp_routing"].setdefault(product_code, {})[stage] = btp_code
+
+        return self._mutate(dataset_id, expected_revision, mutate)
+
+    def upsert_btp_inventory(
+        self,
+        dataset_id: str,
+        btp_code: str,
+        *,
+        expected_revision: int,
+        initial_qty: int,
+        capacity: int | None,
+    ) -> MasterDatasetDetail:
+        def mutate(raw: dict[str, Any]) -> None:
+            self._require_code(raw["btp_codes"], btp_code, "BTP_CODE_NOT_FOUND")
+            raw["inventory_btp"][btp_code] = initial_qty
+            if capacity is None:
+                raw["btp_capacity"].pop(btp_code, None)
+            else:
+                raw["btp_capacity"][btp_code] = capacity
+
+        return self._mutate(dataset_id, expected_revision, mutate)
+
+    def delete_btp_inventory(
+        self, dataset_id: str, btp_code: str, *, expected_revision: int
+    ) -> MasterDatasetDetail:
+        def mutate(raw: dict[str, Any]) -> None:
+            self._require_code(raw["btp_codes"], btp_code, "BTP_CODE_NOT_FOUND")
+            raw["inventory_btp"].pop(btp_code, None)
+            raw["btp_capacity"].pop(btp_code, None)
 
         return self._mutate(dataset_id, expected_revision, mutate)
 
@@ -297,6 +435,8 @@ class MasterDataService:
         dataset.checkpoints = scheduling_input.checkpoints
         dataset.minimum_lot = scheduling_input.minimum_lot
         dataset.max_surplus = scheduling_input.max_surplus
+        dataset.max_surplus_btp = scheduling_input.max_surplus_btp
+        dataset.transfer_minutes = scheduling_input.transfer_minutes
         dataset.weights = scheduling_input.weights.model_dump(mode="json")
         dataset.assumptions = scheduling_input.assumptions
 
@@ -306,11 +446,46 @@ class MasterDataService:
                 MasterProduct(
                     dataset_id=dataset_id,
                     code=code,
+                    color=raw["product_color"].get(code, "UNKNOWN"),
+                    line=raw["product_line"].get(code, "UNKNOWN"),
                     initial_inventory=raw["initial_inventory"][code],
                     safety_stock=raw["safety_stock"][code],
                     sort_index=index,
                 )
                 for index, code in enumerate(raw["products"])
+            ]
+        )
+
+    def _import_btp_codes(self, dataset_id: str, raw: dict[str, Any]) -> None:
+        self.session.add_all(
+            [
+                MasterBtpCode(dataset_id=dataset_id, code=code, sort_index=index)
+                for index, code in enumerate(raw["btp_codes"])
+            ]
+        )
+
+    def _import_btp_routing(self, dataset_id: str, raw: dict[str, Any]) -> None:
+        self.session.add_all(
+            [
+                MasterBtpRouting(
+                    dataset_id=dataset_id, product_code=product_code, stage=stage, btp_code=btp_code
+                )
+                for product_code, stage_map in raw["btp_routing"].items()
+                for stage, btp_code in stage_map.items()
+            ]
+        )
+
+    def _import_btp_inventory(self, dataset_id: str, raw: dict[str, Any]) -> None:
+        codes = set(raw["inventory_btp"]) | set(raw["btp_capacity"])
+        self.session.add_all(
+            [
+                MasterBtpInventory(
+                    dataset_id=dataset_id,
+                    btp_code=code,
+                    initial_qty=raw["inventory_btp"].get(code, 0),
+                    capacity=raw["btp_capacity"].get(code),
+                )
+                for code in codes
             ]
         )
 
@@ -510,6 +685,9 @@ class MasterDataService:
             selectinload(MasterDataset.machines).selectinload(MasterMachine.mold),
             selectinload(MasterDataset.orders).selectinload(MasterOrder.allocations),
             selectinload(MasterDataset.lots),
+            selectinload(MasterDataset.btp_inventory),
+            selectinload(MasterDataset.btp_codes),
+            selectinload(MasterDataset.btp_routing),
         )
 
     @staticmethod
@@ -603,8 +781,18 @@ class MasterDataService:
             "working_days": dataset.working_days,
             "stages": dataset.stages,
             "products": [product.code for product in products],
+            "product_color": {product.code: product.color for product in products},
+            "product_line": {product.code: product.line for product in products},
             "initial_inventory": {product.code: product.initial_inventory for product in products},
             "safety_stock": {product.code: product.safety_stock for product in products},
+            "btp_codes": [item.code for item in sorted(dataset.btp_codes, key=lambda item: item.sort_index)],
+            "btp_routing": _routing_by_product(dataset.btp_routing),
+            "inventory_btp": {row.btp_code: row.initial_qty for row in dataset.btp_inventory},
+            "btp_capacity": {
+                row.btp_code: row.capacity for row in dataset.btp_inventory if row.capacity is not None
+            },
+            "max_surplus_btp": dataset.max_surplus_btp,
+            "transfer_minutes": dataset.transfer_minutes,
             "checkpoints": dataset.checkpoints,
             "minimum_lot": dataset.minimum_lot,
             "max_surplus": dataset.max_surplus,

@@ -2,7 +2,7 @@
 
 **Mục đích:** tổng hợp và làm rõ yêu cầu từ [báo cáo sơ bộ](../Report_so_bo_Do_an_CO5103_VoVanDung.md) (mục 1–4) và [đặc tả kỹ thuật](../TECHNICAL_SPEC.md) (§1–§2), làm căn cứ chung cho triển khai, kiểm thử và trình bày đề tài.
 
-**Phiên bản rà soát:** 19/09/2026; bổ sung quản lý tồn kho bán thành phẩm ngày 21/09/2026 (A09, A10, R12). Bản này bổ sung quy tắc để giải quyết những điểm chưa rõ; không còn chỉ là bản trích lại. Các mặc định ở mục 3.3 là **giả định mô hình cho đồ án**, chưa phải quy trình đã được nhà máy xác nhận. Những khác biệt với tài liệu gốc cần đồng bộ được liệt kê ở mục 9; khi có xung đột chưa xử lý, ghi nhận rõ thay vì tự chọn cách hiểu thuận lợi cho thuật toán.
+**Phiên bản rà soát:** 19/09/2026; bổ sung quản lý tồn kho bán thành phẩm ngày 21/09/2026 (A09, A10, R12); bổ sung độ trễ chuyển tiếp BTP cố định ngày 27/09/2026 (A09, R12; mục 3.2); bổ sung công thức tính số lô từ đơn hàng, tồn kho và lượng lô ngày 28/09/2026 (A01, A02, R04, R09; mục 3.3.1). Bản này bổ sung quy tắc để giải quyết những điểm chưa rõ; không còn chỉ là bản trích lại. Các mặc định ở mục 3.3 là **giả định mô hình cho đồ án**, chưa phải quy trình đã được nhà máy xác nhận. Những khác biệt với tài liệu gốc cần đồng bộ được liệt kê ở mục 9; khi có xung đột chưa xử lý, ghi nhận rõ thay vì tự chọn cách hiểu thuận lợi cho thuật toán.
 
 **Tên đề tài:** Xây dựng tác nhân lập lịch sản xuất tạo ra lịch hợp lý, ứng dụng trong ngành sản xuất linh kiện — trường hợp nghiên cứu: sản xuất bánh xe.
 
@@ -59,9 +59,46 @@ Thiết kế một tác nhân lập lịch sản xuất có khả năng:
 | A07 — Sự cố | Khi máy hỏng giữa gia công, giữ phần đã làm và tiếp tục phần còn lại trên máy đó sau sửa; đây là ngoại lệ ngắt việc do sự cố. Giả định không mất sản phẩm và không mất trạng thái setup do sự cố. Nếu dữ liệu thực tế không phù hợp, phải đổi chính sách trước khi dùng mô hình. |
 | A08 — Tận dụng resource | Sau khi bảo vệ khả năng giao đơn và tồn kho an toàn, được chọn lô dự trữ để lấp công suất còn trống khi chi phí resource nhàn rỗi tránh được lớn hơn chi phí setup, sản xuất, lưu kho và rủi ro tồn dư. Ưu tiên lấp ca đã mở; chỉ mở thêm ca/tăng ca cho lô dự trữ khi cấu hình cho phép và lợi ích vẫn lớn hơn toàn bộ chi phí tăng thêm. Không ép máy chạy hoặc sản xuất vượt trần chỉ để làm đẹp utilization. Công suất trống chỉ ở một số công đoạn có thể được lấp bằng lượt sản xuất dự trữ bán thành phẩm theo A09–A10. |
 | A09 — Bán thành phẩm | **Bán thành phẩm (BTP)** là sản phẩm đã hoàn tất công đoạn đúc, CNC hoặc sơn. **Mọi công đoạn sau lấy nguyên liệu từ tồn BTP của công đoạn ngay trước, không lấy trực tiếp từ lượt chạy của lô trước.** Tồn BTP được quản lý theo mã sản phẩm và công đoạn vừa hoàn tất, ở mức lượng; các đơn vị cùng mã và cùng công đoạn hoán đổi được cho nhau, không theo dõi đơn vị nào do lô nào sinh ra. Công đoạn đúc lấy nguyên liệu thô, giả định đủ tại thời điểm lượt chạy bắt đầu (mục 3.2); công đoạn QC nhập thành phẩm (R07). Tồn BTP đầu kỳ là dữ liệu đầu vào riêng, không nhầm với công đoạn dở dang. Sức chứa tối đa của từng (sản phẩm, công đoạn) là dữ liệu tùy chọn; chưa khai báo thì hiểu là không giới hạn. Giả định BTP không hỏng, không phế phẩm, không hạn dùng, mỗi BTP thuộc đúng một sản phẩm cuối; BTP dùng chung cho nhiều sản phẩm cuối (ví dụ nhiều màu sơn) cần khai báo ánh xạ riêng trước khi dùng. |
-| A10 — Lượt chạy | **Lượt chạy** là một lần sản xuất của một lô tại một công đoạn trên một máy (thường 25 sản phẩm). Khi hoàn tất, lượt chạy công đoạn k nhập đúng lượng của lô vào tồn BTP công đoạn k; khi bắt đầu (bắt đầu setup nếu lượt có setup, nếu không thì bắt đầu gia công), lượt chạy công đoạn k+1 trừ đúng lượng đó khỏi tồn BTP công đoạn k. Lượt công đoạn k+1 chỉ bắt đầu khi tồn BTP tại thời điểm bắt đầu đủ lượng, dù lượng đó do lô nào tạo ra hoặc từ tồn đầu kỳ; không phải chờ lượt của cùng lô ở công đoạn trước. Hoàn tất được ghi nhận trước tiêu thụ nếu cùng thời điểm. Lượt QC mang danh tính lô: lô bắt buộc phải có lượt QC, lô dự trữ thành phẩm có lượt QC nếu được chọn. Các lượt ở công đoạn đúc, CNC, sơn là lượt **tùy chọn**, chỉ chạy khi cần để tồn đủ cho công đoạn sau hoặc để dự trữ. **Lượt dự trữ BTP** là lượt tùy chọn tạo tồn BTP vượt nhu cầu của các lô đã chọn; chỉ được chọn theo chính sách A08, vẫn tiêu hao chu kỳ khuôn (đúc), chịu setup và bảo trì như mọi lượt (A04–A05). Tồn BTP còn lại cuối kỳ được liệt kê riêng theo A06 và chịu chi phí lưu và rủi ro tồn dư. |
+| A10 — Lượt chạy | **Lượt chạy** là một lần sản xuất của một lô tại một công đoạn trên một máy (thường 25 sản phẩm). Khi hoàn tất, lượt chạy công đoạn k nhập đúng lượng của lô vào tồn BTP công đoạn k **sau một độ trễ chuyển tiếp cố định 10 phút** (thời gian bê/chuyển bán thành phẩm giữa 2 công đoạn liền kề, áp dụng cho mọi cặp đúc→CNC, CNC→sơn, sơn→QC — không phải chờ toàn lô, không mô hình tài nguyên vận chuyển tường minh); khi bắt đầu (bắt đầu setup nếu lượt có setup, nếu không thì bắt đầu gia công), lượt chạy công đoạn k+1 trừ đúng lượng đó khỏi tồn BTP công đoạn k. Lượt công đoạn k+1 chỉ bắt đầu khi tồn BTP tại thời điểm bắt đầu đủ lượng, dù lượng đó do lô nào tạo ra hoặc từ tồn đầu kỳ; không phải chờ lượt của cùng lô ở công đoạn trước. Hoàn tất cộng độ trễ chuyển tiếp được ghi nhận trước tiêu thụ nếu cùng thời điểm. Lượt QC mang danh tính lô: lô bắt buộc phải có lượt QC, lô dự trữ thành phẩm có lượt QC nếu được chọn. Các lượt ở công đoạn đúc, CNC, sơn là lượt **tùy chọn**, chỉ chạy khi cần để tồn đủ cho công đoạn sau hoặc để dự trữ. **Lượt dự trữ BTP** là lượt tùy chọn tạo tồn BTP vượt nhu cầu của các lô đã chọn; chỉ được chọn theo chính sách A08, vẫn tiêu hao chu kỳ khuôn (đúc), chịu setup và bảo trì như mọi lượt (A04–A05). Tồn BTP còn lại cuối kỳ được liệt kê riêng theo A06 và chịu chi phí lưu và rủi ro tồn dư. |
 
 Các giả định trên là cấu hình của bài toán, không phải lựa chọn ngầm của solver. Thay đổi giả định phải cập nhật cả bộ sinh dữ liệu, baseline và bộ kiểm tra lịch.
+
+#### 3.3.1. Cách tạo lô từ đơn hàng (bước chuẩn bị dữ liệu, trước khi lập lịch)
+
+A01 quy định lô được tạo trước khi lập lịch và kích thước lô là tham số cố định của solver (mục 3.2 loại việc tối ưu đồng thời kích thước lô và lịch). Vì vậy số lô và lượng từng lô phải được tính ở bước chuẩn bị dữ liệu theo quy tắc dưới đây, không nhập tay tùy ý. Với mỗi sản phẩm p trong horizon:
+
+| Ký hiệu | Ý nghĩa |
+|---|---|
+| D_p | Tổng số lượng các đơn hàng của sản phẩm p trong horizon |
+| I_p | Tồn thành phẩm đầu kỳ của p |
+| SS_p | Tồn kho an toàn cần giữ của p (R09); đặt SS_p = 0 nếu cấu hình không yêu cầu giữ tồn an toàn cuối kỳ |
+| Q | Lượng chuẩn của một lô (thường 25, theo A01) |
+| L_min | Lô tối thiểu về kỹ thuật (`minimum_lot`, R04) |
+
+```
+Nhu cầu ròng cần sản xuất   N_p = max(0, D_p + SS_p − I_p)
+Số lô                       n_p = ⌈ N_p / Q ⌉
+Lượng dư kỹ thuật           s_p = n_p · Q − N_p
+```
+
+Quy tắc đi kèm:
+
+1. **Dùng tồn trước, sản xuất sau.** Tồn thành phẩm đầu kỳ được phân bổ cho các đơn của p theo hạn giao tăng dần (hòa thì theo độ ưu tiên); phần tồn còn lại sau khi đủ các đơn được tính vào SS_p. Lượng đó ghi vào `initial_allocated` của từng đơn, tính ra từ công thức, không khai tay.
+2. **Gom đơn cùng sản phẩm.** Phần nhu cầu còn lại của các đơn cùng sản phẩm được gộp thành một pool rồi chia thành n_p lô; lô được gán cho đơn theo hạn giao tăng dần và ghi `lot_allocations` (A01, A02). Một lô có thể phục vụ nhiều đơn, một đơn có thể dùng nhiều lô.
+3. **Lô chuẩn hoặc lô co giãn.** Mặc định mọi lô có lượng Q. Khi cần giảm lượng dư, cho phép chia đều N_p cho n_p lô, mỗi lô nằm trong [L_min, Q]; nếu N_p / n_p < L_min thì nâng mỗi lô lên L_min và phần chênh là lượng dư kỹ thuật (A02).
+4. **Kiểm tra sau khi tính.** Tổng lượng dư Σ s_p phải không vượt giới hạn lượng dư của lần chạy và tồn dự kiến của từng sản phẩm không vượt trần (R04). Vượt giới hạn thì báo rõ và chọn: dùng lô co giãn, hoặc nâng giới hạn có ghi nhận; không được âm thầm bỏ ràng buộc.
+5. **Tồn BTP không làm giảm số lô.** Mọi lô bắt buộc chạy đủ bốn công đoạn (A10), nên tồn BTP đầu kỳ chỉ là bộ đệm giữa các công đoạn và được tính vào tổng lượng dư BTP theo R12. Muốn tồn BTP thay được lượt chạy ở công đoạn trước thì cần lượt tùy chọn theo A10, thuộc hướng mở rộng A08.
+
+Ví dụ với bộ dữ liệu nhỏ `dataset/wheel-factory-small/` (Q = 25, có tính tồn an toàn):
+
+| Sản phẩm | D | SS | I | N | n | Dư |
+|---|---|---|---|---|---|---|
+| F_SILVER | 44 | 8 | 10 | 42 | 2 | 8 |
+| F_BLACK | 20 | 6 | 6 | 20 | 1 | 5 |
+| R_SILVER | 20 | 6 | 6 | 20 | 1 | 5 |
+| R_BLACK | 24 | 6 | 8 | 22 | 1 | 3 |
+
+Kết quả là 5 lô với tổng dư 21, lớn hơn giới hạn lượng dư 10 của bộ dữ liệu hiện tại, nên nếu áp quy tắc này phải nâng giới hạn hoặc dùng lô co giãn. Bộ dữ liệu nhỏ hiện dùng lô 20/24 đặt tay và chưa sinh từ công thức này; quy tắc chưa được cài đặt trong code.
 
 ### 3.4. Thời gian xử lý theo công đoạn, sản phẩm, máy và lượng lô
 
@@ -90,7 +127,8 @@ Ví dụ, lô 84 bánh trước bạc trong bộ dữ liệu tổng hợp hiện
 - **setup/changeover** do trạng thái hoặc sản phẩm trước đó quyết định;
 - **bảo trì**, giờ nghỉ và downtime;
 - **thời gian chờ** bán thành phẩm, máy hoặc khuôn;
-- thời gian vận chuyển, phế phẩm và làm lại, vì các nội dung này ngoài phạm vi hiện tại.
+- **độ trễ chuyển tiếp BTP** giữa 2 công đoạn liền kề: cố định 10 phút, cộng vào thời điểm bán thành phẩm được tính là "đã nhập" tồn (xem A09, R12, mục 3.2) — đã vào phạm vi từ 27/09/2026;
+- tài nguyên vận chuyển tường minh (AGV, xe nâng có định tuyến/tranh chấp), phế phẩm và làm lại, vì các nội dung này ngoài phạm vi hiện tại.
 
 Một phương án chỉ hợp lệ khi máy thuộc đúng công đoạn, máy–sản phẩm nằm trong tập đủ điều kiện và có đủ tham số thời gian. Thiếu bản ghi thời gian là lỗi dữ liệu, không được hiểu là thời lượng bằng 0. Do lượng của từng lô bắt buộc và lô dự trữ tùy chọn đều được chốt trước theo A01, `processing_time[l,s,m]` là hằng số sau khi chọn máy; biến quyết định về việc chạy chỉ là chọn hay không chọn lô tùy chọn (lượt QC của nó) và các lượt tùy chọn ở công đoạn đúc, CNC, sơn theo A10; thời lượng của mọi lượt vẫn là hằng số sau khi chọn máy. Nếu sau này cho solver tự quyết định cả kích thước lô, quan hệ giữa lượng và thời lượng phải được đưa thành biến/ràng buộc; đó là phần mở rộng đang được loại khỏi phạm vi ở mục 3.2.
 
@@ -149,7 +187,7 @@ Sử dụng khung **Flexible Job-Shop Scheduling Problem (FJSP)** để biểu d
 | R09 | Tồn kho an toàn | Mềm | Thiếu hụt tại cuối ngày = max(0, ngưỡng an toàn − tồn thực tế); tính phạt và báo cáo. Không nhầm thiếu safety stock với tồn vật lý âm. |
 | R10 | Hiệu suất sử dụng máy | Mềm | Giảm chi phí resource nhàn rỗi theo toàn bộ ca bật và cho phép chọn lô dự trữ theo A08; báo idle/utilization theo mục 4.4. Không ép đạt tỷ lệ cứng hoặc sản xuất vượt trần chỉ để tăng utilization. |
 | R11 | Bảo toàn phần lịch thực hiện | Cứng | Không sửa lịch quá khứ; cập nhật việc đang chạy và tài nguyên theo trạng thái thực tại thời điểm sự kiện, theo mục 4.5. |
-| R12 | Tồn kho bán thành phẩm | Cứng | Với mỗi (sản phẩm, công đoạn k = đúc, CNC, sơn): tồn = tồn đầu kỳ + lượng các lượt công đoạn k đã hoàn tất − lượng các lượt công đoạn k+1 đã bắt đầu; không âm và không vượt sức chứa (nếu có khai báo) tại mọi sự kiện; hoàn tất được ghi nhận trước tiêu thụ nếu cùng thời điểm. Không dùng cùng một đơn vị BTP cho hai lượt; lượt tùy chọn đã chọn phải hoàn tất trong horizon; tổng lượng BTP dự trữ không vượt giới hạn cấu hình của lần chạy. |
+| R12 | Tồn kho bán thành phẩm | Cứng | Với mỗi (sản phẩm, công đoạn k = đúc, CNC, sơn): tồn = tồn đầu kỳ + lượng các lượt công đoạn k đã hoàn tất **và đã qua độ trễ chuyển tiếp cố định (10 phút)** − lượng các lượt công đoạn k+1 đã bắt đầu; không âm và không vượt sức chứa (nếu có khai báo) tại mọi sự kiện; hoàn tất cộng độ trễ chuyển tiếp được ghi nhận trước tiêu thụ nếu cùng thời điểm. Không dùng cùng một đơn vị BTP cho hai lượt; lượt tùy chọn đã chọn phải hoàn tất trong horizon; tổng lượng BTP dự trữ không vượt giới hạn cấu hình của lần chạy. |
 
 Lượng chưa giao được theo dõi riêng với tồn kho; không trừ nhu cầu đúng hạn khỏi tồn vật lý khi thực tế chưa giao. Việc gộp/hoãn lô có thể gây trễ và phải chịu phạt R08; không được vi phạm deadline cứng để tăng hiệu suất. Lô dự trữ là công việc tùy chọn, không được dùng để che việc bỏ sót lô bắt buộc. Tương tự, tồn BTP và lượt dự trữ BTP không được dùng để che việc bỏ sót lô bắt buộc; mọi lượt của lô bắt buộc phải có nguồn tồn theo R12.
 
@@ -297,6 +335,7 @@ Xây dựng thêm các phân tích từ lịch và các lần giải đối ch�
 | Nội dung | Cách hiểu trong bản rà soát | Việc cần đồng bộ |
 |---|---|---|
 | Tồn kho | Tồn vật lý không âm và không vượt trần là cứng; safety stock mềm; cho phép lô dự trữ tùy chọn có giới hạn | Schema lô/tồn kho, bảng ràng buộc, mục tiêu và DoD trong cả hai tài liệu gốc |
+| Số lô | Số lô và lượng từng lô tính ở bước chuẩn bị dữ liệu: N = max(0, D + SS − I), n = ⌈N/Q⌉ (mục 3.3.1); solver không tự chia lô | Bộ sinh dữ liệu, planning và bộ kiểm tra lô/lượng dư; đồng bộ với A01, A02, R04 |
 | Bán thành phẩm | Mọi công đoạn sau lấy nguyên liệu từ tồn BTP của công đoạn ngay trước, quản lý theo mã sản phẩm và công đoạn; lô giữ danh tính ở QC; R12 là cứng; chi phí lưu BTP nằm trong chi phí lô dự trữ; sức chứa không khai báo hiểu là không giới hạn | Quy tắc "công đoạn sau chờ toàn lô" thay bằng lấy từ tồn; schema lượt chạy và lô, bảng tồn BTP, ràng buộc bảo toàn BTP, mục tiêu, DoD và kế hoạch đánh giá trong cả hai tài liệu gốc |
 | Hiệu suất | Đo theo toàn ca bật; 90% là tham chiếu theo tải; có thể lấp idle bằng lô dự trữ khi hiệu quả kinh tế | Công thức idle/utilization, chi phí idle–lưu kho, biến chọn lô, biến bật ca và tiêu chí thành công |
 | Planning | Tổng hợp nhu cầu tháng/quý, đầu vào scheduling 2 tuần, chưa cần solver tối ưu riêng | Sơ đồ aggregate engine CP-SAT trong TECHNICAL_SPEC và mô tả phạm vi |

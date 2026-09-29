@@ -14,7 +14,7 @@ input=$(cat)
 if command -v jq >/dev/null 2>&1; then
   cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty')
 else
-  cmd=$(printf '%s' "$input" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("tool_input",{}).get("command",""))' 2>/dev/null || echo "")
+  cmd=$(printf '%s' "$input" | python -c 'import sys,json;print(json.load(sys.stdin).get("tool_input",{}).get("command",""))' 2>/dev/null || echo "")
 fi
 
 [ -z "$cmd" ] && exit 0

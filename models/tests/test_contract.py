@@ -2,9 +2,62 @@
 import copy
 import unittest
 
+from ortools.sat.python import cp_model
+
 from models.common.instance import build, STAGES
 from models.common.decoder import decode
 from models.common.evaluate import evaluate, validate
+
+
+class ReservoirSimultaneousEvents(unittest.TestCase):
+    """Locks in the OR-Tools semantics C7b's implementation in cp_engine.py relies
+    on: mathematical_model.md flags this as unverified ("chưa kiểm ngữ nghĩa sự
+    kiện đồng thời"). Same-instant events must net out (merge) rather than be
+    checked in an adversarial per-event order; distinct-time events must still
+    respect real chronological order."""
+
+    def test_same_instant_events_merge_net_effect(self):
+        model = cp_model.CpModel()
+        t = model.new_int_var(0, 100, "t")
+        model.add_reservoir_constraint([t, t], [-3, 3], 0, 10)
+        solver = cp_model.CpSolver()
+        self.assertIn(solver.solve(model), (cp_model.OPTIMAL, cp_model.FEASIBLE))
+
+    def test_same_instant_events_still_enforce_bounds(self):
+        model = cp_model.CpModel()
+        t = model.new_int_var(0, 100, "t")
+        model.add_reservoir_constraint([t, t], [-5, 3], 0, 10)
+        solver = cp_model.CpSolver()
+        self.assertEqual(solver.solve(model), cp_model.INFEASIBLE)
+
+    def test_distinct_times_require_production_before_consumption(self):
+        consume_first = cp_model.CpModel()
+        consume_first.add_reservoir_constraint([5, 10], [-3, 3], 0, 10)
+        self.assertEqual(cp_model.CpSolver().solve(consume_first), cp_model.INFEASIBLE)
+
+        produce_first = cp_model.CpModel()
+        produce_first.add_reservoir_constraint([5, 10], [3, -3], 0, 10)
+        self.assertIn(cp_model.CpSolver().solve(produce_first), (cp_model.OPTIMAL, cp_model.FEASIBLE))
+
+
+def single():
+    """One lot, zero initial BTP: its own casting run is the ONLY possible source
+    for its own CNC run, so any transfer_minutes lag is forced and unambiguous."""
+    d = build()
+    d["lots"] = copy.deepcopy(d["lots"][:1])
+    d["orders"] = []
+    d["initial_inventory"] = {p: 0 for p in d["products"]}
+    lot = d["lots"][0]
+    lot["release"], lot["order"] = 360, "T0"
+    d["orders"].append({"id": lot["order"], "product": lot["product"], "release": 360, "due": 1800,
+                         "priority": 1, "quantity": lot["quantity"], "initial_allocated": 0,
+                         "lot_allocations": {lot["id"]: lot["quantity"]}})
+    d["checkpoints"] = [1440, 2880]
+    d["horizon"] = 2880
+    for machine in d["machines"].values():
+        machine["windows"] = [w for w in machine["windows"] if w["end"] <= 2880]
+        machine["shifts"] = [s for s in machine["shifts"] if s["end"] <= 2880]
+    return d
 
 
 def tiny():
@@ -25,6 +78,115 @@ def tiny():
         machine["windows"] = [w for w in machine["windows"] if w["end"]<=2880]
         machine["shifts"] = [s for s in machine["shifts"] if s["end"]<=2880]
     return d
+
+
+def cross_product_shared_code():
+    """A09's actual example: F_SILVER and F_BLACK share one casting blank (same
+    line, cast on the SAME machine, diverging only at paint) — route both
+    products' cast stage to one shared BTP code instead of their own dedicated
+    ones, so a CNC run of either product may consume BTP the OTHER produced."""
+    d = build()
+    first = next(l for l in d["lots"] if l["product"] == "F_SILVER")
+    second = next(l for l in d["lots"] if l["product"] == "F_BLACK")
+    d["lots"] = copy.deepcopy([first, second])
+    d["orders"] = []
+    d["initial_inventory"] = {p: 0 for p in d["products"]}
+    for i, lot in enumerate(d["lots"]):
+        lot["release"], lot["order"] = 360, f"T{i}"
+        d["orders"].append({"id": lot["order"], "product": lot["product"], "release": 360, "due": 1800,
+                             "priority": 1, "quantity": lot["quantity"], "initial_allocated": 0,
+                             "lot_allocations": {lot["id"]: lot["quantity"]}})
+    d["checkpoints"] = [1440, 2880]
+    d["horizon"] = 2880
+    for machine in d["machines"].values():
+        machine["windows"] = [w for w in machine["windows"] if w["end"] <= 2880]
+        machine["shifts"] = [s for s in machine["shifts"] if s["end"] <= 2880]
+    shared = "F_SHARED_CAST"
+    d["btp_codes"] = d["btp_codes"] + [shared]
+    d["btp_routing"]["F_SILVER"]["cast"] = shared
+    d["btp_routing"]["F_BLACK"]["cast"] = shared
+    return d
+
+
+class BTPCodeSharing(unittest.TestCase):
+    """A09: 1 BTP code CAN be shared by multiple finished products, not just by
+    multiple lots of the same product (BTPTransferLag/decoder already covers the
+    single-product interleave; this covers genuine cross-product pooling)."""
+
+    def test_decoder_lets_either_product_consume_the_shared_pool(self):
+        data = cross_product_shared_code()
+        rows = decode(data, "edd")
+        self.assertTrue(validate(data, rows)["valid"], rows)
+        cast_rows = sorted((r for r in rows if r["stage"] == "cast"), key=lambda r: r["end"])
+        cnc_rows = {r["lot"]: r for r in rows if r["stage"] == "cnc"}
+        first_cast, second_cast = cast_rows
+        # The SECOND lot's CNC may legitimately start using BTP the FIRST lot (a
+        # DIFFERENT product) produced — cross-product pooling, not just same-lot.
+        second_lot_cnc = cnc_rows[second_cast["lot"]]
+        self.assertGreaterEqual(
+            second_lot_cnc["block_start"], first_cast["end"] + data["transfer_minutes"],
+        )
+
+    def test_validator_flags_shortfall_shared_across_products(self):
+        data = cross_product_shared_code()
+        rows = copy.deepcopy(decode(data, "edd"))
+        cast_rows = sorted((r for r in rows if r["stage"] == "cast"), key=lambda r: r["end"])
+        earliest_cast = cast_rows[0]
+        target = min((r for r in rows if r["stage"] == "cnc"), key=lambda r: r["block_start"])
+        # Move it to start strictly before EITHER cast run has produced anything —
+        # the shared pool is empty at that instant no matter which product needed it.
+        shift = target["block_start"] - max(0, earliest_cast["end"] - 1)
+        for field in ("block_start", "start", "end"):
+            target[field] -= shift
+        check = validate(data, rows)
+        self.assertFalse(check["valid"])
+        self.assertTrue(any("BTP" in e for e in check["errors"]), check["errors"])
+
+    def test_cp_engine_pools_across_products(self):
+        from models.common.cp_engine import solve
+        data = cross_product_shared_code()
+        hint = decode(data, "edd")
+        rows, meta = solve(data, seconds=10, seed=11, hint=hint)
+        self.assertIsNotNone(rows, meta)
+        self.assertTrue(validate(data, rows)["valid"])
+
+
+class BTPTransferLag(unittest.TestCase):
+    """A09/R12 extension: BTP is only usable downstream transfer_minutes after the
+    upstream run physically ends. Exercises all 3 independent sites that encode
+    this rule: decoder.py (baselines), cp_engine.py (CP-SAT), evaluate.py (validator)."""
+
+    def test_decoder_enforces_lag_when_stock_is_the_only_source(self):
+        data = single()
+        rows = decode(data, "edd")
+        self.assertTrue(validate(data, rows)["valid"], rows)
+        cast_row = next(r for r in rows if r["stage"] == "cast")
+        cnc_row = next(r for r in rows if r["stage"] == "cnc")
+        self.assertGreaterEqual(cnc_row["block_start"], cast_row["end"] + data["transfer_minutes"])
+
+    def test_validator_rejects_schedule_that_skips_the_lag(self):
+        data = single()
+        rows = copy.deepcopy(decode(data, "edd"))
+        cast_row = next(r for r in rows if r["stage"] == "cast")
+        cnc_row = next(r for r in rows if r["stage"] == "cnc")
+        # Pull CNC's block_start back to exactly cast's end (0-lag), violating C7b.
+        shift = cnc_row["block_start"] - cast_row["end"]
+        for field in ("block_start", "start", "end"):
+            cnc_row[field] -= shift
+        check = validate(data, rows)
+        self.assertFalse(check["valid"])
+        self.assertTrue(any("BTP" in e for e in check["errors"]), check["errors"])
+
+    def test_cp_engine_respects_lag(self):
+        from models.common.cp_engine import solve
+        data = single()
+        hint = decode(data, "edd")
+        rows, meta = solve(data, seconds=10, seed=11, hint=hint)
+        self.assertIsNotNone(rows, meta)
+        self.assertTrue(validate(data, rows)["valid"])
+        cast_row = next(r for r in rows if r["stage"] == "cast")
+        cnc_row = next(r for r in rows if r["stage"] == "cnc")
+        self.assertGreaterEqual(cnc_row["block_start"], cast_row["end"] + data["transfer_minutes"])
 
 
 class Contract(unittest.TestCase):
@@ -56,13 +218,27 @@ class Contract(unittest.TestCase):
             row[field] = 0
             self.assertFalse(validate(self.data,rows)["valid"])
 
-    def test_precedence_detected(self):
+    def test_btp_shortfall_detected(self):
+        """A10/R12: a stage's run may not consume BTP that has not been produced yet."""
         rows = copy.deepcopy(self.rows)
         row = next(r for r in rows if r["stage"] == "qc")
         delta = row["block_start"]
         for field in ("block_start","start","end"):
             row[field] -= delta
-        self.assertTrue(any("precedence" in e for e in validate(self.data,rows)["errors"]))
+        self.assertTrue(any("BTP" in e for e in validate(self.data,rows)["errors"]))
+
+    def test_same_lot_precedence_not_required(self):
+        """A10: stage k+1 no longer needs to wait for its OWN lot's stage k to finish."""
+        rows = decode(self.data,"edd")
+        by_lot = {}
+        for r in rows:
+            by_lot.setdefault(r["lot"],{})[r["stage"]] = r
+        interleaved = any(
+            by_lot[lot][STAGES[k]]["block_start"] < by_lot[lot][STAGES[k-1]]["end"]
+            for lot in by_lot for k in range(1,4)
+        )
+        self.assertTrue(interleaved, "expected at least one cross-lot BTP interleave in a 48-lot instance")
+        self.assertTrue(validate(self.data,rows)["valid"])
 
     def test_lot_and_inventory_allocation(self):
         data = copy.deepcopy(self.data)

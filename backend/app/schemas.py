@@ -87,7 +87,7 @@ class ObjectiveWeights(StrictModel):
 
 
 class SchedulingInput(StrictModel):
-    schema_version: Literal[1]
+    schema_version: Literal[3]
     name: str = Field(min_length=1, max_length=200)
     seed: int
     origin: str = Field(min_length=1, max_length=80)
@@ -96,8 +96,22 @@ class SchedulingInput(StrictModel):
     working_days: list[NonNegativeInt] = Field(min_length=1)
     stages: list[str] = Field(min_length=1)
     products: list[str] = Field(min_length=1)
+    product_color: dict[str, str] = Field(default_factory=dict)
+    product_line: dict[str, str] = Field(default_factory=dict)
     initial_inventory: dict[str, NonNegativeInt]
     safety_stock: dict[str, NonNegativeInt]
+    # BTP (semi-finished) catalog (A09): a free-standing code, distinct from finished
+    # product codes, that one or more (product, stage in {cast,cnc,paint}) routings
+    # can share — sharing means those routings draw from the SAME inventory pool.
+    btp_codes: list[str] = Field(default_factory=list)
+    btp_routing: dict[str, dict[str, str]] = Field(default_factory=dict)
+    # Flat by BTP code. Sparse: a missing btp_code in btp_capacity means unlimited.
+    inventory_btp: dict[str, NonNegativeInt] = Field(default_factory=dict)
+    btp_capacity: dict[str, PositiveInt] = Field(default_factory=dict)
+    max_surplus_btp: NonNegativeInt = 0
+    # Fixed handoff lag (A09/R12 extension): BTP credited by a stage-k run is only
+    # usable downstream this many minutes after the run physically ends.
+    transfer_minutes: NonNegativeInt = 0
     checkpoints: list[PositiveInt] = Field(min_length=1)
     minimum_lot: PositiveInt
     max_surplus: NonNegativeInt
@@ -262,6 +276,8 @@ class MasterDatasetImport(StrictModel):
 class ProductCreate(StrictModel):
     expected_revision: PositiveInt
     code: str = Field(min_length=1, max_length=100, pattern=r"^[A-Z0-9][A-Z0-9_-]*$")
+    color: str = Field(min_length=1, max_length=40)
+    line: str = Field(min_length=1, max_length=10)
     initial_inventory: NonNegativeInt = 0
     safety_stock: NonNegativeInt = 0
 
@@ -273,8 +289,41 @@ class ProductCreate(StrictModel):
 
 class ProductUpdate(StrictModel):
     expected_revision: PositiveInt
+    color: str = Field(min_length=1, max_length=40)
+    line: str = Field(min_length=1, max_length=10)
     initial_inventory: NonNegativeInt
     safety_stock: NonNegativeInt
+
+
+class BtpInventoryUpsert(StrictModel):
+    expected_revision: PositiveInt
+    initial_qty: NonNegativeInt
+    capacity: PositiveInt | None = None
+
+
+class BtpCodeCreate(StrictModel):
+    expected_revision: PositiveInt
+    code: str = Field(min_length=1, max_length=100, pattern=r"^[A-Z0-9][A-Z0-9_-]*$")
+
+    @field_validator("code", mode="before")
+    @classmethod
+    def normalize_code(cls, value: Any) -> Any:
+        return value.strip().upper() if isinstance(value, str) else value
+
+
+class BtpCodeRename(StrictModel):
+    expected_revision: PositiveInt
+    code: str = Field(min_length=1, max_length=100, pattern=r"^[A-Z0-9][A-Z0-9_-]*$")
+
+    @field_validator("code", mode="before")
+    @classmethod
+    def normalize_code(cls, value: Any) -> Any:
+        return value.strip().upper() if isinstance(value, str) else value
+
+
+class BtpRoutingSet(StrictModel):
+    expected_revision: PositiveInt
+    btp_code: str = Field(min_length=1, max_length=100)
 
 
 class OrderUpdate(StrictModel):
