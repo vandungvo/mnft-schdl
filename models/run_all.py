@@ -4,8 +4,24 @@ import html
 from datetime import datetime, timezone
 from pathlib import Path
 from statistics import median
-from models.common.experiment import METHODS, run_one, write_csv
-from models.common.instance import ROOT, DEFAULT_INPUT, load, digest, save_json
+from models.common.experiment import METHODS, methods_for, run_one, runs_root, write_csv
+from models.common.instance import DEFAULT_INPUT, load, digest, save_json
+
+
+def describe(data):
+    """One-line description of the input, derived from the data (never hard-coded)."""
+    days = data["horizon"] // 1440
+    if data.get("schema_version") == 5:
+        runs = data["runs"]
+        lots = [r for r in runs if r["stage"] == data["stages"][-1] and "reserve_option" not in r]
+        mandatory = sum("reserve_option" not in r for r in runs)
+        return (f"{len(data['orders'])} đơn, {len(lots)} lô QC, {len(runs)} lượt chạy ({mandatory} bắt buộc, "
+                f"{len(runs) - mandatory} thuộc {len(data.get('reserve_options', {}))} phương án làm trước), "
+                f"{len(data['stages'])} công đoạn, {len(data['machines'])} máy, {len(data.get('molds', {}))} khuôn, "
+                f"horizon {days} ngày; giả định ở dataset/wheel-factory-small/SOURCE.md")
+    ops = len(data["lots"]) * len(data["stages"])
+    return (f"{len(data['orders'])} đơn, {len(data['lots'])} lô, {ops} công đoạn, {len(data['machines'])} máy, "
+            f"{len(data['products'])} SKU, horizon {days} ngày; giả định ở input/README.md")
 
 
 def main():
@@ -13,12 +29,14 @@ def main():
     parser.add_argument("--input",type=Path,default=DEFAULT_INPUT)
     parser.add_argument("--seconds",type=float,default=30)
     parser.add_argument("--seeds",type=int,nargs="+",default=[11,29,47])
-    parser.add_argument("--methods",nargs="+",choices=METHODS,default=METHODS)
+    parser.add_argument("--methods",nargs="+",choices=METHODS,default=None)
     args = parser.parse_args()
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
-    folder = ROOT/"comparison"/run_id
-    folder.mkdir(parents=True,exist_ok=True)
     data = load(args.input)
+    args.methods = args.methods or methods_for(data)
+    root = runs_root(data)
+    folder = root/"comparison"/run_id
+    folder.mkdir(parents=True,exist_ok=True)
     save_json(folder/"input.json",data)
     save_json(folder/"config.json",{"run_id":run_id,"input_sha256":digest(data),"seconds":args.seconds,
                                    "seeds":args.seeds,"methods":args.methods,"execution":"sequential, 1 CP-SAT worker"})
@@ -30,15 +48,15 @@ def main():
             raw.append(result)
             m = result.get("metrics",{})
             record = {"method":method,"seed":seed,"status":result["status"],"valid":result["validation"]["valid"],
-                      **{key:m.get(key) for key in ["objective","makespan","late_orders","weighted_tardiness","setup_minutes","maintenance_count","idle_minutes","safety_shortfall","activated_shifts","productive_utilization"]},
+                      **{key:m.get(key) for key in ["objective","makespan","schedule_end","late_orders","weighted_tardiness","setup_minutes","maintenance_count","idle_minutes","safety_shortfall","activated_shifts","productive_utilization"]},
                       "algorithm_seconds":result["algorithm_seconds"],"bound":result.get("bound"),"gap":result.get("gap"),
-                      "artifacts":path.relative_to(ROOT).as_posix()}
+                      "artifacts":path.relative_to(root).as_posix()}
             records.append(record)
             write_csv(folder/"results.csv",records)
             save_json(folder/"results.json",raw)
     lines = ["# Kết quả thử nghiệm trên cùng một input", "", f"Run: `{run_id}`; SHA256: `{digest(data)}`.",
              f"Ngân sách {args.seconds:g}s/phương pháp/seed, gồm dựng mô hình và khởi tạo; một lượt decode không bị ngắt giữa chừng. Chạy tuần tự, CP-SAT một worker.",
-             "", "Dữ liệu tổng hợp: 36 đơn, 48 lô, 192 công đoạn, 7 máy, 4 SKU, horizon 14 ngày / 10 ngày làm việc; các giả định chi tiết ở input/README.md.",
+             "", "Dữ liệu tổng hợp: " + describe(data) + ".",
              "", "| Phương pháp | Có lịch hợp lệ / lần chạy | Objective median | Min–max | Đơn trễ median | Utilization median | Thời gian median (s) |", "|---|---:|---:|---:|---:|---:|---:|"]
     for method in args.methods:
         all_rows = [r for r in records if r["method"] == method]
@@ -74,13 +92,13 @@ def main():
                           +(f'<a href="{base}/gantt.html">Gantt</a>' if r["valid"] else '')+'</td></tr>')
     page = '''<!doctype html><meta charset="utf-8"><title>So sánh lập lịch</title>
 <style>body{font:15px system-ui;margin:32px;background:#f8fafc;color:#172033}table{border-collapse:collapse;background:white;width:100%}td,th{padding:12px;border-bottom:1px solid #ddd;text-align:left}th{cursor:pointer;background:#e2e8f0}a{color:#0369a1}p{max-width:1000px}h1{font-size:26px}</style>
-<h1>So sánh 8 hướng lập lịch sản xuất</h1><p>36 đơn · 48 lô · 192 công đoạn · 7 máy · cùng input và mục tiêu. Bấm tiêu đề cột để sắp xếp; mở Gantt để xem lịch. UNKNOWN là chưa tìm được nghiệm, không phải vô nghiệm.</p>
+<h1>So sánh 8 hướng lập lịch sản xuất</h1><p>'''+html.escape(describe(data))+''' · cùng input và mục tiêu. Bấm tiêu đề cột để sắp xếp; mở Gantt để xem lịch. UNKNOWN là chưa tìm được nghiệm, không phải vô nghiệm.</p>
 <p>Dữ liệu tổng hợp, thử nghiệm tĩnh; không suy rộng thành thứ hạng thuật toán trên mọi nhà máy. Đọc <a href="REPORT.md">báo cáo đầy đủ</a> và <a href="results.csv">CSV</a>.</p><table><thead><tr>'''
     page += ''.join(f'<th onclick="sortRows({i})">{name}</th>' for i,name in enumerate(["Phương pháp","Seed","Trạng thái","Objective ↓","Đơn trễ","Trễ có trọng số","Idle phút","Utilization","Giây","Kết quả"]))
     page += '</tr></thead><tbody>'+''.join(table_rows)+'</tbody></table>'
     page += '''<script>function sortRows(i){const b=document.querySelector('tbody');const rs=[...b.rows];const num=s=>Number(s.replace('%',''));rs.sort((a,c)=>{let x=a.cells[i].innerText,y=c.cells[i].innerText;return Number.isFinite(num(x))&&Number.isFinite(num(y))?num(x)-num(y):x.localeCompare(y)});rs.forEach(r=>b.append(r))}</script>'''
     (folder/"index.html").write_text(page,encoding="utf-8")
-    save_json(ROOT/"comparison"/"latest.json",{"run_id":run_id,"report":f"{run_id}/REPORT.md"})
+    save_json(root/"comparison"/"latest.json",{"run_id":run_id,"report":f"{run_id}/REPORT.md"})
     print(f"REPORT={folder/'REPORT.md'}",flush=True)
 
 

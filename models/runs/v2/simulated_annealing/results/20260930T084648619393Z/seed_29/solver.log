@@ -1,0 +1,85 @@
+{
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.0032132999986060895,
+      "objective": 17574,
+      "evaluations": 1
+    },
+    {
+      "seconds": 0.03487769999628654,
+      "objective": 15956,
+      "evaluations": 12
+    },
+    {
+      "seconds": 0.057965199994214345,
+      "objective": 14588,
+      "evaluations": 20
+    },
+    {
+      "seconds": 0.10394180000002962,
+      "objective": 14564,
+      "evaluations": 31
+    },
+    {
+      "seconds": 0.2891974999947706,
+      "objective": 13238,
+      "evaluations": 84
+    },
+    {
+      "seconds": 0.2978670999946189,
+      "objective": 13178,
+      "evaluations": 87
+    },
+    {
+      "seconds": 2.298142799998459,
+      "objective": 13056,
+      "evaluations": 797
+    },
+    {
+      "seconds": 2.6415391999980784,
+      "objective": 13036,
+      "evaluations": 926
+    },
+    {
+      "seconds": 2.7334058999986155,
+      "objective": 13032,
+      "evaluations": 961
+    },
+    {
+      "seconds": 9.633493599998474,
+      "objective": 13014,
+      "evaluations": 3496
+    },
+    {
+      "seconds": 12.583308299996133,
+      "objective": 13012,
+      "evaluations": 4586
+    },
+    {
+      "seconds": 17.78773569999612,
+      "objective": 12996,
+      "evaluations": 6520
+    },
+    {
+      "seconds": 18.41423599999689,
+      "objective": 11602,
+      "evaluations": 6730
+    },
+    {
+      "seconds": 18.431211999995867,
+      "objective": 11578,
+      "evaluations": 6736
+    },
+    {
+      "seconds": 19.583830199997465,
+      "objective": 11549,
+      "evaluations": 7109
+    }
+  ],
+  "evaluations": 10817,
+  "bound": null,
+  "iterations": 10816,
+  "accepted_moves": 6240,
+  "initial_temperature_fraction": 0.04
+}

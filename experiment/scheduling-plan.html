@@ -1,0 +1,708 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Lịch tay nhà máy bánh xe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: bảng điều độ xưởng — chọn phương án → tóm tắt → các mục thu gọn được (đầu vào, lịch, so sánh, giao hàng, tồn cuối, lý do) */
+:root{
+  --bg:#F3F5F7; --panel:#FFFFFF; --fg:#1B2430; --muted:#5E6B7A; --line:#DDE3E9; --grid:#EDF1F4;
+  --shift:#E9F1F8; --break:#EFE6D8; --accent:#C2410C; --ok:#15803D; --warn:#B45309; --sel:#1D4E89;
+  --fs:#7FA7C9; --rs:#86BFB2; --fb:#3E4A63; --rb:#6E4E70; --res:#D9A441; --heat:#C9824A;
+  --txt-light:#1B2430; --txt-dark:#FFFFFF; --setup:#B9C3CE; --maint:#8A96A3; --chip:#EEF2F6;
+  --font-body:"Be Vietnam Pro","Segoe UI","Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12171D; --panel:#1A2129; --fg:#E4EAF0; --muted:#98A5B3; --line:#2E3843; --grid:#222B35;
+  --shift:#1E2B38; --break:#342D23; --accent:#F28C4B; --ok:#4ADE80; --warn:#F5B454; --sel:#8DB8EC;
+  --fs:#7FA7C9; --rs:#86BFB2; --fb:#6A7FA8; --rb:#9A74A0; --res:#E0B155; --heat:#D9955E;
+  --txt-light:#10161C; --txt-dark:#FFFFFF; --setup:#56626F; --maint:#7C8896; --chip:#242D37; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171D; --panel:#1A2129; --fg:#E4EAF0; --muted:#98A5B3; --line:#2E3843; --grid:#222B35;
+  --shift:#1E2B38; --break:#342D23; --accent:#F28C4B; --ok:#4ADE80; --warn:#F5B454; --sel:#8DB8EC;
+  --fs:#7FA7C9; --rs:#86BFB2; --fb:#6A7FA8; --rb:#9A74A0; --res:#E0B155; --heat:#D9955E;
+  --txt-light:#10161C; --txt-dark:#FFFFFF; --setup:#56626F; --maint:#7C8896; --chip:#242D37; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.6;font-variant-numeric:tabular-nums}
+.wrap{max-width:1200px;margin:0 auto;padding-inline:16px;padding-block:28px 56px;display:grid;gap:22px;min-width:0}
+.wrap>*{min-width:0}
+h1{font-weight:700;font-size:clamp(1.35rem,3vw,1.75rem);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:1.05rem;margin:0;font-weight:600;display:inline}
+h3{margin:0 0 8px;font-size:.92rem;font-weight:600}
+.sub{color:var(--muted);margin:6px 0 0;max-width:80ch}
+/* mode picker */
+.picker{display:grid;gap:8px}
+.picker .lbl{font-size:.82rem;color:var(--muted);font-weight:500}
+.seg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.seg button{font:inherit;font-size:.86rem;font-weight:500;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:8px;padding:5px 13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--sel);border-color:var(--sel);color:var(--panel);font-weight:600}
+.seg button:disabled{cursor:not-allowed;color:var(--muted);background:transparent;border-style:dashed}
+.seg button:focus-visible{outline:2px solid var(--sel);outline-offset:2px}
+.seg .sep{width:1px;background:var(--line);margin:2px 4px}
+.mode-note{font-size:.84rem;color:var(--muted);margin:0}
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;min-width:0}
+.stat b{display:block;font-size:1.3rem;font-weight:700;letter-spacing:-.01em}
+.stat span{color:var(--muted);font-size:.78rem;font-weight:500}
+.good b{color:var(--ok)} .warnc b{color:var(--warn)}
+/* collapsible sections */
+details.sec{display:block;min-width:0}
+details.sec>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:4px 10px;flex-wrap:wrap;padding:4px 0;border-radius:6px;user-select:none}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::before{content:"";width:.5em;height:.5em;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg);transition:transform .15s;align-self:center;margin:0 6px 0 2px;flex:none}
+details.sec[open]>summary::before{transform:rotate(45deg) translate(-2px,-2px)}
+details.sec>summary:focus-visible{outline:2px solid var(--sel);outline-offset:2px}
+.sechead{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap}
+.tog{font:inherit;color:inherit;background:none;border:0;padding:4px 0;cursor:pointer;display:flex;align-items:center;border-radius:6px}
+.tog::before{content:"";width:.5em;height:.5em;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg) translate(-2px,-2px);transition:transform .15s;margin:0 8px 0 2px;flex:none}
+.tog[aria-expanded="false"]::before{transform:rotate(-45deg)}
+.tog:focus-visible{outline:2px solid var(--sel);outline-offset:2px}
+section.sec>.body{display:grid;gap:12px;margin-top:10px;min-width:0}
+section.sec>.body[hidden]{display:none}
+details.sec>summary small{font-weight:400;color:var(--muted);font-size:.85rem}
+details.sec>.body{display:grid;gap:12px;margin-top:10px;min-width:0}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.s4{grid-column:span 4}.s5{grid-column:span 5}.s7{grid-column:span 7}
+@media (max-width:980px){.s4{grid-column:span 6}.s5,.s7{grid-column:span 12}}
+@media (max-width:680px){.s4{grid-column:span 12}}
+.tw{overflow-x:auto;min-width:0}
+table{border-collapse:collapse;font-size:.87rem;line-height:1.5;width:100%}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+th{color:var(--muted);font-weight:500;font-size:.78rem;white-space:nowrap}
+.n{text-align:right;white-space:nowrap}.nw{white-space:nowrap}
+tr.cur td{background:var(--chip);font-weight:600}
+.note{margin:8px 0 0;font-size:.8rem;color:var(--muted)}
+.tag{display:inline-block;font-size:.7rem;padding:1px 7px;border-radius:9px;background:var(--accent);color:var(--panel);margin-left:4px;vertical-align:1px}
+.yes{color:var(--ok);font-weight:600}.no{color:var(--muted)}
+.up{color:var(--ok)}.down{color:var(--warn)}.bad{color:var(--warn);font-weight:700}
+.best{color:var(--ok);font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:11px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--chip);border-radius:6px;padding:3px 9px;font-size:.8rem;color:var(--fg)}
+.chip b{font-weight:600}
+.scroll{overflow-x:auto}
+#g{display:block;width:100%;min-width:880px;height:auto}
+svg text{font-family:var(--font-body)}
+.bar{cursor:pointer;transition:opacity .15s}.bar:focus{outline:none}
+.dim .bar{opacity:.15}.dim .bar.on{opacity:1}
+#tip{position:fixed;pointer-events:none;background:var(--fg);color:var(--bg);font-size:.82rem;line-height:1.6;padding:9px 12px;border-radius:6px;font-family:var(--font-body);white-space:pre;z-index:10;max-width:92vw;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.why{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px}
+.why .card p{margin:0;color:var(--muted);font-size:.87rem}
+/* input: process flow */
+.flow{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1.3fr) minmax(0,1fr)) minmax(0,1.3fr) minmax(0,1.15fr);align-items:stretch}
+.flow .stage{background:var(--chip);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.st-name{font-weight:600;font-size:.92rem;line-height:1.3}
+.st-batch{font-size:.78rem;color:var(--muted);margin-bottom:4px}
+.st-m{display:flex;justify-content:space-between;gap:6px;font-size:.8rem}
+.st-m span{color:var(--muted)} .st-m b{font-weight:600}
+.st-wait{margin-top:auto;padding-top:6px;font-size:.74rem;color:var(--muted);border-top:1px dashed var(--line)}
+.st-wait.hot{color:var(--warn);font-weight:600}
+.flow .buf{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6px 10px 6px 6px;min-width:0}
+.flow .buf::before{content:"";position:absolute;left:4px;right:8px;top:50%;border-top:2px solid var(--line)}
+.flow .buf::after{content:"";position:absolute;right:6px;top:calc(50% - 4px);width:7px;height:7px;border-top:2px solid var(--line);border-right:2px solid var(--line);transform:rotate(45deg)}
+.bf-name,.bf-v{position:relative;z-index:1;background:var(--panel);padding:0 5px}
+.bf-name{font-size:.72rem;color:var(--muted);line-height:1.3}
+.bf-v{display:flex;flex-direction:column;font-size:.8rem;line-height:1.35}
+.bf-v b{font-weight:700}
+.flow .buf.end{border:1.5px solid var(--ok);border-radius:10px;margin-left:10px;padding:8px 6px}
+.flow .buf.end::before,.flow .buf.end::after{display:none}
+.flow .buf.end .bf-name{color:var(--ok);font-weight:600}
+@media (max-width:1020px){
+  .flow{grid-template-columns:1fr}
+  .flow .buf{flex-direction:row;justify-content:flex-start;align-items:center;gap:10px;padding:8px 4px 8px 28px;text-align:left}
+  .flow .buf::before{left:13px;right:auto;top:0;bottom:6px;border-top:0;border-left:2px solid var(--line)}
+  .flow .buf::after{left:9px;right:auto;top:auto;bottom:3px;transform:rotate(135deg)}
+  .bf-name,.bf-v{background:transparent;padding:0}
+  .bf-name{min-width:6.5em}
+  .bf-v{flex-direction:row;flex-wrap:wrap;gap:0 12px}
+  .flow .buf.end{margin:8px 0 0;padding:8px 12px}
+}
+/* input: molds */
+.molds{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.molds li{display:grid;grid-template-columns:5.2em minmax(60px,1fr) 9.5em;align-items:center;gap:10px;font-size:.85rem}
+.md-id{font-weight:600}
+.md-bar{height:8px;border-radius:5px;background:var(--grid);overflow:hidden}
+.md-bar i{display:block;height:100%;width:calc(var(--u)*100%);background:var(--sel);border-radius:5px}
+.md-bar.full i{background:var(--warn)}
+.md-v{color:var(--muted);white-space:nowrap;font-size:.8rem;text-align:right}
+.muted{color:var(--muted);font-weight:400;font-size:.8rem}
+tfoot td{border-top:1.5px solid var(--line);border-bottom:0;font-weight:600}
+.s6{grid-column:span 6}
+@media (max-width:680px){.s6{grid-column:span 12}}
+.formula .eq{font-size:1rem;line-height:1.9;margin:4px 0 10px}
+.formula .eq b{font-weight:700}
+.formula .eq .w{display:inline-block;min-width:1.4em;text-align:right;color:var(--sel);font-weight:700}
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:6px 18px;margin:0;padding:0;list-style:none;font-size:.85rem}
+.terms li{display:flex;gap:8px;align-items:baseline}
+.terms .w{color:var(--sel);font-weight:700;min-width:2.6em;text-align:right;flex:none}
+.terms span{color:var(--muted)}
+td small{display:block;color:var(--muted);font-size:.72rem;font-weight:400}
+.polhead{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap}
+.polhead h3{margin:0}
+.pickrow{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-bottom:10px}
+.pickrow label,.lbl{font-size:.82rem;color:var(--muted);font-weight:500}
+select,textarea{font:inherit;font-size:.88rem;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;max-width:100%}
+textarea{width:100%;display:block;margin:4px 0 10px;resize:vertical}
+select:focus-visible,textarea:focus-visible,button.primary:focus-visible{outline:2px solid var(--sel);outline-offset:2px}
+button.primary{font:inherit;font-size:.88rem;font-weight:600;border:0;border-radius:8px;padding:7px 16px;background:var(--sel);color:var(--panel);cursor:pointer}
+.dpos{color:var(--ok);font-weight:600}.dneg{color:var(--warn);font-weight:600}
+#pareto{display:block;width:100%;min-width:560px;max-width:900px;height:auto}
+#pareto .pt{cursor:pointer}
+.shiftlist{font-size:.84rem;line-height:1.7}
+.steps{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px 8px;counter-reset:st}
+.steps li{counter-increment:st}
+.steps a{display:inline-flex;align-items:center;gap:7px;font-size:.84rem;color:var(--fg);text-decoration:none;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:3px 12px 3px 4px}
+.steps a::before{content:counter(st);display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--sel);color:var(--panel);font-size:.74rem;font-weight:700}
+.steps a:hover{border-color:var(--sel)}
+.steps a:focus-visible{outline:2px solid var(--sel);outline-offset:2px}
+.alts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:12px}
+.alt{font:inherit;text-align:left;color:var(--fg);background:var(--panel);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-width:0}
+.alt:hover{border-color:var(--sel)}
+.alt:focus-visible{outline:2px solid var(--sel);outline-offset:2px}
+.alt[aria-pressed="true"]{border-color:var(--sel);box-shadow:inset 0 0 0 1.5px var(--sel)}
+.alt .top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.76rem;color:var(--muted);font-weight:500}
+.alt .rank{background:var(--chip);border-radius:9px;padding:1px 8px}
+.alt .rank.first{background:var(--ok);color:var(--panel);font-weight:600}
+.alt .now{color:var(--sel);font-weight:700}
+.alt .nm{font-size:1.02rem;font-weight:700;line-height:1.3}
+.alt .kp{display:grid;grid-template-columns:1fr auto;gap:1px 10px;font-size:.84rem}
+.alt .kp span{color:var(--muted);white-space:nowrap} .alt .kp b{font-weight:600;text-align:right}
+.alt .kp b.warnc{color:var(--warn)}
+.alt .tr{font-size:.8rem;border-top:1px dashed var(--line);padding-top:6px}
+.alt .src{font-size:.76rem;color:var(--muted)}
+.alt .dom{font-size:.76rem;color:var(--warn)}
+details.inner{margin-top:8px}
+details.inner>summary{cursor:pointer;font-size:.85rem;font-weight:600;color:var(--sel);width:max-content;max-width:100%;border-radius:4px}
+details.inner>summary:focus-visible{outline:2px solid var(--sel);outline-offset:2px}
+details.inner[open]>summary{margin-bottom:8px}
+#cmp tbody tr.click{cursor:pointer}
+#cmp tbody tr.click:hover td{background:var(--grid)}
+.sechead .pickrow{margin:0}
+#dec-sum{font-size:.92rem;margin:0 0 10px}
+#dec-sum a{color:var(--sel);font-weight:600}
+@media (prefers-reduced-motion:reduce){.bar,details.sec>summary::before,.tog::before{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Lịch nhà máy bánh xe, lò 8 giờ</h1>
+    <p class="sub">5 công đoạn: đúc → nhiệt luyện 8 giờ → gia công → sơn → thử nghiệm & đóng gói; horizon 3 ngày. Hệ thống sinh nhiều lịch khả thi; người lập kế hoạch chọn chính sách, xem, so sánh rồi chốt một lịch. Mọi lịch đều qua cùng một bộ kiểm tra độc lập (0 lỗi).</p>
+    <ol class="steps" aria-label="Các bước">
+      <li><a href="#sec-input">Tình huống</a></li><li><a href="#sec-choose">Chính sách &amp; phương án</a></li>
+      <li><a href="#sec-gantt">Xem lịch &amp; so sánh</a></li><li><a href="#sec-decide">Chốt phương án</a></li>
+    </ol>
+  </header>
+
+  <details class="sec" id="sec-input" open>
+    <summary><h2>1. Tình huống</h2><small>đơn hàng, tồn kho, năng lực — giống nhau cho mọi phương án</small></summary>
+    <div class="body">
+
+      <div class="card">
+        <h3>Quy trình và tồn đầu kỳ</h3>
+        <ol class="flow" aria-label="Dòng chảy 5 công đoạn và các kho bán thành phẩm">
+          <li class="stage"><span class="st-name">Đúc</span><span class="st-batch">mẻ 16 vành</span>
+            <span class="st-m"><span>CAST_1</span><b>74'</b></span><span class="st-m"><span>CAST_2</span><b>82'</b></span><span class="st-wait">chờ 10'</span></li>
+          <li class="buf"><span class="bf-name">Phôi đúc</span><span class="bf-v"><span>F <b>8</b></span><span>R <b>4</b></span></span></li>
+          <li class="stage"><span class="st-name">Nhiệt luyện</span><span class="st-batch">giá 24 vành</span>
+            <span class="st-m"><span>HT_1</span><b>480'</b></span><span class="st-m"><span>HT_2</span><b>480'</b></span><span class="st-wait">chạy 24/7 · chờ 10'</span></li>
+          <li class="buf"><span class="bf-name">Đã nhiệt luyện</span><span class="bf-v"><span>F <b>24</b></span><span>R <b>12</b></span></span></li>
+          <li class="stage"><span class="st-name">Gia công</span><span class="st-batch">mẻ 20 vành</span>
+            <span class="st-m"><span>CNC_1</span><b>148'</b></span><span class="st-m"><span>CNC_2</span><b>168'</b></span><span class="st-wait">chờ 10'</span></li>
+          <li class="buf"><span class="bf-name">Đã gia công</span><span class="bf-v"><span>F <b>6</b></span><span>R <b>4</b></span></span></li>
+          <li class="stage"><span class="st-name">Sơn</span><span class="st-batch">mẻ 25 vành</span>
+            <span class="st-m"><span>PAINT_1</span><b>40'</b></span><span class="st-wait hot">sấy 120'</span></li>
+          <li class="buf"><span class="bf-name">Đã sơn</span><span class="bf-v"><span>F bạc <b>4</b></span><span>F đen <b>3</b></span><span>R bạc <b>3</b></span><span>R đen <b>2</b></span></span></li>
+          <li class="stage"><span class="st-name">Thử nghiệm &amp; gói</span><span class="st-batch">lô 20 = 5 thùng</span>
+            <span class="st-m"><span>QC_1</span><b>35'</b></span><span class="st-wait">giao khi đủ lô của đơn</span></li>
+          <li class="buf end"><span class="bf-name">Thành phẩm</span><span class="bf-v"><span>F bạc <b>10</b></span><span>F đen <b>6</b></span><span>R bạc <b>6</b></span><span>R đen <b>8</b></span></span></li>
+        </ol>
+        <div class="chips" style="margin-top:12px">
+          <span class="chip"><b>Setup</b> vào máy 10'</span><span class="chip">lắp khuôn đúc 60'</span><span class="chip">đúc đổi F↔R 60'</span>
+          <span class="chip">gia công đổi F↔R 18'</span><span class="chip">sơn bạc→đen 12' · đen→bạc 24'</span><span class="chip">QC đổi sản phẩm 4'</span>
+        </div>
+        <p class="note">Số trong mỗi khâu là thời gian một lượt trên từng máy; số trong kho là tồn đầu kỳ. Vành bạc và đen dùng chung kho tới khâu sơn mới tách màu.</p>
+      </div>
+
+      <div class="grid">
+        <div class="card s7">
+          <h3>Đơn hàng trong kỳ</h3>
+          <div class="tw"><table>
+            <thead><tr><th>Đơn</th><th>Sản phẩm</th><th class="n">Số lượng</th><th class="n">Lấy kho</th><th class="n">Phải làm</th><th>Lô QC</th><th>Hạn</th><th class="n">Ưu tiên</th></tr></thead>
+            <tbody>
+              <tr><td>O001</td><td class="nw">F bạc</td><td class="n">44</td><td class="n">4</td><td class="n">40</td><td class="nw">L001, L002</td><td class="nw">16:00 N2</td><td class="n">4<span class="tag">gấp</span></td></tr>
+              <tr><td>O002</td><td class="nw">F đen</td><td class="n">20</td><td class="n">0</td><td class="n">20</td><td>L003</td><td class="nw">12:00 N3</td><td class="n">2</td></tr>
+              <tr><td>O003</td><td class="nw">R bạc</td><td class="n">20</td><td class="n">0</td><td class="n">20</td><td>L004</td><td class="nw">16:00 N3</td><td class="n">1</td></tr>
+              <tr><td>O004</td><td class="nw">R đen</td><td class="n">24</td><td class="n">4</td><td class="n">20</td><td>L005</td><td class="nw">22:00 N3</td><td class="n">2</td></tr>
+            </tbody>
+            <tfoot><tr><td colspan="2">Tổng</td><td class="n">108</td><td class="n">8</td><td class="n">100</td><td colspan="3">5 lô QC</td></tr></tfoot>
+          </table></div>
+        </div>
+        <div class="card s5">
+          <h3>Đơn dài hạn và phương án làm trước</h3>
+          <div class="tw"><table>
+            <thead><tr><th>Phương án</th><th>Cho đơn</th><th>Gồm</th></tr></thead>
+            <tbody>
+              <tr><td>RL001</td><td class="nw">LT001 · F bạc 50</td><td>1 lô thành phẩm (6 lượt)</td></tr>
+              <tr><td>RL002</td><td class="nw">LT002 · F đen 25</td><td>1 lô thành phẩm (6 lượt)</td></tr>
+              <tr><td>RB001</td><td class="nw">LT003 · R bạc 20</td><td>1 lượt đúc R (16 phôi)</td></tr>
+            </tbody>
+          </table></div>
+          <p class="note">Hạn ngày 7–9, sau horizon. R đen không có đơn dài hạn nên không được làm trước.</p>
+        </div>
+        <div class="card s6">
+          <h3>Kho thành phẩm</h3>
+          <div class="tw"><table>
+            <thead><tr><th></th><th class="n">F bạc</th><th class="n">F đen</th><th class="n">R bạc</th><th class="n">R đen</th></tr></thead>
+            <tbody>
+              <tr><td>Tồn đầu kỳ</td><td class="n">10</td><td class="n">6</td><td class="n">6</td><td class="n">8</td></tr>
+              <tr><td>Tồn an toàn</td><td class="n">8</td><td class="n">6</td><td class="n">6</td><td class="n">6</td></tr>
+              <tr><td>Trần kho</td><td class="n">40</td><td class="n">35</td><td class="n">15</td><td class="n">15</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="card s6">
+          <h3>Khuôn đúc <small class="muted">1 lòng · 1 lượt = 16 lần rót</small></h3>
+          <ul class="molds">
+            <li><span class="md-id">MOLD_F1</span><span class="md-bar" style="--u:.667"><i></i></span><span class="md-v">32/48 · còn 1 lượt</span></li>
+            <li><span class="md-id">MOLD_F2</span><span class="md-bar" style="--u:0"><i></i></span><span class="md-v">0/48 · còn 3 lượt</span></li>
+            <li><span class="md-id">MOLD_R1</span><span class="md-bar" style="--u:.2"><i></i></span><span class="md-v">8/40 · còn 2 lượt</span></li>
+            <li><span class="md-id">MOLD_R2</span><span class="md-bar full" style="--u:.8"><i></i></span><span class="md-v">32/40 · phải bảo trì</span></li>
+          </ul>
+          <p class="note">Hết chu kỳ phải phủ lại khuôn 30' rồi setup 30'.</p>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details class="sec" id="sec-choose" open>
+    <summary><h2>2. Chọn chính sách và phương án</h2><small>hệ thống đề xuất, bạn chọn theo ưu tiên của kỳ này</small></summary>
+    <div class="body">
+      <div class="card">
+        <div class="polhead"><h3>Kỳ này ưu tiên gì?</h3><div class="seg" id="pol" role="group" aria-label="Chính sách xếp hạng"></div></div>
+        <p class="mode-note" id="pol-note" style="margin-top:6px"></p>
+        <details class="inner"><summary>Cách tính điểm theo chính sách này</summary><div class="formula" id="formula"></div></details>
+      </div>
+      <div class="alts" id="alts" role="group" aria-label="Phương án đề xuất"></div>
+      <p class="note" id="alts-note" style="margin:0"></p>
+      <div class="card">
+        <h3>Đồ thị đánh đổi: chi phí vận hành ↔ thiếu tồn an toàn</h3>
+        <div class="scroll"><svg id="pareto" role="img" aria-label="Đồ thị đánh đổi giữa chi phí vận hành và thiếu tồn an toàn"></svg></div>
+        <p class="note">Chấm màu có tên là phương án đề xuất; chấm xám nhỏ là các lịch khác đã sinh (xem ở phụ lục). Đường nét đứt nối các phương án không bị lịch nào khác hơn ở mọi mặt: muốn bớt thiếu tồn thì phải trả thêm chi phí. Bấm chấm để xem lịch đó.</p>
+      </div>
+    </div>
+  </details>
+
+  <section class="sec" id="sec-gantt">
+    <div class="sechead">
+      <button type="button" class="tog" aria-expanded="true" aria-controls="gantt-body"><h2 id="gantt-title">3. Lịch</h2></button>
+      <div class="pickrow"><label for="cmpB">So với</label><select id="cmpB"></select></div>
+    </div>
+    <div class="body" id="gantt-body">
+    <p class="mode-note" id="mode-note"></p>
+    <div class="stats" id="stats"></div>
+    <div class="card">
+      <div class="legend" id="legend"></div>
+      <div class="scroll" style="margin-top:10px"><svg id="g" role="img" aria-label="Biểu đồ Gantt lịch sản xuất"></svg></div>
+      <div class="chips" style="margin-top:10px">
+        <span class="chip"><b>Ca</b> S1 00–08h · S2 08–16h · S3 16–24h</span>
+        <span class="chip"><b>Nghỉ</b> 12:00–12:30, không chạy xuyên</span>
+        <span class="chip"><b>Lò</b> chạy 24/7</span>
+        <span class="chip"><b>Dừng</b> CNC_2 15:00–15:30 N1</span>
+        <span class="chip">Nền xanh: ca đang bật · vạch cam: hạn O001</span>
+        <span class="chip" id="ovl" hidden></span>
+      </div>
+      <p class="note">Rê chuột lên thanh để xem số lượng và nguồn hàng; bấm để làm nổi cả dòng F hoặc R. Nguồn hàng chia theo quy ước vào trước ra trước, chỉ để đọc; trong mô hình, hàng cùng mã trong kho dùng chung.</p>
+    </div>
+    <div class="card" id="diff-card">
+      <h3 id="diff-title"></h3>
+      <div class="tw"><table id="diff"></table></div>
+      <div class="grid" id="diffshift" style="margin-top:12px"></div>
+    </div>
+    </div>
+  </section>
+
+  <details class="sec" id="sec-ship" open>
+    <summary><h2>Giao hàng</h2><small class="curname"></small></summary>
+    <div class="body"><div class="card"><div class="tw"><table id="ship"></table></div></div></div>
+  </details>
+
+  <details class="sec" id="sec-stock" open>
+    <summary><h2>Tồn cuối kỳ</h2><small class="curname"></small></summary>
+    <div class="body"><div class="grid" id="stock"></div></div>
+  </details>
+
+  <details class="sec" id="sec-why" open>
+    <summary><h2>Vì sao xếp như vậy</h2><small class="curname"></small></summary>
+    <div class="body"><div class="why" id="why"></div></div>
+  </details>
+
+  <details class="sec" id="sec-decide" open>
+    <summary><h2>4. Chốt phương án</h2><small>ghi lịch được chọn, theo chính sách nào, vì sao</small></summary>
+    <div class="body"><div class="card">
+      <p id="dec-sum"></p>
+      <label for="decWhy" class="lbl">Lý do chọn</label>
+      <textarea id="decWhy" rows="3" placeholder="Ví dụ: chấp nhận bật thêm 3 ca để giữ đủ tồn an toàn F bạc cho đơn dài hạn LT001."></textarea>
+      <div class="pickrow"><button type="button" id="decSave" class="primary">Chốt phương án này</button><span id="decMsg" class="note" role="status" style="margin:0"></span></div>
+      <div class="tw"><table id="declog"></table></div>
+      <p class="note">Bản mẫu: nhật ký chỉ lưu trong trình duyệt này. Trong sản phẩm, quyết định lưu vào cơ sở dữ liệu cùng kịch bản, chính sách và người chọn; bước sau là sửa lịch tay và "khoá phần đã chốt rồi tối ưu lại" (engine đã có bộ kiểm độc lập và <code>fixed_runs</code> của CP-SAT).</p>
+    </div></div>
+  </details>
+
+  <details class="sec" id="sec-algo">
+    <summary><h2>Phụ lục: đánh giá thuật toán</h2><small>cho báo cáo đồ án — mọi lịch đã sinh, kể cả lịch không được đề xuất</small></summary>
+    <div class="body">
+    <div class="card"><h3>Xếp hạng theo chính sách đang chọn</h3><div class="tw"><table id="cmp"></table></div>
+      <p class="note">Bấm một dòng để xem lịch đó ở mục 3. Mọi lịch qua cùng bộ kiểm độc lập (<code>models/common/stage_runs/evaluate.py</code>). FIFO/EDD/SPT chạy 1 lần; SA, GA, CP chạy 3 seed × 30 giây, 1 worker (bảng hiện seed tốt nhất). "CP-SAT từ lịch tay" và các điểm "ε ≤ k": 60 giây, 8 worker — cấu hình khác, ghi rõ để không so lệch. Các điểm "ε ≤ k" sinh bằng cách giới hạn thiếu tồn an toàn ≤ k vành rồi tối thiểu trễ và chi phí (ε = 6 và 4 ra cùng một lịch).</p>
+    </div>
+    <div class="card"><h3>Điểm tách theo thành phần</h3>
+      <div class="tw"><table id="parts"></table></div>
+      <p class="note">Mỗi ô là điểm đóng góp = trọng số × giá trị (giá trị ghi nhỏ bên dưới). Cộng các ô của từng tầng ra đúng điểm tầng đó.</p>
+    </div></div>
+  </details>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+const DATA={"manual": {"rows": [["F_CAST-01", "CAST_1", 0, 0, 60, 60, 134, "MOLD_F2"], ["R_CAST-01", "CAST_2", 0, 0, 60, 60, 142, "MOLD_R1"], ["F_CAST-02", "CAST_1", 134, 0, 0, 134, 208, "MOLD_F2"], ["R_CAST-02", "CAST_2", 142, 0, 0, 142, 224, "MOLD_R1"], ["F_HEAT-01", "HT_1", 144, 0, 0, 144, 624, null], ["F_CAST-03", "CAST_1", 208, 0, 0, 208, 282, "MOLD_F2"], ["R_CAST-03", "CAST_2", 224, 30, 30, 284, 366, "MOLD_R1"], ["F_CAST-04", "CAST_1", 282, 30, 30, 342, 416, "MOLD_F2"], ["F_HEAT-02", "HT_2", 292, 0, 0, 292, 772, null], ["R_CAST-RB001", "CAST_2", 366, 0, 0, 366, 448, "MOLD_R1"], ["R_HEAT-01", "HT_1", 624, 0, 0, 624, 1104, null], ["R_HEAT-02", "HT_2", 772, 0, 0, 772, 1252, null], ["F_MACH-01", "CNC_1", 960, 0, 10, 970, 1118, null], ["F_MACH-02", "CNC_2", 960, 0, 10, 970, 1138, null], ["F_HEAT-03", "HT_1", 1104, 0, 0, 1104, 1584, null], ["R_MACH-01", "CNC_1", 1118, 0, 18, 1136, 1284, null], ["F_MACH-03", "CNC_2", 1138, 0, 0, 1138, 1306, null], ["R_MACH-02", "CNC_1", 1284, 0, 0, 1284, 1432, null], ["R_MACH-03", "CNC_1", 1440, 0, 0, 1440, 1588, null], ["F_SILVER_PAINT-01", "PAINT_1", 1440, 0, 10, 1450, 1490, null], ["F_SILVER_PAINT-02", "PAINT_1", 1490, 0, 0, 1490, 1530, null], ["R_SILVER_PAINT-01", "PAINT_1", 1530, 0, 0, 1530, 1570, null], ["F_MACH-04", "CNC_1", 1594, 0, 18, 1612, 1760, null], ["R_BLACK_PAINT-01", "PAINT_1", 1598, 0, 12, 1610, 1650, null], ["F_BLACK_PAINT-01", "PAINT_1", 1770, 0, 0, 1770, 1810, null], ["L001", "QC_1", 1920, 0, 10, 1930, 1965, null], ["L002", "QC_1", 1965, 0, 0, 1965, 2000, null], ["L004", "QC_1", 2000, 0, 4, 2004, 2039, null], ["L005", "QC_1", 2039, 0, 4, 2043, 2078, null], ["L003", "QC_1", 2078, 0, 4, 2082, 2117, null]], "options": ["RB001"], "kpi": {"makespan": 2117, "weighted_tardiness": 0, "setup_minutes": 280, "idle_minutes": 915, "maintenance_minutes": 60, "nonproductive_minutes": 1255, "safety_shortfall": 8, "reserve_units": 16, "surplus_holding": 4, "btp_end_units": 98, "objective": 160006356, "objective_tier1": 160, "objective_tier2": 6356}, "deliveries": [{"order": "O001", "time": 2000, "due": 2400, "tardiness": 0, "priority": 4}, {"order": "O002", "time": 2117, "due": 3600, "tardiness": 0, "priority": 2}, {"order": "O003", "time": 2039, "due": 3840, "tardiness": 0, "priority": 1}, {"order": "O004", "time": 2078, "due": 4200, "tardiness": 0, "priority": 2}], "active": [["CAST_1", 0, 480, 480, 416], ["CAST_2", 0, 480, 480, 448], ["CNC_1", 960, 1440, 480, 472], ["CNC_1", 1440, 1920, 480, 314], ["CNC_2", 960, 1440, 480, 346], ["PAINT_1", 1440, 1920, 480, 222], ["QC_1", 1920, 2400, 450, 197]], "btp_end": {"F_CAST": 0, "R_CAST": 20, "F_HEAT": 16, "R_HEAT": 0, "F_MACH": 11, "R_MACH": 14, "F_SILVER_PAINT": 14, "F_BLACK_PAINT": 8, "R_SILVER_PAINT": 8, "R_BLACK_PAINT": 7}, "fin_end": {"F_SILVER": 6, "F_BLACK": 6, "R_SILVER": 6, "R_BLACK": 4}, "maint": 2, "late": 0, "status": "xếp tay", "seed": null, "seeds": null}, "fifo": {"rows": [["F_CAST-01", "CAST_1", 0, 0, 60, 60, 134, "MOLD_F1"], ["F_CAST-02", "CAST_2", 0, 0, 60, 60, 142, "MOLD_F2"], ["F_MACH-01", "CNC_1", 0, 0, 10, 10, 158, null], ["R_CAST-01", "CAST_1", 134, 0, 60, 194, 268, "MOLD_R1"], ["F_CAST-03", "CAST_2", 142, 0, 0, 142, 224, "MOLD_F2"], ["F_HEAT-01", "HT_1", 144, 0, 0, 144, 624, null], ["F_BLACK_PAINT-01", "PAINT_1", 168, 0, 10, 178, 218, null], ["F_CAST-04", "CAST_2", 224, 0, 0, 224, 306, "MOLD_F2"], ["F_HEAT-02", "HT_2", 234, 0, 0, 234, 714, null], ["R_CAST-02", "CAST_1", 268, 0, 0, 268, 342, "MOLD_R1"], ["R_CAST-03", "CAST_2", 306, 30, 30, 366, 448, "MOLD_R2"], ["L003", "QC_1", 338, 0, 10, 348, 383, null], ["F_HEAT-03", "HT_1", 624, 0, 0, 624, 1104, null], ["R_HEAT-01", "HT_2", 714, 0, 0, 714, 1194, null], ["F_MACH-02", "CNC_1", 750, 0, 0, 750, 898, null], ["F_MACH-03", "CNC_1", 960, 0, 0, 960, 1108, null], ["R_HEAT-02", "HT_1", 1104, 0, 0, 1104, 1584, null], ["F_MACH-04", "CNC_1", 1114, 0, 0, 1114, 1262, null], ["F_SILVER_PAINT-01", "PAINT_1", 1118, 0, 24, 1142, 1182, null], ["R_MACH-01", "CNC_2", 1204, 0, 10, 1214, 1382, null], ["F_SILVER_PAINT-02", "PAINT_1", 1272, 0, 0, 1272, 1312, null], ["L001", "QC_1", 1302, 0, 4, 1306, 1341, null], ["L002", "QC_1", 1440, 0, 0, 1440, 1475, null], ["R_MACH-02", "CNC_1", 1594, 0, 18, 1612, 1760, null], ["R_MACH-03", "CNC_2", 1594, 0, 0, 1594, 1762, null], ["R_BLACK_PAINT-01", "PAINT_1", 1770, 0, 12, 1782, 1822, null], ["R_SILVER_PAINT-01", "PAINT_1", 1822, 0, 24, 1846, 1886, null], ["L005", "QC_1", 1942, 0, 4, 1946, 1981, null], ["L004", "QC_1", 2006, 0, 4, 2010, 2045, null]], "options": [], "kpi": {"makespan": 2045, "weighted_tardiness": 0, "setup_minutes": 340, "idle_minutes": 4769, "maintenance_minutes": 30, "nonproductive_minutes": 5139, "safety_shortfall": 8, "reserve_units": 0, "surplus_holding": 24, "btp_end_units": 82, "objective": 160017938, "objective_tier1": 160, "objective_tier2": 17938}, "deliveries": [{"order": "O001", "time": 1475, "due": 2400, "tardiness": 0, "priority": 4}, {"order": "O002", "time": 383, "due": 3600, "tardiness": 0, "priority": 2}, {"order": "O003", "time": 2045, "due": 3840, "tardiness": 0, "priority": 1}, {"order": "O004", "time": 1981, "due": 4200, "tardiness": 0, "priority": 2}], "active": [["CAST_1", 0, 480, 480, 342], ["CAST_2", 0, 480, 480, 448], ["CNC_1", 0, 480, 480, 158], ["CNC_1", 480, 960, 450, 148], ["CNC_1", 960, 1440, 480, 296], ["CNC_1", 1440, 1920, 480, 166], ["CNC_2", 960, 1440, 480, 178], ["CNC_2", 1440, 1920, 480, 168], ["PAINT_1", 0, 480, 480, 50], ["PAINT_1", 960, 1440, 480, 104], ["PAINT_1", 1440, 1920, 480, 116], ["QC_1", 0, 480, 480, 45], ["QC_1", 960, 1440, 480, 39], ["QC_1", 1440, 1920, 480, 35], ["QC_1", 1920, 2400, 450, 78]], "btp_end": {"F_CAST": 0, "R_CAST": 4, "F_HEAT": 16, "R_HEAT": 0, "F_MACH": 11, "R_MACH": 14, "F_SILVER_PAINT": 14, "F_BLACK_PAINT": 8, "R_SILVER_PAINT": 8, "R_BLACK_PAINT": 7}, "fin_end": {"F_SILVER": 6, "F_BLACK": 6, "R_SILVER": 6, "R_BLACK": 4}, "maint": 1, "late": 0, "status": "HEURISTIC_FEASIBLE", "seed": 11, "seeds": 1, "valid_runs": 1, "all_objectives": [160017938], "seconds": 30.0}, "edd": {"rows": [["F_CAST-01", "CAST_1", 0, 0, 60, 60, 134, "MOLD_F1"], ["F_CAST-02", "CAST_2", 0, 0, 60, 60, 142, "MOLD_F2"], ["F_MACH-01", "CNC_1", 0, 0, 10, 10, 158, null], ["R_CAST-01", "CAST_1", 134, 0, 60, 194, 268, "MOLD_R1"], ["F_CAST-03", "CAST_2", 142, 0, 0, 142, 224, "MOLD_F2"], ["F_HEAT-01", "HT_1", 144, 0, 0, 144, 624, null], ["F_SILVER_PAINT-01", "PAINT_1", 168, 0, 10, 178, 218, null], ["F_CAST-04", "CAST_2", 224, 0, 0, 224, 306, "MOLD_F2"], ["F_HEAT-02", "HT_2", 234, 0, 0, 234, 714, null], ["R_CAST-02", "CAST_1", 268, 0, 0, 268, 342, "MOLD_R1"], ["R_CAST-03", "CAST_2", 306, 30, 30, 366, 448, "MOLD_R2"], ["L001", "QC_1", 338, 0, 10, 348, 383, null], ["F_HEAT-03", "HT_1", 624, 0, 0, 624, 1104, null], ["R_HEAT-01", "HT_2", 714, 0, 0, 714, 1194, null], ["F_MACH-02", "CNC_1", 750, 0, 0, 750, 898, null], ["F_MACH-03", "CNC_1", 960, 0, 0, 960, 1108, null], ["R_HEAT-02", "HT_1", 1104, 0, 0, 1104, 1584, null], ["F_MACH-04", "CNC_1", 1114, 0, 0, 1114, 1262, null], ["F_SILVER_PAINT-02", "PAINT_1", 1118, 0, 0, 1118, 1158, null], ["R_MACH-01", "CNC_2", 1204, 0, 10, 1214, 1382, null], ["F_BLACK_PAINT-01", "PAINT_1", 1272, 0, 12, 1284, 1324, null], ["L002", "QC_1", 1278, 0, 0, 1278, 1313, null], ["L003", "QC_1", 1444, 0, 4, 1448, 1483, null], ["R_MACH-02", "CNC_1", 1594, 0, 18, 1612, 1760, null], ["R_MACH-03", "CNC_2", 1594, 0, 0, 1594, 1762, null], ["R_SILVER_PAINT-01", "PAINT_1", 1770, 0, 24, 1794, 1834, null], ["R_BLACK_PAINT-01", "PAINT_1", 1834, 0, 12, 1846, 1886, null], ["L004", "QC_1", 1954, 0, 4, 1958, 1993, null], ["L005", "QC_1", 2006, 0, 4, 2010, 2045, null]], "options": [], "kpi": {"makespan": 2045, "weighted_tardiness": 0, "setup_minutes": 328, "idle_minutes": 4781, "maintenance_minutes": 30, "nonproductive_minutes": 5139, "safety_shortfall": 10, "reserve_units": 0, "surplus_holding": 2, "btp_end_units": 82, "objective": 200017904, "objective_tier1": 200, "objective_tier2": 17904}, "deliveries": [{"order": "O001", "time": 1313, "due": 2400, "tardiness": 0, "priority": 4}, {"order": "O002", "time": 1483, "due": 3600, "tardiness": 0, "priority": 2}, {"order": "O003", "time": 1993, "due": 3840, "tardiness": 0, "priority": 1}, {"order": "O004", "time": 2045, "due": 4200, "tardiness": 0, "priority": 2}], "active": [["CAST_1", 0, 480, 480, 342], ["CAST_2", 0, 480, 480, 448], ["CNC_1", 0, 480, 480, 158], ["CNC_1", 480, 960, 450, 148], ["CNC_1", 960, 1440, 480, 296], ["CNC_1", 1440, 1920, 480, 166], ["CNC_2", 960, 1440, 480, 178], ["CNC_2", 1440, 1920, 480, 168], ["PAINT_1", 0, 480, 480, 50], ["PAINT_1", 960, 1440, 480, 92], ["PAINT_1", 1440, 1920, 480, 116], ["QC_1", 0, 480, 480, 45], ["QC_1", 960, 1440, 480, 35], ["QC_1", 1440, 1920, 480, 39], ["QC_1", 1920, 2400, 450, 78]], "btp_end": {"F_CAST": 0, "R_CAST": 4, "F_HEAT": 16, "R_HEAT": 0, "F_MACH": 11, "R_MACH": 14, "F_SILVER_PAINT": 14, "F_BLACK_PAINT": 8, "R_SILVER_PAINT": 8, "R_BLACK_PAINT": 7}, "fin_end": {"F_SILVER": 6, "F_BLACK": 6, "R_SILVER": 6, "R_BLACK": 4}, "maint": 1, "late": 0, "status": "HEURISTIC_FEASIBLE", "seed": 11, "seeds": 1, "valid_runs": 1, "all_objectives": [200017904], "seconds": 30.0}, "spt": {"rows": [["F_CAST-01", "CAST_1", 0, 0, 60, 60, 134, "MOLD_F1"], ["F_CAST-02", "CAST_2", 0, 0, 60, 60, 142, "MOLD_F2"], ["F_MACH-01", "CNC_1", 0, 0, 10, 10, 158, null], ["R_CAST-01", "CAST_1", 134, 0, 60, 194, 268, "MOLD_R1"], ["F_CAST-03", "CAST_2", 142, 0, 0, 142, 224, "MOLD_F2"], ["F_HEAT-01", "HT_1", 144, 0, 0, 144, 624, null], ["F_SILVER_PAINT-01", "PAINT_1", 168, 0, 10, 178, 218, null], ["F_CAST-04", "CAST_2", 224, 0, 0, 224, 306, "MOLD_F2"], ["F_HEAT-02", "HT_2", 234, 0, 0, 234, 714, null], ["R_CAST-02", "CAST_1", 268, 0, 0, 268, 342, "MOLD_R1"], ["R_CAST-03", "CAST_2", 306, 30, 30, 366, 448, "MOLD_R2"], ["L001", "QC_1", 338, 0, 10, 348, 383, null], ["F_HEAT-03", "HT_1", 624, 0, 0, 624, 1104, null], ["R_HEAT-01", "HT_2", 714, 0, 0, 714, 1194, null], ["F_MACH-02", "CNC_1", 750, 0, 0, 750, 898, null], ["F_MACH-03", "CNC_1", 960, 0, 0, 960, 1108, null], ["R_HEAT-02", "HT_1", 1104, 0, 0, 1104, 1584, null], ["F_MACH-04", "CNC_1", 1114, 0, 0, 1114, 1262, null], ["F_SILVER_PAINT-02", "PAINT_1", 1118, 0, 0, 1118, 1158, null], ["R_MACH-01", "CNC_2", 1204, 0, 10, 1214, 1382, null], ["F_BLACK_PAINT-01", "PAINT_1", 1272, 0, 12, 1284, 1324, null], ["L002", "QC_1", 1278, 0, 0, 1278, 1313, null], ["L003", "QC_1", 1444, 0, 4, 1448, 1483, null], ["R_MACH-02", "CNC_1", 1594, 0, 18, 1612, 1760, null], ["R_MACH-03", "CNC_2", 1594, 0, 0, 1594, 1762, null], ["R_SILVER_PAINT-01", "PAINT_1", 1770, 0, 24, 1794, 1834, null], ["R_BLACK_PAINT-01", "PAINT_1", 1834, 0, 12, 1846, 1886, null], ["L004", "QC_1", 1954, 0, 4, 1958, 1993, null], ["L005", "QC_1", 2006, 0, 4, 2010, 2045, null]], "options": [], "kpi": {"makespan": 2045, "weighted_tardiness": 0, "setup_minutes": 328, "idle_minutes": 4781, "maintenance_minutes": 30, "nonproductive_minutes": 5139, "safety_shortfall": 10, "reserve_units": 0, "surplus_holding": 2, "btp_end_units": 82, "objective": 200017904, "objective_tier1": 200, "objective_tier2": 17904}, "deliveries": [{"order": "O001", "time": 1313, "due": 2400, "tardiness": 0, "priority": 4}, {"order": "O002", "time": 1483, "due": 3600, "tardiness": 0, "priority": 2}, {"order": "O003", "time": 1993, "due": 3840, "tardiness": 0, "priority": 1}, {"order": "O004", "time": 2045, "due": 4200, "tardiness": 0, "priority": 2}], "active": [["CAST_1", 0, 480, 480, 342], ["CAST_2", 0, 480, 480, 448], ["CNC_1", 0, 480, 480, 158], ["CNC_1", 480, 960, 450, 148], ["CNC_1", 960, 1440, 480, 296], ["CNC_1", 1440, 1920, 480, 166], ["CNC_2", 960, 1440, 480, 178], ["CNC_2", 1440, 1920, 480, 168], ["PAINT_1", 0, 480, 480, 50], ["PAINT_1", 960, 1440, 480, 92], ["PAINT_1", 1440, 1920, 480, 116], ["QC_1", 0, 480, 480, 45], ["QC_1", 960, 1440, 480, 35], ["QC_1", 1440, 1920, 480, 39], ["QC_1", 1920, 2400, 450, 78]], "btp_end": {"F_CAST": 0, "R_CAST": 4, "F_HEAT": 16, "R_HEAT": 0, "F_MACH": 11, "R_MACH": 14, "F_SILVER_PAINT": 14, "F_BLACK_PAINT": 8, "R_SILVER_PAINT": 8, "R_BLACK_PAINT": 7}, "fin_end": {"F_SILVER": 6, "F_BLACK": 6, "R_SILVER": 6, "R_BLACK": 4}, "maint": 1, "late": 0, "status": "HEURISTIC_FEASIBLE", "seed": 11, "seeds": 1, "valid_runs": 1, "all_objectives": [200017904], "seconds": 30.0}, "sa": {"rows": [["F_CAST-04", "CAST_1", 0, 0, 60, 60, 134, "MOLD_F1"], ["F_MACH-03", "CNC_2", 480, 0, 10, 490, 658, null], ["F_CAST-RL001-2", "CAST_2", 0, 0, 60, 60, 142, "MOLD_F2"], ["R_CAST-03", "CAST_1", 134, 0, 60, 194, 268, "MOLD_R1"], ["F_CAST-02", "CAST_2", 142, 0, 0, 142, 224, "MOLD_F2"], ["F_HEAT-02", "HT_2", 144, 0, 0, 144, 624, null], ["R_CAST-01", "CAST_2", 224, 30, 30, 284, 366, "MOLD_R2"], ["F_HEAT-01", "HT_1", 234, 0, 0, 234, 714, null], ["R_CAST-02", "CAST_1", 268, 0, 0, 268, 342, "MOLD_R1"], ["F_CAST-RL001-1", "CAST_1", 342, 30, 30, 402, 476, "MOLD_F1"], ["R_CAST-RB001", "CAST_2", 366, 0, 0, 366, 448, "MOLD_R2"], ["F_SILVER_PAINT-02", "PAINT_1", 1440, 0, 10, 1450, 1490, null], ["F_CAST-01", "CAST_1", 480, 0, 0, 480, 554, "MOLD_F1"], ["F_CAST-03", "CAST_1", 554, 0, 0, 554, 628, "MOLD_F1"], ["R_HEAT-01", "HT_2", 624, 0, 0, 624, 1104, null], ["F_HEAT-RL001-1", "HT_1", 714, 0, 0, 714, 1194, null], ["F_MACH-RL001-1", "CNC_1", 750, 0, 10, 760, 908, null], ["L001", "QC_1", 1920, 0, 10, 1930, 1965, null], ["F_MACH-02", "CNC_2", 960, 0, 0, 960, 1128, null], ["R_HEAT-02", "HT_1", 1194, 0, 0, 1194, 1674, null], ["F_HEAT-03", "HT_2", 1104, 0, 0, 1104, 1584, null], ["F_MACH-01", "CNC_2", 1204, 0, 0, 1204, 1372, null], ["F_SILVER_PAINT-RL001-1", "PAINT_1", 1547, 0, 0, 1547, 1587, null], ["F_MACH-04", "CNC_1", 1594, 0, 0, 1594, 1742, null], ["R_MACH-01", "CNC_1", 1742, 0, 18, 1760, 1908, null], ["F_SILVER_PAINT-01", "PAINT_1", 1862, 0, 0, 1862, 1902, null], ["L002", "QC_1", 2020, 0, 0, 2020, 2055, null], ["RL001", "QC_1", 2400, 0, 0, 2400, 2435, null], ["R_MACH-03", "CNC_1", 2400, 0, 0, 2400, 2548, null], ["R_MACH-02", "CNC_1", 2548, 0, 0, 2548, 2696, null], ["R_SILVER_PAINT-01", "PAINT_1", 2558, 0, 0, 2558, 2598, null], ["F_BLACK_PAINT-01", "PAINT_1", 2636, 0, 12, 2648, 2688, null], ["R_BLACK_PAINT-01", "PAINT_1", 2706, 0, 0, 2706, 2746, null], ["L004", "QC_1", 2718, 0, 4, 2722, 2757, null], ["L003", "QC_1", 2835, 0, 4, 2839, 2874, null], ["L005", "QC_1", 2880, 0, 4, 2884, 2919, null]], "options": ["RB001", "RL001"], "kpi": {"makespan": 2919, "weighted_tardiness": 0, "setup_minutes": 322, "idle_minutes": 3242, "maintenance_minutes": 60, "nonproductive_minutes": 3624, "safety_shortfall": 2, "reserve_units": 36, "surplus_holding": 42, "btp_end_units": 110, "objective": 40014397, "objective_tier1": 40, "objective_tier2": 14397}, "deliveries": [{"order": "O001", "time": 2055, "due": 2400, "tardiness": 0, "priority": 4}, {"order": "O002", "time": 2874, "due": 3600, "tardiness": 0, "priority": 2}, {"order": "O003", "time": 2757, "due": 3840, "tardiness": 0, "priority": 1}, {"order": "O004", "time": 2919, "due": 4200, "tardiness": 0, "priority": 2}], "active": [["CAST_1", 0, 480, 480, 476], ["CAST_1", 480, 960, 450, 148], ["CAST_2", 0, 480, 480, 448], ["CNC_1", 480, 960, 450, 158], ["CNC_1", 1440, 1920, 480, 314], ["CNC_1", 2400, 2880, 480, 296], ["CNC_2", 480, 960, 420, 178], ["CNC_2", 960, 1440, 480, 336], ["PAINT_1", 1440, 1920, 480, 130], ["PAINT_1", 2400, 2880, 480, 132], ["QC_1", 1920, 2400, 450, 80], ["QC_1", 2400, 2880, 480, 113], ["QC_1", 2880, 3360, 480, 39]], "btp_end": {"F_CAST": 8, "R_CAST": 20, "F_HEAT": 20, "R_HEAT": 0, "F_MACH": 6, "R_MACH": 14, "F_SILVER_PAINT": 19, "F_BLACK_PAINT": 8, "R_SILVER_PAINT": 8, "R_BLACK_PAINT": 7}, "fin_end": {"F_SILVER": 26, "F_BLACK": 6, "R_SILVER": 6, "R_BLACK": 4}, "maint": 2, "late": 0, "status": "HEURISTIC_FEASIBLE", "seed": 47, "seeds": 3, "valid_runs": 3, "all_objectives": [40014397, 40015970, 40016023], "seconds": 30.0}, "ga": {"rows": [["F_CAST-RL001-2", "CAST_1", 0, 0, 60, 60, 134, "MOLD_F1"], ["F_CAST-04", "CAST_2", 0, 0, 60, 60, 142, "MOLD_F2"], ["F_MACH-04", "CNC_2", 480, 0, 10, 490, 658, null], ["R_CAST-02", "CAST_1", 134, 0, 60, 194, 268, "MOLD_R1"], ["F_CAST-02", "CAST_2", 142, 0, 0, 142, 224, "MOLD_F2"], ["F_HEAT-RL001-1", "HT_1", 144, 0, 0, 144, 624, null], ["F_BLACK_PAINT-01", "PAINT_1", 960, 0, 10, 970, 1010, null], ["F_CAST-RL001-1", "CAST_2", 224, 0, 0, 224, 306, "MOLD_F2"], ["F_HEAT-03", "HT_2", 234, 0, 0, 234, 714, null], ["F_CAST-01", "CAST_1", 268, 30, 30, 328, 402, "MOLD_F1"], ["R_CAST-01", "CAST_2", 306, 0, 60, 366, 448, "MOLD_R1"], ["F_CAST-03", "CAST_1", 402, 0, 0, 402, 476, "MOLD_F1"], ["R_CAST-RB001", "CAST_2", 480, 30, 30, 540, 622, "MOLD_R1"], ["R_CAST-03", "CAST_2", 622, 0, 0, 622, 704, "MOLD_R1"], ["R_HEAT-02", "HT_1", 624, 0, 0, 624, 1104, null], ["R_HEAT-01", "HT_2", 714, 0, 0, 714, 1194, null], ["F_MACH-02", "CNC_1", 750, 0, 10, 760, 908, null], ["F_MACH-03", "CNC_2", 960, 0, 0, 960, 1128, null], ["F_HEAT-02", "HT_1", 1104, 0, 0, 1104, 1584, null], ["R_MACH-02", "CNC_1", 1114, 0, 18, 1132, 1280, null], ["F_SILVER_PAINT-01", "PAINT_1", 1138, 0, 24, 1162, 1202, null], ["L003", "QC_1", 1159, 0, 10, 1169, 1204, null], ["R_MACH-03", "CNC_2", 1204, 0, 18, 1222, 1390, null], ["F_HEAT-01", "HT_2", 1260, 0, 0, 1260, 1740, null], ["R_MACH-01", "CNC_1", 1280, 0, 0, 1280, 1428, null], ["L002", "QC_1", 1322, 0, 4, 1326, 1361, null], ["R_SILVER_PAINT-01", "PAINT_1", 1400, 0, 0, 1400, 1440, null], ["F_MACH-01", "CNC_1", 1594, 0, 18, 1612, 1760, null], ["F_MACH-RL001-1", "CNC_1", 1760, 0, 0, 1760, 1908, null], ["F_SILVER_PAINT-RL001-1", "PAINT_1", 1770, 0, 0, 1770, 1810, null], ["F_SILVER_PAINT-02", "PAINT_1", 1920, 0, 0, 1920, 1960, null], ["L001", "QC_1", 1930, 0, 0, 1930, 1965, null], ["L004", "QC_1", 1988, 0, 4, 1992, 2027, null], ["RL001", "QC_1", 2080, 0, 4, 2084, 2119, null], ["R_BLACK_PAINT-01", "PAINT_1", 2343, 0, 12, 2355, 2395, null], ["L005", "QC_1", 2880, 0, 4, 2884, 2919, null]], "options": ["RB001", "RL001"], "kpi": {"makespan": 2919, "weighted_tardiness": 0, "setup_minutes": 446, "idle_minutes": 3552, "maintenance_minutes": 60, "nonproductive_minutes": 4058, "safety_shortfall": 2, "reserve_units": 36, "surplus_holding": 62, "btp_end_units": 110, "objective": 40015843, "objective_tier1": 40, "objective_tier2": 15843}, "deliveries": [{"order": "O001", "time": 1965, "due": 2400, "tardiness": 0, "priority": 4}, {"order": "O002", "time": 1204, "due": 3600, "tardiness": 0, "priority": 2}, {"order": "O003", "time": 2027, "due": 3840, "tardiness": 0, "priority": 1}, {"order": "O004", "time": 2919, "due": 4200, "tardiness": 0, "priority": 2}], "active": [["CAST_1", 0, 480, 480, 476], ["CAST_2", 0, 480, 480, 448], ["CAST_2", 480, 960, 450, 224], ["CNC_1", 480, 960, 450, 158], ["CNC_1", 960, 1440, 480, 314], ["CNC_1", 1440, 1920, 480, 314], ["CNC_2", 480, 960, 420, 178], ["CNC_2", 960, 1440, 480, 354], ["PAINT_1", 960, 1440, 480, 154], ["PAINT_1", 1440, 1920, 480, 40], ["PAINT_1", 1920, 2400, 450, 92], ["QC_1", 960, 1440, 480, 84], ["QC_1", 1920, 2400, 450, 113], ["QC_1", 2880, 3360, 480, 39]], "btp_end": {"F_CAST": 8, "R_CAST": 20, "F_HEAT": 20, "R_HEAT": 0, "F_MACH": 6, "R_MACH": 14, "F_SILVER_PAINT": 19, "F_BLACK_PAINT": 8, "R_SILVER_PAINT": 8, "R_BLACK_PAINT": 7}, "fin_end": {"F_SILVER": 26, "F_BLACK": 6, "R_SILVER": 6, "R_BLACK": 4}, "maint": 2, "late": 0, "status": "HEURISTIC_FEASIBLE", "seed": 11, "seeds": 3, "valid_runs": 3, "all_objectives": [40015843, 40017321, 40018465], "seconds": 30.0}, "cpsat": {"rows": [["F_CAST-01", "CAST_2", 1, 0, 60, 61, 143, "MOLD_F1"], ["F_CAST-02", "CAST_2", 143, 0, 60, 203, 285, "MOLD_F2"], ["F_CAST-03", "CAST_1", 2400, 0, 0, 2400, 2474, "MOLD_F1"], ["F_CAST-04", "CAST_2", 2526, 30, 30, 2586, 2668, "MOLD_F1"], ["R_CAST-01", "CAST_1", 186, 0, 0, 186, 260, "MOLD_R1"], ["R_CAST-02", "CAST_1", 480, 30, 30, 540, 614, "MOLD_R2"], ["R_CAST-03", "CAST_1", 646, 0, 0, 646, 720, "MOLD_R2"], ["F_HEAT-01", "HT_1", 968, 0, 0, 968, 1448, null], ["F_HEAT-02", "HT_2", 1113, 0, 0, 1113, 1593, null], ["F_HEAT-03", "HT_2", 2678, 0, 0, 2678, 3158, null], ["R_HEAT-01", "HT_1", 270, 0, 0, 270, 750, null], ["R_HEAT-02", "HT_2", 633, 0, 0, 633, 1113, null], ["F_MACH-01", "CNC_1", 481, 0, 10, 491, 639, null], ["F_MACH-02", "CNC_1", 1274, 0, 18, 1292, 1440, null], ["F_MACH-03", "CNC_1", 1648, 0, 0, 1648, 1796, null], ["F_MACH-04", "CNC_2", 3363, 0, 18, 3381, 3549, null], ["R_MACH-01", "CNC_1", 760, 0, 18, 778, 926, null], ["R_MACH-02", "CNC_2", 1123, 0, 10, 1133, 1301, null], ["R_MACH-03", "CNC_1", 1126, 0, 0, 1126, 1274, null], ["F_BLACK_PAINT-01", "PAINT_1", 3630, 0, 12, 3642, 3682, null], ["F_SILVER_PAINT-01", "PAINT_1", 1616, 0, 0, 1616, 1656, null], ["F_SILVER_PAINT-02", "PAINT_1", 1920, 0, 0, 1920, 1960, null], ["R_BLACK_PAINT-01", "PAINT_1", 3840, 0, 0, 3840, 3880, null], ["R_SILVER_PAINT-01", "PAINT_1", 3360, 0, 0, 3360, 3400, null], ["L001", "QC_1", 1920, 0, 10, 1930, 1965, null], ["L002", "QC_1", 2365, 0, 0, 2365, 2400, null], ["L003", "QC_1", 3840, 0, 4, 3844, 3879, null], ["L004", "QC_1", 3801, 0, 4, 3805, 3840, null], ["L005", "QC_1", 4000, 0, 4, 4004, 4039, null], ["F_CAST-RL001-1", "CAST_1", 750, 30, 30, 810, 884, "MOLD_F1"], ["F_CAST-RL001-2", "CAST_1", 884, 0, 0, 884, 958, "MOLD_F1"], ["F_HEAT-RL001-1", "HT_2", 153, 0, 0, 153, 633, null], ["F_MACH-RL001-1", "CNC_1", 1458, 0, 0, 1458, 1606, null], ["F_SILVER_PAINT-RL001-1", "PAINT_1", 649, 0, 10, 659, 699, null], ["RL001", "QC_1", 2400, 0, 0, 2400, 2435, null], ["R_CAST-RB001", "CAST_1", 1, 0, 60, 61, 135, "MOLD_R1"]], "options": ["RB001", "RL001"], "kpi": {"makespan": 4039, "weighted_tardiness": 558, "setup_minutes": 388, "idle_minutes": 5964, "maintenance_minutes": 90, "nonproductive_minutes": 6442, "safety_shortfall": 2, "reserve_units": 36, "surplus_holding": 42, "btp_end_units": 110, "objective": 8410024067, "objective_tier1": 8410, "objective_tier2": 24067}, "deliveries": [{"order": "O001", "time": 2400, "due": 2400, "tardiness": 0, "priority": 4}, {"order": "O002", "time": 3879, "due": 3600, "tardiness": 279, "priority": 2}, {"order": "O003", "time": 3840, "due": 3840, "tardiness": 0, "priority": 1}, {"order": "O004", "time": 4039, "due": 4200, "tardiness": 0, "priority": 2}], "active": [["CAST_1", 0, 480, 480, 208], ["CAST_1", 480, 960, 450, 416], ["CAST_1", 2400, 2880, 480, 74], ["CAST_2", 0, 480, 480, 284], ["CAST_2", 2400, 2880, 480, 142], ["CNC_1", 480, 960, 450, 324], ["CNC_1", 960, 1440, 480, 314], ["CNC_1", 1440, 1920, 480, 296], ["CNC_2", 960, 1440, 480, 178], ["CNC_2", 3360, 3840, 450, 186], ["PAINT_1", 480, 960, 450, 50], ["PAINT_1", 1440, 1920, 480, 40], ["PAINT_1", 1920, 2400, 450, 40], ["PAINT_1", 3360, 3840, 450, 92], ["PAINT_1", 3840, 4320, 480, 40], ["QC_1", 1920, 2400, 450, 80], ["QC_1", 2400, 2880, 480, 35], ["QC_1", 3360, 3840, 450, 39], ["QC_1", 3840, 4320, 480, 78]], "btp_end": {"F_CAST": 8, "R_CAST": 20, "F_HEAT": 20, "R_HEAT": 0, "F_MACH": 6, "R_MACH": 14, "F_SILVER_PAINT": 19, "F_BLACK_PAINT": 8, "R_SILVER_PAINT": 8, "R_BLACK_PAINT": 7}, "fin_end": {"F_SILVER": 26, "F_BLACK": 6, "R_SILVER": 6, "R_BLACK": 4}, "maint": 3, "late": 1, "status": "FEASIBLE", "seed": 29, "seeds": 3, "valid_runs": 3, "all_objectives": [8410024067, 28325024207, 58450018917], "seconds": 30.0}, "cpsathint": {"rows": [["F_CAST-01", "CAST_1", 1, 0, 60, 61, 135, "MOLD_F1"], ["F_CAST-02", "CAST_2", 1, 0, 60, 61, 143, "MOLD_F2"], ["F_CAST-03", "CAST_2", 143, 0, 0, 143, 225, "MOLD_F2"], ["F_CAST-04", "CAST_2", 496, 0, 0, 496, 578, "MOLD_F2"], ["R_CAST-01", "CAST_1", 135, 0, 60, 195, 269, "MOLD_R1"], ["R_CAST-02", "CAST_1", 269, 0, 0, 269, 343, "MOLD_R1"], ["R_CAST-03", "CAST_2", 578, 30, 30, 638, 720, "MOLD_R2"], ["F_HEAT-01", "HT_1", 145, 0, 0, 145, 625, null], ["F_HEAT-02", "HT_2", 235, 0, 0, 235, 715, null], ["F_HEAT-03", "HT_1", 637, 0, 0, 637, 1117, null], ["R_HEAT-01", "HT_2", 715, 0, 0, 715, 1195, null], ["R_HEAT-02", "HT_1", 1117, 0, 0, 1117, 1597, null], ["F_MACH-01", "CNC_1", 968, 0, 10, 978, 1126, null], ["F_MACH-02", "CNC_1", 1126, 0, 0, 1126, 1274, null], ["F_MACH-03", "CNC_1", 1440, 0, 18, 1458, 1606, null], ["F_MACH-04", "CNC_1", 1606, 0, 0, 1606, 1754, null], ["R_MACH-01", "CNC_1", 1274, 0, 18, 1292, 1440, null], ["R_MACH-02", "CNC_1", 1754, 0, 18, 1772, 1920, null], ["R_MACH-03", "CNC_1", 2401, 0, 0, 2401, 2549, null], ["F_BLACK_PAINT-01", "PAINT_1", 1970, 0, 12, 1982, 2022, null], ["F_SILVER_PAINT-01", "PAINT_1", 1920, 0, 10, 1930, 1970, null], ["F_SILVER_PAINT-02", "PAINT_1", 2022, 0, 24, 2046, 2086, null], ["R_BLACK_PAINT-01", "PAINT_1", 2708, 0, 12, 2720, 2760, null], ["R_SILVER_PAINT-01", "PAINT_1", 2120, 0, 0, 2120, 2160, null], ["L001", "QC_1", 2090, 0, 10, 2100, 2135, null], ["L002", "QC_1", 2266, 0, 0, 2266, 2301, null], ["L003", "QC_1", 2301, 0, 4, 2305, 2340, null], ["L004", "QC_1", 2361, 0, 4, 2365, 2400, null], ["L005", "QC_1", 2880, 0, 4, 2884, 2919, null], ["R_CAST-RB001", "CAST_2", 750, 0, 0, 750, 832, "MOLD_R2"]], "options": ["RB001"], "kpi": {"makespan": 2919, "weighted_tardiness": 0, "setup_minutes": 354, "idle_minutes": 2283, "maintenance_minutes": 30, "nonproductive_minutes": 2667, "safety_shortfall": 6, "reserve_units": 16, "surplus_holding": 6, "btp_end_units": 98, "objective": 120011440, "objective_tier1": 120, "objective_tier2": 11440}, "deliveries": [{"order": "O001", "time": 2301, "due": 2400, "tardiness": 0, "priority": 4}, {"order": "O002", "time": 2340, "due": 3600, "tardiness": 0, "priority": 2}, {"order": "O003", "time": 2400, "due": 3840, "tardiness": 0, "priority": 1}, {"order": "O004", "time": 2919, "due": 4200, "tardiness": 0, "priority": 2}], "active": [["CAST_1", 0, 480, 480, 342], ["CAST_2", 0, 480, 480, 224], ["CAST_2", 480, 960, 450, 306], ["CNC_1", 960, 1440, 480, 472], ["CNC_1", 1440, 1920, 480, 480], ["CNC_1", 2400, 2880, 480, 148], ["PAINT_1", 1920, 2400, 450, 206], ["PAINT_1", 2400, 2880, 480, 52], ["QC_1", 1920, 2400, 450, 158], ["QC_1", 2880, 3360, 480, 39]], "btp_end": {"F_CAST": 0, "R_CAST": 20, "F_HEAT": 16, "R_HEAT": 0, "F_MACH": 11, "R_MACH": 14, "F_SILVER_PAINT": 14, "F_BLACK_PAINT": 8, "R_SILVER_PAINT": 8, "R_BLACK_PAINT": 7}, "fin_end": {"F_SILVER": 6, "F_BLACK": 6, "R_SILVER": 6, "R_BLACK": 4}, "maint": 1, "late": 0, "status": "FEASIBLE", "seed": 47, "seeds": 3, "valid_runs": 3, "all_objectives": [120011440, 120012599, 120012780], "seconds": 30.0}, "cplns": {"rows": [["F_CAST-01", "CAST_1", 0, 0, 60, 60, 134, "MOLD_F1"], ["F_CAST-02", "CAST_2", 0, 0, 60, 60, 142, "MOLD_F2"], ["F_CAST-03", "CAST_2", 142, 0, 0, 142, 224, "MOLD_F2"], ["F_CAST-04", "CAST_2", 224, 0, 0, 224, 306, "MOLD_F2"], ["R_CAST-01", "CAST_1", 134, 0, 60, 194, 268, "MOLD_R1"], ["R_CAST-02", "CAST_1", 268, 0, 0, 268, 342, "MOLD_R1"], ["R_CAST-03", "CAST_2", 306, 30, 30, 366, 448, "MOLD_R2"], ["F_HEAT-01", "HT_1", 144, 0, 0, 144, 624, null], ["F_HEAT-02", "HT_2", 234, 0, 0, 234, 714, null], ["F_HEAT-03", "HT_1", 1104, 0, 0, 1104, 1584, null], ["R_HEAT-01", "HT_2", 714, 0, 0, 714, 1194, null], ["R_HEAT-02", "HT_2", 1194, 0, 0, 1194, 1674, null], ["F_MACH-01", "CNC_1", 562, 0, 10, 572, 720, null], ["F_MACH-02", "CNC_1", 812, 0, 0, 812, 960, null], ["F_MACH-03", "CNC_1", 1606, 0, 18, 1624, 1772, null], ["F_MACH-04", "CNC_1", 1772, 0, 0, 1772, 1920, null], ["R_MACH-01", "CNC_1", 1440, 0, 18, 1458, 1606, null], ["R_MACH-02", "CNC_1", 1920, 0, 18, 1938, 2086, null], ["R_MACH-03", "CNC_1", 2190, 0, 0, 2190, 2338, null], ["F_BLACK_PAINT-01", "PAINT_1", 1271, 0, 10, 1281, 1321, null], ["F_SILVER_PAINT-01", "PAINT_1", 1385, 0, 0, 1385, 1425, null], ["F_SILVER_PAINT-02", "PAINT_1", 1920, 0, 0, 1920, 1960, null], ["R_BLACK_PAINT-01", "PAINT_1", 2360, 0, 0, 2360, 2400, null], ["R_SILVER_PAINT-01", "PAINT_1", 2096, 0, 0, 2096, 2136, null], ["L001", "QC_1", 2004, 0, 0, 2004, 2039, null], ["L002", "QC_1", 2080, 0, 0, 2080, 2115, null], ["L003", "QC_1", 1920, 0, 10, 1930, 1965, null], ["L004", "QC_1", 2256, 0, 4, 2260, 2295, null], ["L005", "QC_1", 2880, 0, 4, 2884, 2919, null], ["F_CAST-RL001-1", "CAST_2", 563, 30, 30, 623, 705, "MOLD_F2"], ["F_CAST-RL001-2", "CAST_2", 750, 0, 0, 750, 832, "MOLD_F2"], ["F_HEAT-RL001-1", "HT_1", 1584, 0, 0, 1584, 2064, null], ["F_MACH-RL001-1", "CNC_2", 1207, 0, 0, 1207, 1375, null], ["F_SILVER_PAINT-RL001-1", "PAINT_1", 1321, 0, 24, 1345, 1385, null], ["RL001", "QC_1", 1965, 0, 4, 1969, 2004, null], ["F_CAST-RL002-1", "CAST_1", 342, 30, 30, 402, 476, "MOLD_F1"], ["F_CAST-RL002-2", "CAST_2", 878, 0, 0, 878, 960, "MOLD_F2"], ["F_HEAT-RL002-1", "HT_1", 624, 0, 0, 624, 1104, null], ["F_MACH-RL002-1", "CNC_2", 1029, 0, 10, 1039, 1207, null], ["F_BLACK_PAINT-RL002-1", "PAINT_1", 2308, 0, 12, 2320, 2360, null], ["RL002", "QC_1", 3321, 0, 4, 3325, 3360, null], ["R_CAST-RB001", "CAST_2", 481, 0, 0, 481, 563, "MOLD_R2"]], "options": ["RB001", "RL001", "RL002"], "kpi": {"makespan": 2919, "weighted_tardiness": 0, "setup_minutes": 416, "idle_minutes": 1775, "maintenance_minutes": 90, "nonproductive_minutes": 2281, "safety_shortfall": 2, "reserve_units": 56, "surplus_holding": 62, "btp_end_units": 122, "objective": 40010564, "objective_tier1": 40, "objective_tier2": 10564}, "deliveries": [{"order": "O001", "time": 2115, "due": 2400, "tardiness": 0, "priority": 4}, {"order": "O002", "time": 1965, "due": 3600, "tardiness": 0, "priority": 2}, {"order": "O003", "time": 2295, "due": 3840, "tardiness": 0, "priority": 1}, {"order": "O004", "time": 2919, "due": 4200, "tardiness": 0, "priority": 2}], "active": [["CAST_1", 0, 480, 480, 476], ["CAST_2", 0, 480, 480, 448], ["CAST_2", 480, 960, 450, 388], ["CNC_1", 480, 960, 450, 306], ["CNC_1", 1440, 1920, 480, 480], ["CNC_1", 1920, 2400, 450, 314], ["CNC_2", 960, 1440, 480, 346], ["PAINT_1", 960, 1440, 480, 154], ["PAINT_1", 1920, 2400, 450, 172], ["QC_1", 1920, 2400, 450, 193], ["QC_1", 2880, 3360, 480, 78]], "btp_end": {"F_CAST": 16, "R_CAST": 20, "F_HEAT": 24, "R_HEAT": 0, "F_MACH": 1, "R_MACH": 14, "F_SILVER_PAINT": 19, "F_BLACK_PAINT": 13, "R_SILVER_PAINT": 8, "R_BLACK_PAINT": 7}, "fin_end": {"F_SILVER": 26, "F_BLACK": 26, "R_SILVER": 6, "R_BLACK": 4}, "maint": 3, "late": 0, "status": "HEURISTIC_FEASIBLE", "seed": 29, "seeds": 3, "valid_runs": 3, "all_objectives": [40010564, 40011686, 40014902], "seconds": 30.0}, "cpman": {"rows": [["F_CAST-01", "CAST_1", 134, 0, 0, 134, 208, "MOLD_F2"], ["F_CAST-02", "CAST_1", 208, 0, 0, 208, 282, "MOLD_F2"], ["F_CAST-03", "CAST_2", 960, 30, 30, 1020, 1102, "MOLD_F1"], ["F_CAST-04", "CAST_2", 1102, 0, 0, 1102, 1184, "MOLD_F1"], ["R_CAST-01", "CAST_2", 0, 0, 60, 60, 142, "MOLD_R1"], ["R_CAST-02", "CAST_2", 142, 0, 0, 142, 224, "MOLD_R1"], ["R_CAST-03", "CAST_2", 224, 30, 30, 284, 366, "MOLD_R1"], ["F_HEAT-01", "HT_1", 144, 0, 0, 144, 624, null], ["F_HEAT-02", "HT_2", 714, 0, 0, 714, 1194, null], ["F_HEAT-03", "HT_1", 1112, 0, 0, 1112, 1592, null], ["R_HEAT-01", "HT_2", 234, 0, 0, 234, 714, null], ["R_HEAT-02", "HT_1", 624, 0, 0, 624, 1104, null], ["F_MACH-01", "CNC_2", 1440, 0, 0, 1440, 1608, null], ["F_MACH-02", "CNC_1", 1440, 0, 18, 1458, 1606, null], ["F_MACH-03", "CNC_2", 1743, 0, 0, 1743, 1911, null], ["F_MACH-04", "CNC_1", 1763, 0, 0, 1763, 1911, null], ["R_MACH-01", "CNC_1", 986, 0, 10, 996, 1144, null], ["R_MACH-02", "CNC_1", 1144, 0, 0, 1144, 1292, null], ["R_MACH-03", "CNC_1", 1292, 0, 0, 1292, 1440, null], ["F_BLACK_PAINT-01", "PAINT_1", 2090, 0, 12, 2102, 2142, null], ["F_SILVER_PAINT-01", "PAINT_1", 1970, 0, 0, 1970, 2010, null], ["F_SILVER_PAINT-02", "PAINT_1", 2010, 0, 0, 2010, 2050, null], ["R_BLACK_PAINT-01", "PAINT_1", 2360, 0, 0, 2360, 2400, null], ["R_SILVER_PAINT-01", "PAINT_1", 2050, 0, 0, 2050, 2090, null], ["L001", "QC_1", 2190, 0, 0, 2190, 2225, null], ["L002", "QC_1", 2225, 0, 0, 2225, 2260, null], ["L003", "QC_1", 2262, 0, 4, 2266, 2301, null], ["L004", "QC_1", 2301, 0, 4, 2305, 2340, null], ["L005", "QC_1", 2880, 0, 4, 2884, 2919, null], ["F_CAST-RL001-1", "CAST_2", 1184, 0, 0, 1184, 1266, "MOLD_F1"], ["F_CAST-RL001-2", "CAST_1", 0, 0, 60, 60, 134, "MOLD_F2"], ["F_HEAT-RL001-1", "HT_2", 1674, 0, 0, 1674, 2154, null], ["F_MACH-RL001-1", "CNC_2", 480, 0, 10, 490, 658, null], ["F_SILVER_PAINT-RL001-1", "PAINT_1", 1920, 0, 10, 1930, 1970, null], ["RL001", "QC_1", 2115, 0, 10, 2125, 2160, null], ["F_CAST-RL002-1", "CAST_1", 282, 0, 60, 342, 416, "MOLD_F1"], ["F_CAST-RL002-2", "CAST_2", 1298, 30, 30, 1358, 1440, "MOLD_F1"], ["F_HEAT-RL002-1", "HT_2", 1194, 0, 0, 1194, 1674, null], ["F_MACH-RL002-1", "CNC_1", 1606, 0, 0, 1606, 1754, null], ["F_BLACK_PAINT-RL002-1", "PAINT_1", 2320, 0, 0, 2320, 2360, null], ["RL002", "QC_1", 2919, 0, 4, 2923, 2958, null], ["R_CAST-RB001", "CAST_2", 366, 0, 0, 366, 448, "MOLD_R1"]], "options": ["RB001", "RL001", "RL002"], "kpi": {"makespan": 2919, "weighted_tardiness": 0, "setup_minutes": 356, "idle_minutes": 1365, "maintenance_minutes": 90, "nonproductive_minutes": 1811, "safety_shortfall": 2, "reserve_units": 56, "surplus_holding": 62, "btp_end_units": 122, "objective": 40009094, "objective_tier1": 40, "objective_tier2": 9094}, "deliveries": [{"order": "O001", "time": 2260, "due": 2400, "tardiness": 0, "priority": 4}, {"order": "O002", "time": 2301, "due": 3600, "tardiness": 0, "priority": 2}, {"order": "O003", "time": 2340, "due": 3840, "tardiness": 0, "priority": 1}, {"order": "O004", "time": 2919, "due": 4200, "tardiness": 0, "priority": 2}], "active": [["CAST_1", 0, 480, 480, 416], ["CAST_2", 0, 480, 480, 448], ["CAST_2", 960, 1440, 480, 448], ["CNC_1", 960, 1440, 480, 454], ["CNC_1", 1440, 1920, 480, 462], ["CNC_2", 480, 960, 420, 178], ["CNC_2", 1440, 1920, 480, 336], ["PAINT_1", 1920, 2400, 450, 302], ["QC_1", 1920, 2400, 450, 193], ["QC_1", 2880, 3360, 480, 78]], "btp_end": {"F_CAST": 16, "R_CAST": 20, "F_HEAT": 24, "R_HEAT": 0, "F_MACH": 1, "R_MACH": 14, "F_SILVER_PAINT": 19, "F_BLACK_PAINT": 13, "R_SILVER_PAINT": 8, "R_BLACK_PAINT": 7}, "fin_end": {"F_SILVER": 26, "F_BLACK": 26, "R_SILVER": 6, "R_BLACK": 4}, "maint": 3, "late": 0, "status": "FEASIBLE · 60s · 8 worker", "seed": null, "seeds": null}, "eps8": {"rows": [["F_CAST-01", "CAST_1", 480, 0, 60, 540, 614, "MOLD_F2"], ["F_CAST-02", "CAST_1", 614, 0, 0, 614, 688, "MOLD_F2"], ["F_CAST-03", "CAST_1", 750, 0, 0, 750, 824, "MOLD_F2"], ["F_CAST-04", "CAST_1", 824, 30, 30, 884, 958, "MOLD_F2"], ["R_CAST-01", "CAST_2", 0, 0, 60, 60, 142, "MOLD_R1"], ["R_CAST-02", "CAST_2", 142, 0, 0, 142, 224, "MOLD_R1"], ["R_CAST-03", "CAST_2", 366, 0, 0, 366, 448, "MOLD_R2"], ["F_HEAT-01", "HT_1", 714, 0, 0, 714, 1194, null], ["F_HEAT-02", "HT_2", 950, 0, 0, 950, 1430, null], ["F_HEAT-03", "HT_1", 1212, 0, 0, 1212, 1692, null], ["R_HEAT-01", "HT_1", 234, 0, 0, 234, 714, null], ["R_HEAT-02", "HT_2", 376, 0, 0, 376, 856, null], ["F_MACH-01", "CNC_2", 1026, 0, 10, 1036, 1204, null], ["F_MACH-02", "CNC_2", 1204, 0, 0, 1204, 1372, null], ["F_MACH-03", "CNC_2", 1440, 0, 0, 1440, 1608, null], ["F_MACH-04", "CNC_2", 1702, 0, 0, 1702, 1870, null], ["R_MACH-01", "CNC_1", 960, 0, 10, 970, 1118, null], ["R_MACH-02", "CNC_1", 1118, 0, 0, 1118, 1266, null], ["R_MACH-03", "CNC_1", 1266, 0, 0, 1266, 1414, null], ["F_BLACK_PAINT-01", "PAINT_1", 1880, 0, 0, 1880, 1920, null], ["F_SILVER_PAINT-01", "PAINT_1", 1440, 0, 10, 1450, 1490, null], ["F_SILVER_PAINT-02", "PAINT_1", 1618, 0, 0, 1618, 1658, null], ["R_BLACK_PAINT-01", "PAINT_1", 1828, 0, 12, 1840, 1880, null], ["R_SILVER_PAINT-01", "PAINT_1", 1490, 0, 0, 1490, 1530, null], ["L001", "QC_1", 1920, 0, 10, 1930, 1965, null], ["L002", "QC_1", 1965, 0, 0, 1965, 2000, null], ["L003", "QC_1", 2078, 0, 4, 2082, 2117, null], ["L004", "QC_1", 2000, 0, 4, 2004, 2039, null], ["L005", "QC_1", 2039, 0, 4, 2043, 2078, null], ["R_CAST-RB001", "CAST_2", 224, 30, 30, 284, 366, "MOLD_R2"]], "options": ["RB001"], "kpi": {"makespan": 2117, "weighted_tardiness": 0, "setup_minutes": 244, "idle_minutes": 881, "maintenance_minutes": 60, "nonproductive_minutes": 1185, "safety_shortfall": 8, "reserve_units": 16, "surplus_holding": 4, "btp_end_units": 98, "objective": 160006110, "objective_tier1": 160, "objective_tier2": 6110}, "deliveries": [{"order": "O001", "time": 2000, "due": 2400, "tardiness": 0, "priority": 4}, {"order": "O002", "time": 2117, "due": 3600, "tardiness": 0, "priority": 2}, {"order": "O003", "time": 2039, "due": 3840, "tardiness": 0, "priority": 1}, {"order": "O004", "time": 2078, "due": 4200, "tardiness": 0, "priority": 2}], "active": [["CAST_1", 480, 960, 450, 416], ["CAST_2", 0, 480, 480, 448], ["CNC_1", 960, 1440, 480, 454], ["CNC_2", 960, 1440, 480, 346], ["CNC_2", 1440, 1920, 480, 336], ["PAINT_1", 1440, 1920, 480, 222], ["QC_1", 1920, 2400, 450, 197]], "btp_end": {"F_CAST": 0, "R_CAST": 20, "F_HEAT": 16, "R_HEAT": 0, "F_MACH": 11, "R_MACH": 14, "F_SILVER_PAINT": 14, "F_BLACK_PAINT": 8, "R_SILVER_PAINT": 8, "R_BLACK_PAINT": 7}, "fin_end": {"F_SILVER": 6, "F_BLACK": 6, "R_SILVER": 6, "R_BLACK": 4}, "maint": 2, "late": 0, "status": "FEASIBLE · 60s · 8 worker", "seed": null, "seeds": null, "eps": 8}, "eps4": {"rows": [["F_CAST-01", "CAST_1", 134, 0, 0, 134, 208, "MOLD_F2"], ["F_CAST-02", "CAST_1", 208, 0, 0, 208, 282, "MOLD_F2"], ["F_CAST-03", "CAST_2", 960, 30, 30, 1020, 1102, "MOLD_F2"], ["F_CAST-04", "CAST_2", 1102, 0, 0, 1102, 1184, "MOLD_F2"], ["R_CAST-01", "CAST_2", 0, 30, 30, 60, 142, "MOLD_R2"], ["R_CAST-02", "CAST_2", 142, 0, 0, 142, 224, "MOLD_R2"], ["R_CAST-03", "CAST_2", 224, 0, 60, 284, 366, "MOLD_R1"], ["F_HEAT-01", "HT_1", 144, 0, 0, 144, 624, null], ["F_HEAT-02", "HT_2", 714, 0, 0, 714, 1194, null], ["F_HEAT-03", "HT_1", 1112, 0, 0, 1112, 1592, null], ["R_HEAT-01", "HT_2", 234, 0, 0, 234, 714, null], ["R_HEAT-02", "HT_1", 624, 0, 0, 624, 1104, null], ["F_MACH-01", "CNC_1", 1440, 0, 18, 1458, 1606, null], ["F_MACH-02", "CNC_2", 1440, 0, 0, 1440, 1608, null], ["F_MACH-03", "CNC_1", 1606, 0, 0, 1606, 1754, null], ["F_MACH-04", "CNC_1", 1754, 0, 0, 1754, 1902, null], ["R_MACH-01", "CNC_1", 960, 0, 10, 970, 1118, null], ["R_MACH-02", "CNC_1", 1140, 0, 0, 1140, 1288, null], ["R_MACH-03", "CNC_1", 1292, 0, 0, 1292, 1440, null], ["F_BLACK_PAINT-01", "PAINT_1", 1862, 0, 0, 1862, 1902, null], ["F_SILVER_PAINT-01", "PAINT_1", 1618, 0, 0, 1618, 1658, null], ["F_SILVER_PAINT-02", "PAINT_1", 1764, 0, 0, 1764, 1804, null], ["R_BLACK_PAINT-01", "PAINT_1", 1804, 0, 12, 1816, 1856, null], ["R_SILVER_PAINT-01", "PAINT_1", 1658, 0, 0, 1658, 1698, null], ["L001", "QC_1", 1920, 0, 10, 1930, 1965, null], ["L002", "QC_1", 1965, 0, 0, 1965, 2000, null], ["L003", "QC_1", 2078, 0, 4, 2082, 2117, null], ["L004", "QC_1", 2039, 0, 4, 2043, 2078, null], ["L005", "QC_1", 2000, 0, 4, 2004, 2039, null], ["F_CAST-RL001-1", "CAST_2", 1184, 0, 0, 1184, 1266, "MOLD_F2"], ["F_CAST-RL001-2", "CAST_1", 0, 0, 60, 60, 134, "MOLD_F2"], ["F_HEAT-RL001-1", "HT_1", 1674, 0, 0, 1674, 2154, null], ["F_MACH-RL001-1", "CNC_2", 480, 0, 10, 490, 658, null], ["F_SILVER_PAINT-RL001-1", "PAINT_1", 1440, 0, 10, 1450, 1490, null], ["RL001", "QC_1", 2190, 0, 4, 2194, 2229, null], ["F_CAST-RL002-1", "CAST_1", 282, 0, 60, 342, 416, "MOLD_F1"], ["F_CAST-RL002-2", "CAST_2", 1266, 30, 30, 1326, 1408, "MOLD_F2"], ["F_HEAT-RL002-1", "HT_2", 1194, 0, 0, 1194, 1674, null], ["F_MACH-RL002-1", "CNC_2", 1684, 0, 0, 1684, 1852, null], ["F_BLACK_PAINT-RL002-1", "PAINT_1", 1920, 0, 0, 1920, 1960, null], ["RL002", "QC_1", 2117, 0, 0, 2117, 2152, null], ["R_CAST-RB001", "CAST_2", 366, 0, 0, 366, 448, "MOLD_R1"]], "options": ["RB001", "RL001", "RL002"], "kpi": {"makespan": 2117, "weighted_tardiness": 0, "setup_minutes": 356, "idle_minutes": 1365, "maintenance_minutes": 90, "nonproductive_minutes": 1811, "safety_shortfall": 4, "reserve_units": 56, "surplus_holding": 80, "btp_end_units": 122, "objective": 80008310, "objective_tier1": 80, "objective_tier2": 8310}, "deliveries": [{"order": "O001", "time": 2000, "due": 2400, "tardiness": 0, "priority": 4}, {"order": "O002", "time": 2117, "due": 3600, "tardiness": 0, "priority": 2}, {"order": "O003", "time": 2078, "due": 3840, "tardiness": 0, "priority": 1}, {"order": "O004", "time": 2039, "due": 4200, "tardiness": 0, "priority": 2}], "active": [["CAST_1", 0, 480, 480, 416], ["CAST_2", 0, 480, 480, 448], ["CAST_2", 960, 1440, 480, 448], ["CNC_1", 960, 1440, 480, 454], ["CNC_1", 1440, 1920, 480, 462], ["CNC_2", 480, 960, 420, 178], ["CNC_2", 1440, 1920, 480, 336], ["PAINT_1", 1440, 1920, 480, 262], ["PAINT_1", 1920, 2400, 450, 40], ["QC_1", 1920, 2400, 450, 271]], "btp_end": {"F_CAST": 16, "R_CAST": 20, "F_HEAT": 24, "R_HEAT": 0, "F_MACH": 1, "R_MACH": 14, "F_SILVER_PAINT": 19, "F_BLACK_PAINT": 13, "R_SILVER_PAINT": 8, "R_BLACK_PAINT": 7}, "fin_end": {"F_SILVER": 26, "F_BLACK": 26, "R_SILVER": 6, "R_BLACK": 4}, "maint": 3, "late": 0, "status": "FEASIBLE · 60s · 8 worker", "seed": null, "seeds": null, "eps": 4}, "eps2": {"rows": [["F_CAST-01", "CAST_1", 614, 0, 0, 614, 688, "MOLD_F2"], ["F_CAST-02", "CAST_1", 750, 0, 0, 750, 824, "MOLD_F2"], ["F_CAST-03", "CAST_2", 961, 30, 30, 1021, 1103, "MOLD_F1"], ["F_CAST-04", "CAST_2", 1104, 0, 0, 1104, 1186, "MOLD_F1"], ["R_CAST-01", "CAST_2", 0, 30, 30, 60, 142, "MOLD_R2"], ["R_CAST-02", "CAST_2", 142, 0, 0, 142, 224, "MOLD_R2"], ["R_CAST-03", "CAST_2", 224, 30, 30, 284, 366, "MOLD_R2"], ["F_HEAT-01", "HT_2", 714, 0, 0, 714, 1194, null], ["F_HEAT-02", "HT_1", 952, 0, 0, 952, 1432, null], ["F_HEAT-03", "HT_2", 1194, 0, 0, 1194, 1674, null], ["R_HEAT-01", "HT_2", 234, 0, 0, 234, 714, null], ["R_HEAT-02", "HT_1", 471, 0, 0, 471, 951, null], ["F_MACH-01", "CNC_1", 1607, 0, 0, 1607, 1755, null], ["F_MACH-02", "CNC_1", 1772, 0, 0, 1772, 1920, null], ["F_MACH-03", "CNC_1", 1950, 0, 0, 1950, 2098, null], ["F_MACH-04", "CNC_1", 2190, 0, 0, 2190, 2338, null], ["R_MACH-01", "CNC_1", 960, 0, 10, 970, 1118, null], ["R_MACH-02", "CNC_1", 1119, 0, 0, 1119, 1267, null], ["R_MACH-03", "CNC_1", 1267, 0, 0, 1267, 1415, null], ["F_BLACK_PAINT-01", "PAINT_1", 2108, 0, 12, 2120, 2160, null], ["F_SILVER_PAINT-01", "PAINT_1", 1930, 0, 10, 1940, 1980, null], ["F_SILVER_PAINT-02", "PAINT_1", 2060, 0, 0, 2060, 2100, null], ["R_BLACK_PAINT-01", "PAINT_1", 2190, 0, 0, 2190, 2230, null], ["R_SILVER_PAINT-01", "PAINT_1", 2020, 0, 0, 2020, 2060, null], ["L001", "QC_1", 2100, 0, 10, 2110, 2145, null], ["L002", "QC_1", 2190, 0, 0, 2190, 2225, null], ["L003", "QC_1", 2304, 0, 4, 2308, 2343, null], ["L004", "QC_1", 2260, 0, 4, 2264, 2299, null], ["L005", "QC_1", 2880, 0, 4, 2884, 2919, null], ["F_CAST-RL001-1", "CAST_2", 1186, 0, 0, 1186, 1268, "MOLD_F1"], ["F_CAST-RL001-2", "CAST_1", 480, 0, 60, 540, 614, "MOLD_F2"], ["F_HEAT-RL001-1", "HT_1", 3513, 0, 0, 3513, 3993, null], ["F_MACH-RL001-1", "CNC_2", 482, 0, 10, 492, 660, null], ["F_SILVER_PAINT-RL001-1", "PAINT_1", 1980, 0, 0, 1980, 2020, null], ["RL001", "QC_1", 2225, 0, 0, 2225, 2260, null], ["F_CAST-RL002-1", "CAST_1", 825, 0, 60, 885, 959, "MOLD_F1"], ["F_CAST-RL002-2", "CAST_2", 1298, 30, 30, 1358, 1440, "MOLD_F1"], ["F_HEAT-RL002-1", "HT_1", 1433, 0, 0, 1433, 1913, null], ["F_MACH-RL002-1", "CNC_1", 1441, 0, 18, 1459, 1607, null], ["F_BLACK_PAINT-RL002-1", "PAINT_1", 2360, 0, 0, 2360, 2400, null], ["RL002", "QC_1", 3321, 0, 4, 3325, 3360, null], ["R_CAST-RB001", "CAST_2", 381, 0, 0, 381, 463, "MOLD_R2"]], "options": ["RB001", "RL001", "RL002"], "kpi": {"makespan": 2919, "weighted_tardiness": 0, "setup_minutes": 326, "idle_minutes": 1345, "maintenance_minutes": 120, "nonproductive_minutes": 1791, "safety_shortfall": 2, "reserve_units": 56, "surplus_holding": 62, "btp_end_units": 122, "objective": 40009034, "objective_tier1": 40, "objective_tier2": 9034}, "deliveries": [{"order": "O001", "time": 2225, "due": 2400, "tardiness": 0, "priority": 4}, {"order": "O002", "time": 2343, "due": 3600, "tardiness": 0, "priority": 2}, {"order": "O003", "time": 2299, "due": 3840, "tardiness": 0, "priority": 1}, {"order": "O004", "time": 2919, "due": 4200, "tardiness": 0, "priority": 2}], "active": [["CAST_1", 480, 960, 450, 416], ["CAST_2", 0, 480, 480, 448], ["CAST_2", 960, 1440, 480, 448], ["CNC_1", 960, 1440, 480, 454], ["CNC_1", 1440, 1920, 480, 462], ["CNC_1", 1920, 2400, 450, 296], ["CNC_2", 480, 960, 420, 178], ["PAINT_1", 1920, 2400, 450, 302], ["QC_1", 1920, 2400, 450, 193], ["QC_1", 2880, 3360, 480, 78]], "btp_end": {"F_CAST": 16, "R_CAST": 20, "F_HEAT": 24, "R_HEAT": 0, "F_MACH": 1, "R_MACH": 14, "F_SILVER_PAINT": 19, "F_BLACK_PAINT": 13, "R_SILVER_PAINT": 8, "R_BLACK_PAINT": 7}, "fin_end": {"F_SILVER": 26, "F_BLACK": 26, "R_SILVER": 6, "R_BLACK": 4}, "maint": 4, "late": 0, "status": "FEASIBLE · 60s · 8 worker", "seed": null, "seeds": null, "eps": 2}, "_run": {"run_id": "20260930T094223177417Z"}, "_weights": {"weighted_tardiness": 15, "safety_shortfall": 20, "makespan": 1, "nonproductive_minutes": 3, "setup_minutes": 1, "maintenance_minutes": 1, "reserve_units": 2, "surplus_holding": 1, "btp_end_units": 1}, "_checkpoints": 3, "_tiers": {"tier1": ["weighted_tardiness", "safety_shortfall"], "scale": 1000000}};
+const MODES=[
+ {key:"manual",name:"Xếp tay",fam:"manual",note:"Xếp bằng suy luận, mục tiêu bật ít ca-máy nhất; có làm trước RB001."},
+ {sep:true},
+ {key:"fifo",name:"FIFO",fam:"rule",note:"Luật vào trước làm trước: tại mỗi bước chọn lượt bắt đầu được sớm nhất, hoà thì theo thứ tự danh sách lượt."},
+ {key:"edd",name:"EDD",fam:"rule",note:"Hạn sớm làm trước: tại mỗi bước chọn lượt bắt đầu được sớm nhất, hoà thì ưu tiên đơn có hạn giao sớm nhất (mã dùng chung F/R lấy hạn sớm nhất)."},
+ {key:"spt",name:"SPT",fam:"rule",note:"Việc ngắn làm trước: tại mỗi bước chọn lượt bắt đầu được sớm nhất, hoà thì ưu tiên lượt chạy ngắn nhất."},
+ {sep:true},
+ {key:"sa",name:"SA",fam:"search",note:"Simulated Annealing: tìm thứ tự ưu tiên và thiên hướng chọn máy, dựng lịch bằng cùng bộ xếp với FIFO/EDD/SPT; chấp nhận bước xấu theo nhiệt độ giảm dần."},
+ {key:"ga",name:"GA",fam:"search",note:"Genetic Algorithm: quần thể 14, chọn đấu 3, lai đều, đột biến, giữ 2 cá thể tốt nhất; dựng lịch bằng cùng bộ xếp."},
+ {sep:true},
+ {key:"cpsat",name:"CP-SAT",fam:"cp",note:"CP-SAT nguyên khối, không gợi ý: tự chọn máy, khuôn, ca, thứ tự và phương án làm trước."},
+ {key:"cpsathint",name:"CP-SAT + gợi ý",fam:"cp",note:"CP-SAT với lịch EDD làm gợi ý khởi đầu; nếu không cải thiện được thì giữ lịch EDD (HEURISTIC_FALLBACK)."},
+ {key:"cplns",name:"CP-LNS",fam:"cp",note:"Tìm kiếm lân cận lớn: bắt đầu từ lịch luật tốt nhất sau dồn ca, mỗi vòng mở lại một khung giờ / hai máy / một công đoạn / 20% ngẫu nhiên cho CP-SAT xếp lại."},
+ {key:"cpman",name:"CP-SAT từ lịch tay",fam:"cp",note:"CP-SAT xuất phát từ lịch xếp tay, 60 giây, 8 worker (cấu hình khác đợt so sánh chính)."},
+ {sep:true},
+ {key:"eps8",name:"ε ≤ 8",fam:"pareto",eps:8,note:"Điểm trên đường đánh đổi: CP-SAT giới hạn thiếu tồn an toàn ≤ 8 vành, tối thiểu trễ rồi chi phí vận hành (60 giây, 8 worker)."},
+ {key:"eps4",name:"ε ≤ 4",fam:"pareto",eps:4,note:"Điểm trên đường đánh đổi: thiếu tồn an toàn ≤ 4 vành (giới hạn ≤ 6 cho ra đúng lịch này), tối thiểu trễ rồi chi phí vận hành (60 giây, 8 worker)."},
+ {key:"eps2",name:"ε ≤ 2",fam:"pareto",eps:2,note:"Điểm trên đường đánh đổi: thiếu tồn an toàn ≤ 2 vành (thấp nhất đã thử; chưa chứng minh là thấp nhất có thể), tối thiểu trễ rồi chi phí vận hành (60 giây, 8 worker)."}];
+const RUN=DATA._run||{};
+const LINE={F:["--fs","--txt-light","Dòng F (chưa sơn)"],R:["--rs","--txt-light","Dòng R (chưa sơn)"],F_SILVER:["--fs","--txt-light","F bạc"],F_BLACK:["--fb","--txt-dark","F đen"],R_SILVER:["--rs","--txt-light","R bạc"],R_BLACK:["--rb","--txt-dark","R đen"],RES:["--res","--txt-light","Làm trước"]};
+const LOTS={L001:["F_SILVER","O001"],L002:["F_SILVER","O001"],L003:["F_BLACK","O002"],L004:["R_SILVER","O003"],L005:["R_BLACK","O004"]};
+const ORD={O001:["F bạc",44,"L001, L002 + 4 từ kho"],O002:["F đen",20,"L003"],O003:["R bạc",20,"L004"],O004:["R đen",24,"L005 + 4 từ kho"]};
+const PNAME={F_SILVER:"F bạc",F_BLACK:"F đen",R_SILVER:"R bạc",R_BLACK:"R đen"};
+const SAFE={F_SILVER:8,F_BLACK:6,R_SILVER:6,R_BLACK:6},FIN0={F_SILVER:10,F_BLACK:6,R_SILVER:6,R_BLACK:8};
+const SIZE={cast:16,heat:24,machining:20,paint:25,qc:20},TRANSFER={cast:10,heat:10,machining:10,paint:120};
+const INIT={F_CAST:8,R_CAST:4,F_HEAT:24,R_HEAT:12,F_MACH:6,R_MACH:4,F_SILVER_PAINT:4,F_BLACK_PAINT:3,R_SILVER_PAINT:3,R_BLACK_PAINT:2};
+const WHY={
+ manual:[["Mục tiêu: ít ca-máy nhất","Mỗi ca bật là 450–480 phút bị tính máy rảnh. Lịch chỉ bật 7 ca-máy: 2 ca đúc, 3 ca gia công, 1 ca sơn, 1 ca QC. Đây là mức tối thiểu với 7 lượt gia công và 120' sấy sơn."],
+  ["Mẻ lò cuối là F đen","5 mẻ trên 2 lò nên mẻ cuối sớm nhất ra lò 02:34 N2. Để mẻ đó là F thì sau nó chỉ còn 1 lượt gia công; nếu là R thì kéo theo 2 lượt và phải bật thêm ca CNC."],
+  ["Gia công dồn vào ca 3 N1","CNC_1 chạy F, R, R liền nhau (rảnh 8'), CNC_2 chạy 2 lượt F. Hai lượt còn lại CNC_1 làm ở ca 1 N2, trong đó lượt F đen chờ mẻ lò cuối."],
+  ["Sơn 1 ca, bạc trước đen sau","Cả 5 lượt sơn nằm trong ca 1 N2, chỉ đổi màu 1 lần (bạc→đen 12'). Lượt F đen xong 06:10, sấy tới 08:10, vừa kịp giờ QC."],
+  ["QC cố ý chờ để dồn 1 ca","L001, L002 sấy xong từ khoảng 03:00 N2 nhưng chờ đủ 5 lô rồi chạy liền trong ca 2 N2, trước giờ nghỉ trưa. O001 vẫn dư 6,7 giờ so với hạn."],
+  ["Đúc gọn, chỉ làm trước RB001","Mỗi máy đúc một loại khuôn, mỗi khuôn bảo trì 1 lần, xong trong ca 1 N1. RB001 lấp 82' trống của CAST_2. RL001/RL002 cần thêm 2 lượt đúc, phải bật thêm ca đúc nên không đáng."]],
+ rule:[["Cách luật chạy","Mỗi bước dựng mọi lượt đã đủ hàng ở vị trí sớm nhất có thể (nối cuối máy, vừa trong một ca), chọn lượt bắt đầu sớm nhất; luật chỉ phân định khi hoà. Máy đúc chọn khuôn cho lượt xong sớm nhất."],
+  ["Làm ngay, không gom ca","Luật làm mọi việc ngay khi có hàng nên xong sớm, nhưng việc rải ra nhiều ca: mỗi ca bật chỉ dùng một phần nhỏ nên máy rảnh cao."],
+  ["Không làm trước","Giống bộ baseline gốc, luật không tự chọn phương án làm trước (RL001, RL002, RB001)."]],
+ search:[["Cách tìm","Mỗi lời giải gồm: số ưu tiên cho từng lượt, độ lệch chọn máy, độ lùi giờ cho từng lượt (0–960 phút) và công tắc bật/tắt từng phương án làm trước. Bộ xếp giống FIFO/EDD/SPT dựng lịch từ đó, chấm bằng đúng hàm mục tiêu."],
+  ["Chờ để gom ca, tự chọn làm trước","Gen lùi giờ cho phép một lượt đợi tới ca đã bật thay vì mở ca mới; công tắc làm trước cho phép lấy thêm lô để bù tồn an toàn. Lịch tốt nhất được đánh bóng bằng bước dồn ca."],
+  ["Kết quả theo seed","Chạy 3 seed, mỗi seed 30 giây (15% cuối dành cho dồn ca); trang hiển thị seed tốt nhất, bảng so sánh ghi đủ các seed."]],
+ pareto:[["Sinh bằng giới hạn ε","CP-SAT được buộc giữ thiếu tồn an toàn không quá ε vành, rồi tối thiểu trễ và chi phí vận hành. Lặp với ε = 8, 6, 4, 2 (ε = 6 và 4 ra cùng một lịch) cho ra các điểm trên đường đánh đổi."],
+  ["Dùng để làm gì","Trả lời câu hỏi quản lý: muốn bớt thiếu tồn an toàn thêm k vành thì phải trả thêm bao nhiêu ca, bao nhiêu phút không tạo sản phẩm."],
+  ["Giới hạn","60 giây mỗi điểm: các điểm là lời giải tốt nhất tìm được, chưa chứng minh tối ưu, nên đường thật có thể còn thấp hơn."]],
+ cp:[["Cách giải","CP-SAT dựng toàn bộ bài toán: chọn máy và khuôn, ca, thứ tự trên từng máy và từng khuôn, bảo trì theo chu kỳ, tồn bán thành phẩm, và có chọn phương án làm trước hay không. Các lượt giống hệt nhau được buộc theo thứ tự tên để bớt nghiệm trùng."],
+  ["Gợi ý và vùng lân cận","CP-SAT + gợi ý và CP-LNS xuất phát từ lịch tốt nhất của FIFO/EDD/SPT sau bước dồn ca. CP-LNS luân phiên mở lại các lượt trong một khung giờ, trên hai máy, cả một công đoạn, hoặc ngẫu nhiên."],
+  ["Giới hạn thời gian","30 giây mỗi seed, 1 worker là chưa đủ để chứng minh tối ưu: FEASIBLE nghĩa là hợp lệ, chưa chắc tốt nhất. Điểm solver báo được đối chiếu lại bằng bộ kiểm độc lập."]]};
+const lineOf=id=>LOTS[id]?LOTS[id][0][0]:id[0];
+function kind(id){if(/-R[BL]\d/.test(id)||/^RL\d/.test(id))return"RES";if(LOTS[id])return LOTS[id][0];for(const k of["F_SILVER","F_BLACK","R_SILVER","R_BLACK"])if(id.startsWith(k))return k;return id[0]}
+function label(id){if(id==="R_CAST-RB001")return"RB001";if(LOTS[id])return id;const rv=id.match(/-(R[LB]\d+)/);if(rv||/^RL\d/.test(id))return rv?rv[1]:id;
+  const m=id.match(/^([FR])_(SILVER_|BLACK_)?(CAST|HEAT|MACH|PAINT)-0?(\d+)$/);if(!m)return id;
+  if(m[3]==="HEAT")return`${m[1]} mẻ ${m[4]}`;if(m[3]==="PAINT")return m[1]+(m[2]==="SILVER_"?" bạc":" đen");
+  return m[1]+(m[3]==="CAST"?"Đ":"GC")+m[4]}
+const itemOf=id=>LOTS[id]?LOTS[id][0]:id.replace(/-.*$/,"");
+const stageOf=it=>it.endsWith("_CAST")?"cast":it.endsWith("_HEAT")?"heat":it.endsWith("_MACH")?"machining":it.endsWith("_PAINT")?"paint":"qc";
+const upOf=it=>{const l=it[0],st=stageOf(it);return st==="cast"?null:st==="heat"?l+"_CAST":st==="machining"?l+"_HEAT":st==="paint"?l+"_MACH":it+"_PAINT"};
+function flows(R){const F={},ev=[];R.forEach(r=>{const it=itemOf(r[0]),st=stageOf(it),q=SIZE[st];F[r[0]]={qty:q,item:it,from:[],to:[],left:0};
+  if(st!=="qc")ev.push([r[6]+TRANSFER[st],0,it,q,r[0]]);if(upOf(it))ev.push([r[2],1,upOf(it),q,r[0]]);});
+  ev.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const Q={};for(const c in INIT)Q[c]=[{src:null,q:INIT[c]}];
+  ev.forEach(([t,k,code,q,id])=>{Q[code]=Q[code]||[];if(k===0){Q[code].push({src:id,q});return}
+    let need=q;while(need>0&&Q[code].length){const h=Q[code][0],take=Math.min(need,h.q);
+      F[id].from.push([h.src,take]);if(h.src)F[h.src].to.push([id,take]);h.q-=take;need-=take;if(!h.q)Q[code].shift()}});
+  for(const c in Q)Q[c].forEach(h=>{if(h.src)F[h.src].left+=h.q});return F}
+function flowText(F,id){const f=F[id],st=stageOf(f.item),name=c=>c||"tồn đầu kỳ";let t=`Số lượng: ${f.qty} vành\n`;
+  t+=st==="cast"?"Lấy từ: nhôm lỏng (không mô hình)\n":"Lấy từ: "+f.from.map(([s,q])=>`${q} ${name(s)}`).join(" + ")+"\n";
+  if(st==="qc")t+=LOTS[id]?`Giao cho: đơn ${LOTS[id][1]}`:"Làm trước cho đơn dài hạn";
+  else t+="Đi tới: "+(f.to.map(([d,q])=>`${q} → ${d}`).concat(f.left?[`${f.left} còn trong kho`]:[]).join(", ")||"còn trong kho");
+  return t}
+const hm=t=>{const d=Math.floor(t/1440)+1,m=t%1440;return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0")+" N"+d};
+const hrs=m=>(m/60).toFixed(1).replace(".",",")+" giờ";
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let mode=store.get("gantt-mode"),sel=null;
+
+let cmpKey=null;
+
+/* ---- gantt ---- */
+const M=[["CAST_1","Đúc"],["CAST_2","Đúc"],["HT_1","Nhiệt luyện"],["HT_2","Nhiệt luyện"],["CNC_1","Gia công"],["CNC_2","Gia công"],["PAINT_1","Sơn"],["QC_1","Thử nghiệm & gói"],["SHIP",""]];
+const T1=2520,LEFT=128,W=1050,RH=40,TOP=50,SHIPH=64,VBW=LEFT+W+22,H=TOP+(M.length-1)*RH+SHIPH+6;
+const x=t=>LEFT+t/T1*W,NS="http://www.w3.org/2000/svg";
+function el(n,a,p){const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);p&&p.appendChild(e);return e}
+const svg=document.getElementById("g"),tipEl=document.getElementById("tip");
+function tip(ev,s){tipEl.textContent=s;tipEl.hidden=false;const w=tipEl.offsetWidth,h=tipEl.offsetHeight;let l=ev.clientX+14,t=ev.clientY+14;
+  if(l+w>innerWidth-8)l=Math.max(8,ev.clientX-w-14);if(t+h>innerHeight-8)t=Math.max(8,ev.clientY-h-14);tipEl.style.left=l+"px";tipEl.style.top=t+"px"}
+function drawGantt(){const S=DATA[mode],R=S.rows,FL=flows(R);
+  svg.innerHTML="";svg.setAttribute("viewBox",`0 0 ${VBW} ${H}`);
+  const defs=el("defs",{},svg),pat=el("pattern",{id:"hatch",width:6,height:6,patternUnits:"userSpaceOnUse",patternTransform:"rotate(45)"},defs);
+  el("rect",{width:6,height:6,fill:css("--setup")},pat);el("line",{x1:0,y1:0,x2:0,y2:6,stroke:css("--maint"),"stroke-width":3},pat);
+  const rows=(M.length-1)*RH+SHIPH;
+  M.forEach(([id,name],i)=>{const y=TOP+i*RH;
+    if(id.startsWith("HT"))el("rect",{x:x(0),y:y+3,width:x(T1)-x(0),height:RH-6,fill:css("--shift"),rx:3},svg);
+    S.active.filter(a=>a[0]===id&&a[1]<T1).forEach(([,a,z])=>el("rect",{x:x(a),y:y+3,width:x(Math.min(z,T1))-x(a),height:RH-6,fill:css("--shift"),rx:3},svg));
+    if(cmpKey&&cmpKey!==mode){const B=DATA[cmpKey],kk=a=>a[0]+"@"+a[1],mine=new Set(S.active.map(kk)),theirs=new Set(B.active.map(kk)),box=(a,z)=>({x:x(a)+1,y:y+4,width:x(Math.min(z,T1))-x(a)-2,height:RH-8,fill:"none",rx:3,"stroke-width":1.8});
+      B.active.filter(a=>a[0]===id&&!mine.has(kk(a))&&a[1]<T1).forEach(([,a,z])=>el("rect",{...box(a,z),stroke:css("--warn"),"stroke-dasharray":"5 3"},svg));
+      S.active.filter(a=>a[0]===id&&!theirs.has(kk(a))&&a[1]<T1).forEach(([,a,z])=>el("rect",{...box(a,z),stroke:css("--sel")},svg))}
+    if(i)el("line",{x1:LEFT,x2:LEFT+W,y1:y,y2:y,stroke:css("--line")},svg);
+    el("text",{x:4,y:y+(name?RH/2-1:SHIPH/2+4),fill:css("--fg"),"font-size":12.5,"font-weight":600},svg).textContent=id==="SHIP"?"Giao hàng":id;
+    if(name)el("text",{x:4,y:y+RH/2+13,fill:css("--muted"),"font-size":10.5},svg).textContent=name;});
+  for(let d=0;d<2;d++)el("rect",{x:x(d*1440+720),y:TOP,width:x(d*1440+750)-x(d*1440+720),height:rows-SHIPH,fill:css("--break")},svg);
+  for(let t=0;t<=T1;t+=120){const day=t%1440===0;
+    el("line",{x1:x(t),x2:x(t),y1:day?TOP-40:TOP-4,y2:TOP+rows,stroke:day?css("--muted"):css("--grid"),"stroke-width":day?1.2:1},svg);
+    if(day&&t<T1)el("text",{x:x(t)+5,y:TOP-28,fill:css("--fg"),"font-size":11.5,"font-weight":600},svg).textContent="Ngày "+(t/1440+1);
+    el("text",{x:x(t),y:TOP-10,fill:css("--muted"),"font-size":10.5,"text-anchor":"middle"},svg).textContent=String((t%1440)/60).padStart(2,"0")+"h";}
+  const g=el("g",{class:sel?"dim":""},svg);
+  R.forEach(([id,mc,b,mt,su,s,e,mold])=>{const i=M.findIndex(m=>m[0]===mc),y=TOP+i*RH+8,h=RH-16;const col=mc.startsWith("HT")&&kind(id)!=="RES"?["--heat","--txt-light"]:LINE[kind(id)];
+    const grp=el("g",{class:"bar"+(sel&&lineOf(id)===sel?" on":""),tabindex:0,role:"button","aria-label":`${id} trên ${mc}, ${hm(b)} đến ${hm(e)}`},g);
+    if(mt)el("rect",{x:x(b),y,width:x(b+mt)-x(b),height:h,fill:"url(#hatch)"},grp);
+    if(su)el("rect",{x:x(b+mt),y,width:x(s)-x(b+mt),height:h,fill:css("--setup")},grp);
+    el("rect",{x:x(s),y,width:Math.max(2,x(e)-x(s)-1),height:h,fill:css(col[0]),rx:2.5},grp);
+    const lb=label(id);if(x(e)-x(s)>lb.length*6.2+6)el("text",{x:(x(s)+x(e))/2,y:y+h/2+4,"text-anchor":"middle","font-size":10.5,"font-weight":600,fill:css(col[1])},grp).textContent=lb;
+    const info=`${id} trên ${mc}${mold?"  ("+mold+")":""}\nKhối: ${hm(b)} → ${hm(e)}\n`+(mt?`Bảo trì khuôn: ${mt}'\n`:"")+(su?`Setup: ${su}'\n`:"")+`Chạy: ${e-s}'\n\n`+flowText(FL,id);
+    grp.addEventListener("mousemove",ev=>tip(ev,info));grp.addEventListener("mouseleave",()=>tipEl.hidden=true);
+    grp.addEventListener("focus",()=>{const r=grp.getBoundingClientRect();tip({clientX:r.left,clientY:r.bottom},info)});grp.addEventListener("blur",()=>tipEl.hidden=true);
+    const toggle=()=>{sel=sel===lineOf(id)?null:lineOf(id);drawGantt()};grp.addEventListener("click",toggle);grp.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();toggle()}});});
+  el("line",{x1:x(2400),x2:x(2400),y1:TOP-4,y2:TOP+rows,stroke:css("--accent"),"stroke-width":1.6,"stroke-dasharray":"5 4"},svg);
+  el("text",{x:x(2400)+4,y:TOP+12,fill:css("--accent"),"font-size":10.5,"font-weight":600},svg).textContent="hạn O001";
+  const sy=TOP+(M.length-1)*RH;
+  [...S.deliveries].sort((a,b)=>a.time-b.time).forEach((d,k)=>{const ly=sy+12+k*13,t=d.time;
+    el("line",{x1:x(t),x2:x(t),y1:sy-8,y2:ly,stroke:css("--ok"),"stroke-width":1},svg);
+    el("circle",{cx:x(t),cy:ly,r:3,fill:css(d.tardiness?"--warn":"--ok")},svg);
+    el("text",{x:x(t)+7,y:ly+3.5,fill:css(d.tardiness?"--warn":"--ok"),"font-size":10,"font-weight":600},svg).textContent=`${d.order} ${hm(t).slice(0,5)}`;});
+}
+
+/* ---- panels ---- */
+const shortOf=S=>Object.keys(SAFE).reduce((a,p)=>a+Math.max(0,SAFE[p]-S.fin_end[p]),0);
+function renderStats(){const S=DATA[mode],k=S.kpi,sh=shortOf(S);
+  const items=[["Đơn trễ",`${S.late} / 4`,S.late?"warnc":"good"],["Ca-máy bật",S.active.length,""],["Không tạo sản phẩm",k.nonproductive_minutes+"'",""],
+   ["Lô cuối xong",hm(k.makespan),""],["Bảo trì khuôn",S.maint,""],["Thiếu tồn an toàn (cuối kỳ)",sh,sh?"warnc":"good"],["Điểm ("+POLICIES[policy].name.toLowerCase()+")",fmtObj(S),""]];
+  document.getElementById("stats").innerHTML=items.map(([a,b,c])=>`<div class="stat ${c}"><span>${a}</span><b>${b}</b></div>`).join("");
+  const m=MODES.find(m=>m.key===mode);
+  document.getElementById("mode-note").textContent="Nguồn: "+m.note+(S.seed!=null?` · seed tốt nhất ${S.seed} (${S.valid_runs}/${S.seeds} lần chạy hợp lệ, ${S.seconds}s/lần), trạng thái ${S.status}.`:"");
+}
+const WT=DATA._weights||{},NCP=DATA._checkpoints||3;
+const TIERS=DATA._tiers||{},TIER1=new Set(TIERS.tier1||[]);
+const TERMS=[
+ ["weighted_tardiness","Trễ có trọng số","Σ ưu tiên đơn × số phút trễ hạn"],
+ ["safety_shortfall","Thiếu tồn an toàn",`số vành thiếu so với tồn an toàn, cộng qua ${NCP} mốc cuối ngày`],
+ ["nonproductive_minutes","Thời gian không tạo sản phẩm","phút khả dụng − phút gia công, trong các ca máy có bật (không tính lò 24/7)"],
+ ["setup_minutes","Setup","phút setup — chi phí đổi việc ngoài nhân công"],
+ ["maintenance_minutes","Bảo trì khuôn","phút bảo trì — hao mòn khuôn"],
+ ["makespan","Makespan bắt buộc","phút từ đầu horizon tới khi lô bắt buộc cuối cùng xong QC"],
+ ["reserve_units","Làm trước","số vành được làm trước cho đơn dài hạn"],
+ ["surplus_holding","Dư tồn","số vành vượt tồn an toàn, cộng qua các mốc cuối ngày"],
+ ["btp_end_units","Tồn BTP cuối kỳ","số vành bán thành phẩm còn lại cuối horizon"]].filter(t=>WT[t[0]]);
+const SERVICE=["weighted_tardiness","safety_shortfall"],OPS=TERMS.map(t=>t[0]).filter(k=>!SERVICE.includes(k));
+const POLICIES={
+ service:{name:"Giao hàng trước",tier1:SERVICE,note:"Mặc định của đề tài (mục 4.3.2): trễ và thiếu tồn an toàn xét trước; bằng nhau mới xét chi phí vận hành."},
+ balanced:{name:"Cân bằng",tier1:null,note:"Cộng mọi thành phần theo trọng số thành một điểm: chấp nhận đổi một ít tồn an toàn lấy chi phí thấp hơn nếu trọng số cho phép."},
+ cost:{name:"Chi phí trước",tier1:OPS,note:"Chi phí vận hành xét trước; trễ và thiếu tồn an toàn chỉ để phân định khi chi phí bằng nhau. Dùng khi đơn có thể lùi hạn."}};
+let policy=POLICIES[store.get("gantt-policy")]?store.get("gantt-policy"):"service";
+const sumOf=(S,keys)=>keys.reduce((a,k)=>a+(WT[k]||0)*(S.kpi[k]||0),0);
+function score(S){const P=POLICIES[policy];if(!P.tier1)return[0,sumOf(S,TERMS.map(t=>t[0]))];return[sumOf(S,P.tier1),sumOf(S,TERMS.map(t=>t[0]).filter(k=>!P.tier1.includes(k)))]}
+const cmpScore=(a,b)=>{const x=score(a),y=score(b);return x[0]-y[0]||x[1]-y[1]};
+const fmtN=v=>v.toLocaleString("vi-VN");
+const fmtObj=S=>{const [t1,t2]=score(S);return POLICIES[policy].tier1?`${fmtN(t1)} · ${fmtN(t2)}`:fmtN(t2)};
+const opsCost=S=>sumOf(S,OPS);
+const nameOf=k=>MODES.find(m=>m.key===k).name;
+function availableKeys(){return MODES.filter(m=>m.key&&DATA[m.key]&&!DATA[m.key].missing).map(m=>m.key)}
+function sortedKeys(){return availableKeys().sort((a,b)=>cmpScore(DATA[a],DATA[b]))}
+const polSeg=document.getElementById("pol");
+Object.entries(POLICIES).forEach(([k,P])=>{const b=document.createElement("button");b.type="button";b.textContent=P.name;b.dataset.k=k;
+  b.addEventListener("click",()=>{policy=k;store.set("gantt-policy",k);mode=shortlist().keys[0];store.set("gantt-mode",mode);sel=null;render()});polSeg.appendChild(b)});
+function renderFormula(){const P=POLICIES[policy];
+  const part=list=>list.map(t=>`<span class="w">${WT[t[0]]}</span>×<b>${t[1]}</b>`).join(" + ");
+  const li=t=>`<li><span class="w">×${WT[t[0]]}</span><div><b>${t[1]}</b> <span>— ${t[2]}</span></div></li>`;
+  polSeg.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.k===policy?"true":"false"));
+  document.getElementById("pol-note").textContent=P.note;
+  const eq=P.tier1?`<p class="eq"><b>Tầng 1</b> = ${part(TERMS.filter(t=>P.tier1.includes(t[0])))}</p>
+   <p class="eq"><b>Tầng 2</b> = ${part(TERMS.filter(t=>!P.tier1.includes(t[0])))}</p>
+   <p class="eq">So sánh <b>tầng 1 trước</b>; bằng nhau mới xét tầng 2. Điểm ghi dạng <b>tầng 1 · tầng 2</b>, càng thấp càng tốt.</p>`
+   :`<p class="eq"><b>Điểm</b> = ${part(TERMS)}</p><p class="eq">Một tổng duy nhất, càng thấp càng tốt.</p>`;
+  document.getElementById("formula").innerHTML=eq+`<ul class="terms">${TERMS.map(li).join("")}</ul>
+   <p class="note">Trọng số lấy từ <code>weights</code> trong dữ liệu; chính sách chỉ đổi <b>thứ tự ưu tiên</b>, không đổi trọng số. Mọi phút ca đã bật đều trả nhân công nên setup và bảo trì nằm trong "thời gian không tạo sản phẩm", cộng thêm trọng số riêng.</p>`}
+function renderParts(){const keys=sortedKeys(),P=POLICIES[policy];
+  const t1=P.tier1?TERMS.filter(t=>P.tier1.includes(t[0])):[],t2=P.tier1?TERMS.filter(t=>!P.tier1.includes(t[0])):TERMS;
+  const cell=(S,t)=>{const v=S.kpi[t[0]]||0;return`<td class="n">${fmtN(WT[t[0]]*v)}<small>${fmtN(v)}</small></td>`};
+  let h="<thead><tr><th>Phương án</th>"+t1.map(t=>`<th class="n">${t[1]} ×${WT[t[0]]}</th>`).join("")+(t1.length?'<th class="n">Tầng 1</th>':"")
+    +t2.map(t=>`<th class="n">${t[1]} ×${WT[t[0]]}</th>`).join("")+`<th class="n">${t1.length?"Tầng 2":"Điểm"}</th></tr></thead><tbody>`;
+  keys.forEach(k=>{const S=DATA[k],[s1,s2]=score(S);
+    h+=`<tr class="${k===mode?"cur":""}"><td>${nameOf(k)}</td>${t1.map(t=>cell(S,t)).join("")}${t1.length?`<td class="n"><b>${fmtN(s1)}</b></td>`:""}${t2.map(t=>cell(S,t)).join("")}<td class="n"><b>${fmtN(s2)}</b></td></tr>`});
+  document.getElementById("parts").innerHTML=h+"</tbody>"}
+function renderCompare(){const keys=sortedKeys();
+  const cols=[["Hạng",(S,i)=>i+1],["Điểm",(S)=>fmtObj(S)],["Đơn trễ",S=>S.late],["Thiếu tồn an toàn (vành)",S=>S.kpi.safety_shortfall],["Chi phí vận hành",S=>fmtN(opsCost(S))],["Ca-máy bật",S=>S.active.length],
+   ["Không tạo SP (phút)",S=>fmtN(S.kpi.nonproductive_minutes)],["Lô cuối xong",S=>hm(S.kpi.makespan)],["Làm trước",S=>S.options.join(", ")||"—"],["Nguồn",S=>S.seed!=null?`seed ${S.seed} · ${S.status}`:S.status]];
+  let h="<thead><tr><th>Phương án</th>"+cols.map(c=>`<th class="n">${c[0]}</th>`).join("")+"</tr></thead><tbody>";
+  const SL=shortlist();
+  keys.forEach((k,i)=>{const S=DATA[k];h+=`<tr class="click ${k===mode?"cur":""}" data-k="${k}" tabindex="0"><td class="nw">${nameOf(k)}${SL.name[k]?`<small>đề xuất: ${SL.name[k]}</small>`:""}</td>`+cols.map(([,f])=>`<td class="n ${i===0&&f===cols[1][1]?"best":""}">${f(S,i)}</td>`).join("")+"</tr>"});
+  MODES.filter(m=>m.key&&(!DATA[m.key]||DATA[m.key].missing)).forEach(m=>{h+=`<tr><td>${m.name}</td><td class="no" colspan="${cols.length}">không có lịch hợp lệ (${DATA[m.key]?DATA[m.key].status:"chưa chạy"})</td></tr>`});
+  const t=document.getElementById("cmp");t.innerHTML=h+"</tbody>";
+  t.querySelectorAll("tr.click").forEach(tr=>{const go=()=>view(tr.dataset.k,true);tr.addEventListener("click",go);tr.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}})})}
+
+/* ---- alternatives: non-dominated schedules + the planner's own ---- */
+const vec=S=>[S.kpi.weighted_tardiness,S.kpi.safety_shortfall,opsCost(S)];
+const beats=(b,a)=>{const x=vec(DATA[a]),y=vec(DATA[b]);return y.every((v,i)=>v<=x[i])&&y.some((v,i)=>v<x[i])};
+function shortlist(){const keys=availableKeys();
+  const front=keys.filter(k=>!keys.some(j=>j!==k&&beats(j,k)));
+  const byCost=[...front].sort((a,b)=>opsCost(DATA[a])-opsCost(DATA[b])),name={},by={};
+  byCost.forEach((k,i)=>name[k]=byCost.length===1?"Tốt nhất mọi mặt":i===0?"Tiết kiệm nhất":i===byCost.length-1?"Giữ tồn tốt nhất":"Trung gian");
+  const list=[...front];
+  if(DATA.manual&&!DATA.manual.missing){name.manual=front.includes("manual")?name.manual+" (xếp tay)":"Lịch xếp tay";
+    if(!front.includes("manual")){list.push("manual");by.manual=front.find(j=>beats(j,"manual"))}}
+  return {keys:list.sort((a,b)=>cmpScore(DATA[a],DATA[b])),front:byCost,name,by}}
+const srcOf=k=>{const m=MODES.find(m=>m.key===k);return m.fam==="pareto"?`CP-SAT, giới hạn thiếu tồn an toàn ≤ ${m.eps} vành`:m.fam==="manual"?"người lập kế hoạch xếp tay":m.name};
+const dispName=k=>shortlist().name[k]||nameOf(k);
+const sgn=v=>(v>0?"+":v<0?"−":"±")+fmtN(Math.abs(v));
+function view(k,scroll){mode=k;store.set("gantt-mode",k);sel=null;render();if(scroll)document.getElementById("sec-gantt").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})}
+function renderAlts(){const SL=shortlist(),base=SL.front[0];
+  document.getElementById("alts").innerHTML=SL.keys.map((k,i)=>{const S=DATA[k],B=DATA[base];
+    const tr=k===base?"Rẻ nhất trong các phương án đề xuất.":`So với ${SL.name[base]}: ${sgn(S.active.length-B.active.length)} ca-máy, ${sgn(S.kpi.safety_shortfall-B.kpi.safety_shortfall)} vành thiếu tồn, ${sgn(opsCost(S)-opsCost(B))} chi phí.`;
+    return `<button type="button" class="alt" data-k="${k}" aria-pressed="${k===mode}">
+      <span class="top"><span class="rank ${i?"":"first"}">Hạng ${i+1}</span>${k===mode?'<span class="now">Đang xem</span>':""}</span>
+      <span class="nm">${SL.name[k]}</span>
+      <span class="kp"><span>Giao đúng hạn</span><b class="${S.late?"warnc":""}">${4-S.late}/4 đơn</b>
+        <span>Thiếu tồn an toàn</span><b class="${S.kpi.safety_shortfall?"warnc":""}">${S.kpi.safety_shortfall} vành</b>
+        <span>Ca-máy bật</span><b>${S.active.length}</b><span>Chi phí vận hành</span><b>${fmtN(opsCost(S))}</b>
+        <span>Làm trước</span><b>${S.options.join(", ")||"—"}</b><span>Điểm</span><b>${fmtObj(S)}</b></span>
+      <span class="tr">${tr}</span>
+      ${SL.by[k]?`<span class="dom">${SL.name[SL.by[k]]} hơn hoặc bằng lịch này ở mọi mặt.</span>`:""}
+      <span class="src">Nguồn: ${srcOf(k)}</span></button>`}).join("");
+  document.querySelectorAll("#alts .alt").forEach(b=>b.addEventListener("click",()=>view(b.dataset.k,false)));
+  const n=availableKeys().length;
+  document.getElementById("alts-note").textContent=`Đề xuất ${SL.front.length} trong ${n} lịch đã sinh: chỉ giữ lịch không bị lịch nào khác hơn ở cả ba mặt (trễ, thiếu tồn an toàn, chi phí vận hành)`+(SL.by.manual?", thêm lịch xếp tay để đối chiếu.":".")+` Thứ hạng theo chính sách "${POLICIES[policy].name}"; tên thẻ theo đặc điểm của lịch, không theo thuật toán.`}
+
+/* ---- trade-off chart ---- */
+function niceTicks(lo,hi,n){const span=hi-lo,step0=span/n,mag=10**Math.floor(Math.log10(step0)),step=[1,2,5,10].map(m=>m*mag).find(s=>s>=step0);
+  const out=[];for(let v=Math.ceil(lo/step)*step;v<=hi+1e-9;v+=step)out.push(v);return out}
+function drawPareto(){const svg=document.getElementById("pareto"),keys=availableKeys(),SL=shortlist();svg.innerHTML="";
+  const Wd=780,Hd=320,L=56,R=24,T=18,B=46;svg.setAttribute("viewBox",`0 0 ${Wd} ${Hd}`);
+  const shown=keys.filter(k=>opsCost(DATA[k])<60000);
+  const xs=shown.map(k=>opsCost(DATA[k])),ys=shown.map(k=>DATA[k].kpi.safety_shortfall);
+  const x0=Math.min(...xs)*.9,x1=Math.max(...xs)*1.04,y1=Math.max(8,...ys)+1;
+  const X=v=>L+(v-x0)/(x1-x0)*(Wd-L-R),Y=v=>T+(1-v/y1)*(Hd-T-B);
+  niceTicks(x0,x1,6).forEach(v=>{el("line",{x1:X(v),x2:X(v),y1:T,y2:Hd-B,stroke:css("--grid")},svg);
+    el("text",{x:X(v),y:Hd-B+16,"text-anchor":"middle","font-size":11,fill:css("--muted")},svg).textContent=fmtN(v)});
+  for(let v=0;v<=y1;v+=2){el("line",{x1:L,x2:Wd-R,y1:Y(v),y2:Y(v),stroke:css("--grid")},svg);
+    el("text",{x:L-8,y:Y(v)+4,"text-anchor":"end","font-size":11,fill:css("--muted")},svg).textContent=v}
+  el("text",{x:(L+Wd-R)/2,y:Hd-8,"text-anchor":"middle","font-size":12,fill:css("--fg")},svg).textContent="Chi phí vận hành →";
+  el("text",{x:14,y:(T+Hd-B)/2,"text-anchor":"middle","font-size":12,fill:css("--fg"),transform:`rotate(-90 14 ${(T+Hd-B)/2})`},svg).textContent="Thiếu tồn an toàn (vành) →";
+  if(SL.front.length>1){let d="";SL.front.forEach((k,i)=>{const px=X(opsCost(DATA[k])),py=Y(DATA[k].kpi.safety_shortfall);d+=i?` H ${px} V ${py}`:`M ${px} ${py}`});
+    el("path",{d,fill:"none",stroke:css("--ok"),"stroke-width":1.8,"stroke-dasharray":"6 4"},svg)}
+  const order=[...shown.filter(k=>!SL.name[k]),...shown.filter(k=>SL.name[k])],placed=[];
+  order.forEach(k=>{const S=DATA[k],px=X(opsCost(S)),py=Y(S.kpi.safety_shortfall),main=!!SL.name[k],cur=k===mode;
+    const g=el("g",{class:"pt",tabindex:0,role:"button","aria-label":`${dispName(k)}: chi phí ${fmtN(opsCost(S))}, thiếu tồn ${S.kpi.safety_shortfall} vành`},svg);
+    el("title",{},g).textContent=`${dispName(k)} (${nameOf(k)}) · chi phí ${fmtN(opsCost(S))} · thiếu tồn ${S.kpi.safety_shortfall}${S.late?" · có đơn trễ":""}`;
+    el("circle",{cx:px,cy:py,r:main?(cur?8:6.5):(cur?6:3.5),fill:main?(SL.front.includes(k)?css("--ok"):css("--fs")):css("--setup"),stroke:cur?css("--fg"):css("--panel"),"stroke-width":cur?2.4:1.2},g);
+    if(main||cur){let ly=py-12;while(placed.some(p=>Math.abs(p[0]-px)<120&&Math.abs(p[1]-ly)<14))ly-=14;placed.push([px,ly]);
+      const right=px>Wd-190;el("text",{x:px+(right?-10:10),y:ly,"text-anchor":right?"end":"start","font-size":11.5,"font-weight":cur?700:600,fill:css("--fg")},g).textContent=dispName(k)}
+    const go=()=>view(k,false);g.addEventListener("click",go);g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}})})}
+
+/* ---- compare the viewed schedule with another ---- */
+const cmpSel=document.getElementById("cmpB");
+cmpSel.addEventListener("change",()=>{cmpKey=cmpSel.value||null;store.set("gantt-cmp",cmpKey||"none");drawGantt();renderDiff()});
+function fillCmp(){const SL=shortlist(),others=availableKeys().filter(k=>!SL.name[k]);
+  if(cmpKey===mode||(cmpKey&&!DATA[cmpKey]))cmpKey=SL.keys.find(k=>k!==mode)||null;
+  const opt=k=>`<option value="${k}" ${k===mode?"disabled":""}>${dispName(k)}${k===mode?" (đang xem)":""}</option>`;
+  cmpSel.innerHTML=`<option value="">— không so sánh —</option><optgroup label="Phương án đề xuất">${SL.keys.map(opt).join("")}</optgroup><optgroup label="Lịch khác (phụ lục)">${others.map(opt).join("")}</optgroup>`;
+  cmpSel.value=cmpKey||""}
+function shiftSet(S){return new Set(S.active.map(a=>`${a[0]} · ${hm(a[1]).slice(0,5)}–${hm(a[2]).slice(0,5)} ${hm(a[1]).slice(-2)}`))}
+function renderDiff(){const card=document.getElementById("diff-card"),ovl=document.getElementById("ovl");
+  if(!cmpKey||cmpKey===mode){card.hidden=true;ovl.hidden=true;return}
+  card.hidden=false;const A=DATA[mode],B=DATA[cmpKey],nA=dispName(mode),nB=dispName(cmpKey);
+  ovl.hidden=false;ovl.innerHTML=`<b>So sánh</b> viền xanh đậm: ca chỉ lịch này bật · viền cam đứt: ca chỉ "${nB}" bật`;
+  document.getElementById("diff-title").textContent=`Đổi từ "${nA}" sang "${nB}" thì được gì, mất gì`;
+  const rows=[["Đơn trễ",S=>S.late,1],["Trễ có trọng số",S=>S.kpi.weighted_tardiness,1],["Thiếu tồn an toàn (vành)",S=>S.kpi.safety_shortfall,1],
+   ["Chi phí vận hành",S=>opsCost(S),1],["Ca-máy bật",S=>S.active.length,1],["Không tạo sản phẩm (phút)",S=>S.kpi.nonproductive_minutes,1],["Setup (phút)",S=>S.kpi.setup_minutes,1],
+   ["Bảo trì khuôn (phút)",S=>S.kpi.maintenance_minutes,1],["Lô cuối xong",S=>S.kpi.makespan,1,hm],["Làm trước (vành)",S=>S.kpi.reserve_units,0],["Tồn BTP cuối kỳ (vành)",S=>S.kpi.btp_end_units,1]];
+  let h=`<thead><tr><th>Chỉ số</th><th class="n">Đang xem: ${nA}</th><th class="n">${nB}</th><th class="n">Nếu đổi sang ${nB}</th></tr></thead><tbody>`;
+  h+=`<tr><td>Điểm (${POLICIES[policy].name.toLowerCase()})</td><td class="n">${fmtObj(A)}</td><td class="n">${fmtObj(B)}</td><td class="n">${cmpScore(B,A)<0?'<span class="dpos">tốt hơn</span>':cmpScore(B,A)>0?'<span class="dneg">kém hơn</span>':"bằng"}</td></tr>`;
+  rows.forEach(([n,f,lowGood,fmt])=>{const a=f(A),b=f(B),diff=b-a;
+    const d=diff===0?"bằng":`<span class="${lowGood?(diff<0?"dpos":"dneg"):""}">${diff>0?"+":"−"}${fmt?(Math.abs(diff)/60).toFixed(1).replace(".",",")+" giờ":fmtN(Math.abs(diff))}</span>`;
+    h+=`<tr><td>${n}</td><td class="n">${fmt?fmt(a):fmtN(a)}</td><td class="n">${fmt?fmt(b):fmtN(b)}</td><td class="n">${d}</td></tr>`});
+  const oa=new Set(A.options),ob=new Set(B.options);
+  h+=`<tr><td>Phương án làm trước</td><td class="n">${A.options.join(", ")||"—"}</td><td class="n">${B.options.join(", ")||"—"}</td><td class="n">${[...ob].filter(o=>!oa.has(o)).map(o=>"+"+o).concat([...oa].filter(o=>!ob.has(o)).map(o=>"−"+o)).join(" ")||"giống"}</td></tr>`;
+  document.getElementById("diff").innerHTML=h+"</tbody>";
+  const sa=shiftSet(A),sb=shiftSet(B),onlyA=[...sa].filter(v=>!sb.has(v)),onlyB=[...sb].filter(v=>!sa.has(v));
+  const ra=Object.fromEntries(A.rows.map(r=>[r[0],r])),moved=B.rows.filter(r=>ra[r[0]]&&(ra[r[0]][1]!==r[1]||ra[r[0]][5]!==r[5])).length;
+  document.getElementById("diffshift").innerHTML=`<div class="card s4"><h3>Ca chỉ lịch đang xem bật (${onlyA.length})</h3><div class="shiftlist">${onlyA.join("<br>")||"—"}</div></div>
+   <div class="card s4"><h3>Ca chỉ "${nB}" bật (${onlyB.length})</h3><div class="shiftlist">${onlyB.join("<br>")||"—"}</div></div>
+   <div class="card s4"><h3>Lượt thay đổi</h3><p class="shiftlist" style="margin:0">${moved} lượt chung đổi máy hoặc giờ bắt đầu; ${sa.size-onlyA.length} ca-máy dùng chung.</p></div>`}
+
+/* ---- decision log (prototype: this browser only) ---- */
+const LOGKEY="gantt-decisions";
+const readLog=()=>{try{return JSON.parse(localStorage.getItem(LOGKEY)||"[]")}catch(e){return[]}};
+const esc=v=>String(v).replace(/[<>&"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));
+function renderDecision(){const S=DATA[mode];
+  document.getElementById("dec-sum").innerHTML=`Bạn đang chốt: <b>${dispName(mode)}</b> <span class="muted">(${srcOf(mode)})</span> · chính sách <b>${POLICIES[policy].name}</b> · giao đúng hạn ${4-S.late}/4 · thiếu tồn ${S.kpi.safety_shortfall} vành · ${S.active.length} ca-máy. <a href="#sec-choose">Đổi phương án</a>`;
+  const log=readLog();document.getElementById("declog").innerHTML=log.length?'<thead><tr><th>Thời điểm</th><th>Phương án</th><th>Chính sách</th><th class="n">Thiếu tồn</th><th class="n">Ca-máy</th><th>Lý do</th></tr></thead><tbody>'
+    +log.slice().reverse().map(d=>`<tr><td class="nw">${esc(d.at)}</td><td>${esc(d.alt)}${d.src?`<small>${esc(d.src)}</small>`:""}</td><td>${esc(d.policy)}</td><td class="n">${esc(d.short)}</td><td class="n">${esc(d.shifts)}</td><td>${esc(d.why)}</td></tr>`).join("")+"</tbody>":'<tbody><tr><td class="no">Chưa chốt phương án nào.</td></tr></tbody>'}
+document.getElementById("decSave").addEventListener("click",()=>{const S=DATA[mode],why=document.getElementById("decWhy").value.trim(),msg=document.getElementById("decMsg");
+  if(!why){msg.textContent="Nhập lý do trước khi chốt — quyết định cần giải thích được.";return}
+  const log=readLog();log.push({at:new Date().toLocaleString("vi-VN"),alt:dispName(mode),src:srcOf(mode),policy:POLICIES[policy].name,score:fmtObj(S),short:S.kpi.safety_shortfall,shifts:S.active.length,why});
+  try{localStorage.setItem(LOGKEY,JSON.stringify(log));msg.textContent="Đã chốt."}catch(e){msg.textContent="Trình duyệt không cho lưu; quyết định chưa được ghi."}
+  document.getElementById("decWhy").value="";renderDecision()});
+function renderShip(){const S=DATA[mode];
+  let h='<thead><tr><th>Đơn</th><th>Sản phẩm</th><th>Gồm</th><th>Giao lúc</th><th>Hạn</th><th class="n">Còn dư</th></tr></thead><tbody>';
+  [...S.deliveries].sort((a,b)=>a.time-b.time).forEach(d=>{const o=ORD[d.order],slack=d.due-d.time;
+    h+=`<tr><td>${d.order}</td><td class="nw">${o[0]} ${o[1]}</td><td class="nw">${o[2]}</td><td class="nw">${hm(d.time)}</td><td class="nw">${hm(d.due)}</td><td class="n ${slack<0?"bad":""}">${slack<0?"trễ "+hrs(-slack):hrs(slack)}</td></tr>`});
+  document.getElementById("ship").innerHTML=h+"</tbody>"}
+function arrow(a,b,goodUp){const c=b>a?(goodUp?"up":"down"):b<a?(goodUp?"down":"up"):"";return`${a} → <b class="${c}">${b}</b>`}
+function renderStock(){const S=DATA[mode],E=S.btp_end,start=Object.values(INIT).reduce((a,b)=>a+b,0),end=Object.values(E).reduce((a,b)=>a+b,0);
+  const row=(n,f,r)=>`<tr><td>${n}</td><td class="n">${arrow(INIT[f],E[f],true)}</td><td class="n">${arrow(INIT[r],E[r],true)}</td></tr>`;
+  const fin=Object.keys(PNAME).map(p=>{const v=S.fin_end[p];return`<td class="n">${FIN0[p]}→<b class="${v<SAFE[p]?"bad":""}">${v}</b></td>`}).join("");
+  const paint=Object.keys(PNAME).map(p=>`<td class="n">${INIT[p+"_PAINT"]}→<b class="${E[p+"_PAINT"]>INIT[p+"_PAINT"]?"up":""}">${E[p+"_PAINT"]}</b></td>`).join("");
+  const res=Math.max(0,end-82);
+  document.getElementById("stock").innerHTML=`
+   <div class="card s4"><h3>Bán thành phẩm</h3><div class="tw"><table><thead><tr><th></th><th class="n">F</th><th class="n">R</th></tr></thead><tbody>
+     ${row("Phôi đúc","F_CAST","R_CAST")}${row("Đã nhiệt luyện","F_HEAT","R_HEAT")}${row("Đã gia công","F_MACH","R_MACH")}</tbody></table></div>
+     ${S.options.includes("RB001")?'<p class="note">Phôi R có 16 của RB001, để dành cho LT003.</p>':""}</div>
+   <div class="card s4"><h3>Theo sản phẩm</h3><div class="tw"><table><thead><tr><th></th>${Object.values(PNAME).map(n=>`<th class="n">${n}</th>`).join("")}</tr></thead><tbody>
+     <tr><td>Đã sơn</td>${paint}</tr><tr><td>Thành phẩm</td>${fin}</tr><tr><td>Tồn an toàn</td>${Object.keys(PNAME).map(p=>`<td class="n">${SAFE[p]}</td>`).join("")}</tr></tbody></table></div>
+     <p class="note">O001, O004 lấy 4 cái từ kho mà lô QC chỉ bù phần còn lại, nên F bạc và R đen dễ thiếu tồn an toàn; phương án có làm trước RL001 bù được F bạc.</p></div>
+   <div class="card s4"><h3>Vì sao còn dư bán thành phẩm</h3><div class="tw"><table><tbody>
+     <tr><td>Tổng bán thành phẩm</td><td class="n">${start} → <b>${end}</b></td></tr>
+     <tr><td>Do cỡ mẻ lệch nhau (việc bắt buộc)</td><td class="n">82</td></tr><tr><td>Thêm do lượt làm trước</td><td class="n">${res}</td></tr></tbody></table></div>
+     <p class="note">Sơn 25 nuôi QC 20, gia công 20 nuôi sơn 25, lò 24 nuôi gia công 20, nên mỗi khâu dư một ít. Đây là hàng dở dang sẵn cho kỳ sau.</p></div>`}
+function renderWhy(){const m=MODES.find(m=>m.key===mode);const list=m.fam==="manual"?WHY.manual:[[`${dispName(mode)} — ${m.name}`,m.note],...WHY[m.fam]];
+  document.getElementById("why").innerHTML=list.map(([h,p])=>`<div class="card"><h3>${h}</h3><p>${p}</p></div>`).join("")}
+function render(){const inList=!!shortlist().name[mode];
+  document.getElementById("gantt-title").textContent="3. Lịch: "+dispName(mode)+(inList?"":" (từ phụ lục)");
+  document.querySelectorAll(".curname").forEach(e=>e.textContent=dispName(mode));
+  renderFormula();renderAlts();drawPareto();fillCmp();renderStats();drawGantt();renderDiff();
+  renderShip();renderStock();renderWhy();renderDecision();renderCompare();renderParts()}
+
+/* ---- legend, collapsible memory, theme ---- */
+const lg=document.getElementById("legend");
+["F","R","F_SILVER","F_BLACK","R_SILVER","R_BLACK","RES"].forEach(k=>{const s=document.createElement("span");s.innerHTML=`<i style="background:var(${LINE[k][0]})"></i>${LINE[k][2]}`;lg.appendChild(s)});
+lg.insertAdjacentHTML("beforeend",`<span><i style="background:var(--heat)"></i>Mẻ nhiệt luyện</span><span><i style="background:var(--setup)"></i>Setup</span><span><i style="background:repeating-linear-gradient(45deg,var(--maint) 0 2px,var(--setup) 2px 5px)"></i>Bảo trì khuôn</span>`);
+{const tg=document.querySelector("#sec-gantt .tog"),bd=document.getElementById("gantt-body");
+  const setOpen=o=>{tg.setAttribute("aria-expanded",o?"true":"false");bd.hidden=!o};
+  if(store.get("sec-sec-gantt")==="0")setOpen(false);
+  tg.addEventListener("click",()=>{const o=tg.getAttribute("aria-expanded")!=="true";setOpen(o);store.set("sec-sec-gantt",o?"1":"0")})}
+document.querySelectorAll("details.sec").forEach(d=>{const v=store.get("sec-"+d.id);if(v==="0")d.open=false;
+  d.addEventListener("toggle",()=>store.set("sec-"+d.id,d.open?"1":"0"))});
+if(!DATA[mode]||DATA[mode].missing)mode=shortlist().keys[0];
+{const c=store.get("gantt-cmp");cmpKey=c==="none"?null:(DATA[c]&&!DATA[c].missing?c:shortlist().keys.find(k=>k!==mode)||null)}
+render();
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{drawGantt();drawPareto()});
+new MutationObserver(()=>{drawGantt();drawPareto()}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+</script>
+
+</body></html>

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Annotated, Any, Literal
 
 from models.common.experiment import METHODS
-from models.common.instance import check_input
+from models.common.instance import check_input, upgrade_input
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 NonNegativeInt = Annotated[int, Field(ge=0)]
@@ -87,7 +87,7 @@ class ObjectiveWeights(StrictModel):
 
 
 class SchedulingInput(StrictModel):
-    schema_version: Literal[3]
+    schema_version: Literal[4]
     name: str = Field(min_length=1, max_length=200)
     seed: int
     origin: str = Field(min_length=1, max_length=80)
@@ -120,6 +120,17 @@ class SchedulingInput(StrictModel):
     lots: list[Lot] = Field(min_length=1)
     weights: ObjectiveWeights
     assumptions: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def upgrade_legacy_schema(cls, data: Any) -> Any:
+        # Stored v3 plan snapshots / bootstrap files: explicit relabel to v4.
+        if isinstance(data, dict):
+            try:
+                return upgrade_input(data)
+            except (KeyError, TypeError, ValueError) as exc:
+                raise ValueError(f"Input violates scheduling contract: {exc}") from exc
+        return data
 
     @model_validator(mode="after")
     def validate_engine_contract(self) -> SchedulingInput:

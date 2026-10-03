@@ -1,0 +1,286 @@
+{
+  "method": "genetic_algorithm",
+  "seed": 11,
+  "run_id": "20261003T103727176988Z",
+  "input_sha256": "4db39f8b7eb07c10fa857bb34c2ab0a2ac4a75e4b3c5af4fec607bf45aa84112",
+  "code_sha256": "68a4758109628edf6f70005d4f8171327f7f1ee302c86885ebaa8d31095fd0eb",
+  "budget_seconds": 120.0,
+  "algorithm_seconds": 115.77389510000012,
+  "environment": {
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "ortools": "9.15.6755",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 23 Model 104 Stepping 1, AuthenticAMD",
+    "workers": 1
+  },
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.21458709999978964,
+      "objective": 439305100565,
+      "evaluations": 1
+    },
+    {
+      "seconds": 0.8018130999998903,
+      "objective": 345375100704,
+      "evaluations": 3
+    },
+    {
+      "seconds": 1.3797758999999132,
+      "objective": 314820100698,
+      "evaluations": 5
+    },
+    {
+      "seconds": 1.8492166000000907,
+      "objective": 300090103241,
+      "evaluations": 7
+    },
+    {
+      "seconds": 7.71344339999996,
+      "objective": 298110106674,
+      "evaluations": 32
+    },
+    {
+      "seconds": 9.216293299999961,
+      "objective": 263340097596,
+      "evaluations": 39
+    },
+    {
+      "seconds": 9.654933299999811,
+      "objective": 257160103220,
+      "evaluations": 41
+    },
+    {
+      "seconds": 12.631347399999868,
+      "objective": 231540099540,
+      "evaluations": 54
+    },
+    {
+      "seconds": 14.562781799999811,
+      "objective": 203730097696,
+      "evaluations": 63
+    },
+    {
+      "seconds": 14.972044599999663,
+      "objective": 197610097664,
+      "evaluations": 65
+    },
+    {
+      "seconds": 16.796817200000078,
+      "objective": 170430101669,
+      "evaluations": 74
+    },
+    {
+      "seconds": 20.472200899999734,
+      "objective": 170430100129,
+      "evaluations": 92
+    },
+    {
+      "seconds": 20.673235199999908,
+      "objective": 162090099902,
+      "evaluations": 93
+    },
+    {
+      "seconds": 25.234387499999684,
+      "objective": 162090099826,
+      "evaluations": 115
+    },
+    {
+      "seconds": 25.442858200000046,
+      "objective": 160110101281,
+      "evaluations": 116
+    },
+    {
+      "seconds": 27.289568400000007,
+      "objective": 147120104796,
+      "evaluations": 125
+    },
+    {
+      "seconds": 33.3179439999999,
+      "objective": 142455103440,
+      "evaluations": 154
+    },
+    {
+      "seconds": 36.65543690000004,
+      "objective": 139995106522,
+      "evaluations": 170
+    },
+    {
+      "seconds": 38.29160129999991,
+      "objective": 116295107361,
+      "evaluations": 178
+    },
+    {
+      "seconds": 45.375132399999984,
+      "objective": 116295106490,
+      "evaluations": 212
+    },
+    {
+      "seconds": 47.197227399999974,
+      "objective": 116295105040,
+      "evaluations": 221
+    },
+    {
+      "seconds": 53.70896709999988,
+      "objective": 115470108064,
+      "evaluations": 252
+    },
+    {
+      "seconds": 60.36411449999969,
+      "objective": 115470105399,
+      "evaluations": 284
+    },
+    {
+      "seconds": 62.67618889999994,
+      "objective": 115470105291,
+      "evaluations": 295
+    },
+    {
+      "seconds": 65.66329879999967,
+      "objective": 112170107575,
+      "evaluations": 309
+    },
+    {
+      "seconds": 72.97044370000003,
+      "objective": 112170105182,
+      "evaluations": 343
+    },
+    {
+      "seconds": 74.53160260000004,
+      "objective": 112170104062,
+      "evaluations": 350
+    },
+    {
+      "seconds": 77.22239589999981,
+      "objective": 112170103731,
+      "evaluations": 362
+    },
+    {
+      "seconds": 81.20714809999981,
+      "objective": 112170102736,
+      "evaluations": 378
+    },
+    {
+      "seconds": 83.49741509999967,
+      "objective": 112170102589,
+      "evaluations": 387
+    },
+    {
+      "seconds": 85.66004350000003,
+      "objective": 112170102395,
+      "evaluations": 397
+    },
+    {
+      "seconds": 88.70470720000003,
+      "objective": 111450109736,
+      "evaluations": 411
+    },
+    {
+      "seconds": 92.30302669999992,
+      "objective": 111450106143,
+      "evaluations": 428
+    },
+    {
+      "seconds": 94.41394429999991,
+      "objective": 95490111398,
+      "evaluations": 438
+    },
+    {
+      "seconds": 97.34244579999995,
+      "objective": 95490106840,
+      "evaluations": 451
+    },
+    {
+      "seconds": 99.07452019999982,
+      "objective": 75960108572,
+      "evaluations": 459
+    },
+    {
+      "seconds": 102.15210549999983,
+      "objective": 71190109702,
+      "evaluations": 472
+    },
+    {
+      "seconds": 115.77377819999992,
+      "objective": 71190101171,
+      "source": "compact"
+    }
+  ],
+  "evaluations": 472,
+  "bound": null,
+  "genes": {
+    "delay_max": 960,
+    "options": [
+      "RB001",
+      "RB002",
+      "RL001",
+      "RL002",
+      "RL003"
+    ]
+  },
+  "generations": 39,
+  "population_size": 14,
+  "elite": 2,
+  "selection": "tournament_3",
+  "crossover": "uniform_random_keys",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "operations_checked": 249,
+    "scope": "schema 5: fixed runs per stage, shared mold pool, one window per block"
+  },
+  "metrics": {
+    "makespan": 12240,
+    "mandatory_makespan": 12240,
+    "schedule_end": 12240,
+    "weighted_tardiness": 4746,
+    "total_tardiness": 2373,
+    "late_orders": 2,
+    "max_tardiness": 2115,
+    "setup_minutes": 1842,
+    "maintenance_minutes": 720,
+    "maintenance_count": 24,
+    "idle_minutes": 25767,
+    "safety_shortfall": 0,
+    "activated_shifts": 96,
+    "productive_utilization": 0.3692050768203073,
+    "processing_minutes": 16581,
+    "available_minutes": 44910,
+    "produced_quantity": 980,
+    "shipped_quantity": 980,
+    "end_inventory": {
+      "F_SILVER": 28,
+      "F_BLACK": 32,
+      "R_SILVER": 30,
+      "R_BLACK": 20
+    },
+    "btp_end": {
+      "F_CAST": 8,
+      "R_CAST": 16,
+      "F_HEAT": 20,
+      "R_HEAT": 0,
+      "F_MACH": 17,
+      "R_MACH": 13,
+      "F_SILVER_PAINT": 21,
+      "F_BLACK_PAINT": 24,
+      "R_SILVER_PAINT": 20,
+      "R_BLACK_PAINT": 23
+    },
+    "reserve_production": 2,
+    "reserve_quantity": 36,
+    "surplus_holding": 1148,
+    "shift_opening": 0,
+    "reserve_options_chosen": [
+      "RB001",
+      "RL003"
+    ],
+    "nonproductive_minutes": 28329,
+    "reserve_units": 36,
+    "btp_end_units": 162,
+    "objective_tier1": 71190,
+    "objective_tier2": 101171,
+    "objective": 71190101171
+  },
+  "gap": null,
+  "total_seconds": 115.82265039999993
+}

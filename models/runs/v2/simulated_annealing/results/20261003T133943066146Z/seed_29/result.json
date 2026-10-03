@@ -1,0 +1,245 @@
+{
+  "method": "simulated_annealing",
+  "seed": 29,
+  "run_id": "20261003T133943066146Z",
+  "input_sha256": "2df0591662b22157f904dc480f1bce0adcf6f1e5a442b10f5fae7e63a212452b",
+  "code_sha256": "f9a4d4277d56801ca574f6cc809f8a319b556e08a57fd80c97d905ea7cca8983",
+  "budget_seconds": 30.0,
+  "algorithm_seconds": 26.51238790000025,
+  "environment": {
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "ortools": "9.15.6755",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 23 Model 104 Stepping 1, AuthenticAMD",
+    "workers": 1
+  },
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.003907199999957811,
+      "objective": 200017904,
+      "evaluations": 1
+    },
+    {
+      "seconds": 0.020498400001088157,
+      "objective": 160022547,
+      "evaluations": 5
+    },
+    {
+      "seconds": 0.02732780000042112,
+      "objective": 120024814,
+      "evaluations": 6
+    },
+    {
+      "seconds": 0.03295020000041404,
+      "objective": 120024796,
+      "evaluations": 7
+    },
+    {
+      "seconds": 0.0465360000016517,
+      "objective": 120023282,
+      "evaluations": 9
+    },
+    {
+      "seconds": 0.06467250000059721,
+      "objective": 80023352,
+      "evaluations": 12
+    },
+    {
+      "seconds": 0.23583350000080827,
+      "objective": 80023338,
+      "evaluations": 36
+    },
+    {
+      "seconds": 0.24155700000119396,
+      "objective": 80023278,
+      "evaluations": 37
+    },
+    {
+      "seconds": 0.25482480000027863,
+      "objective": 80018373,
+      "evaluations": 39
+    },
+    {
+      "seconds": 0.3447578000013891,
+      "objective": 40020636,
+      "evaluations": 52
+    },
+    {
+      "seconds": 0.5242341000011947,
+      "objective": 40020576,
+      "evaluations": 82
+    },
+    {
+      "seconds": 0.7106313000003865,
+      "objective": 40020486,
+      "evaluations": 111
+    },
+    {
+      "seconds": 2.00380320000113,
+      "objective": 40019657,
+      "evaluations": 302
+    },
+    {
+      "seconds": 2.073528599999918,
+      "objective": 40019642,
+      "evaluations": 313
+    },
+    {
+      "seconds": 2.8044014000006428,
+      "objective": 40019432,
+      "evaluations": 422
+    },
+    {
+      "seconds": 3.603552700000364,
+      "objective": 40019220,
+      "evaluations": 543
+    },
+    {
+      "seconds": 3.848034700000426,
+      "objective": 40017796,
+      "evaluations": 578
+    },
+    {
+      "seconds": 5.511614900000495,
+      "objective": 40017742,
+      "evaluations": 812
+    },
+    {
+      "seconds": 6.044102900001235,
+      "objective": 40017706,
+      "evaluations": 895
+    },
+    {
+      "seconds": 6.54001960000096,
+      "objective": 40017675,
+      "evaluations": 967
+    },
+    {
+      "seconds": 9.082052900001145,
+      "objective": 40017621,
+      "evaluations": 1294
+    },
+    {
+      "seconds": 9.195461799999975,
+      "objective": 40017567,
+      "evaluations": 1308
+    },
+    {
+      "seconds": 10.115899000000354,
+      "objective": 40017507,
+      "evaluations": 1431
+    },
+    {
+      "seconds": 10.151223000000755,
+      "objective": 40017503,
+      "evaluations": 1435
+    },
+    {
+      "seconds": 12.186191400000098,
+      "objective": 40017472,
+      "evaluations": 1707
+    },
+    {
+      "seconds": 12.320852800001376,
+      "objective": 40017382,
+      "evaluations": 1724
+    },
+    {
+      "seconds": 12.430314900000667,
+      "objective": 40017377,
+      "evaluations": 1739
+    },
+    {
+      "seconds": 13.947571600001538,
+      "objective": 40017370,
+      "evaluations": 1933
+    },
+    {
+      "seconds": 19.211739600001238,
+      "objective": 40017350,
+      "evaluations": 2596
+    },
+    {
+      "seconds": 26.512284200000067,
+      "objective": 40014343,
+      "source": "compact"
+    }
+  ],
+  "evaluations": 3499,
+  "bound": null,
+  "patience_seconds": null,
+  "stop_reason": "budget",
+  "search_seconds": 25.504690600000686,
+  "genes": {
+    "delay_max": 960,
+    "options": [
+      "RB001",
+      "RL001",
+      "RL002"
+    ]
+  },
+  "iterations": 3498,
+  "accepted_moves": 1566,
+  "initial_temperature_fraction": 0.04,
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "operations_checked": 36,
+    "scope": "schema 5: fixed runs per stage, shared mold pool, one window per block"
+  },
+  "metrics": {
+    "makespan": 2997,
+    "mandatory_makespan": 2997,
+    "schedule_end": 2997,
+    "weighted_tardiness": 0,
+    "total_tardiness": 0,
+    "late_orders": 0,
+    "max_tardiness": 0,
+    "setup_minutes": 400,
+    "maintenance_minutes": 60,
+    "maintenance_count": 2,
+    "idle_minutes": 3094,
+    "safety_shortfall": 2,
+    "activated_shifts": 13,
+    "productive_utilization": 0.41353135313531353,
+    "processing_minutes": 2506,
+    "available_minutes": 6060,
+    "produced_quantity": 120,
+    "shipped_quantity": 108,
+    "end_inventory": {
+      "F_SILVER": 26,
+      "F_BLACK": 6,
+      "R_SILVER": 6,
+      "R_BLACK": 4
+    },
+    "btp_end": {
+      "F_CAST": 8,
+      "R_CAST": 20,
+      "F_HEAT": 20,
+      "R_HEAT": 0,
+      "F_MACH": 6,
+      "R_MACH": 14,
+      "F_SILVER_PAINT": 19,
+      "F_BLACK_PAINT": 8,
+      "R_SILVER_PAINT": 8,
+      "R_BLACK_PAINT": 7
+    },
+    "reserve_production": 2,
+    "reserve_quantity": 36,
+    "surplus_holding": 42,
+    "shift_opening": 0,
+    "reserve_options_chosen": [
+      "RB001",
+      "RL001"
+    ],
+    "nonproductive_minutes": 3554,
+    "reserve_units": 36,
+    "btp_end_units": 110,
+    "objective_tier1": 40,
+    "objective_tier2": 14343,
+    "objective": 40014343
+  },
+  "gap": null,
+  "total_seconds": 26.60227920000034
+}

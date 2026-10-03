@@ -17,10 +17,38 @@ from .instance import ROOT, DEFAULT_INPUT, load, digest, save_json
 from .decoder import decode
 from .evaluate import evaluate, validate
 
-METHODS = ["fifo", "edd", "spt", "simulated_annealing", "genetic_algorithm", "cp_sat", "cp_sat_hint", "cp_lns"]
+METHODS = ["fifo", "edd", "spt", "simulated_annealing", "genetic_algorithm", "cp_sat", "cp_sat_hint", "cp_lns", "cp_rolling"]
+V2_ONLY = {"cp_rolling"}  # rolling-horizon CP-SAT exists for the schema-5 engine only
+
+
+def methods_for(data):
+    return [m for m in METHODS if _schema5(data) or m not in V2_ONLY]
+
+
+def _schema5(data):
+    return data.get("schema_version") == 5
+
+
+def runs_root(data):
+    """Saved runs are kept per model version: runs/v2 (schema 5), runs/v1 (older schemas)."""
+    return ROOT/"runs"/("v2" if _schema5(data) else "v1")
+
+
+def _engine(data):
+    """(validate, evaluate, gantt) for the input's schema."""
+    if _schema5(data):
+        from .stage_runs import evaluate as ev5
+        from .stage_runs.report import gantt as gantt5
+        return ev5.validate, ev5.evaluate, gantt5
+    return validate, evaluate, gantt
 
 
 def execute(data, method, seconds, seed):
+    if _schema5(data):
+        from .stage_runs.experiment import execute as execute5
+        return execute5(data, method, seconds, seed)
+    if method in V2_ONLY:
+        raise ValueError(f"{method} needs a schema-5 input")
     started = time.perf_counter()
     if method in ("fifo","edd","spt"):
         rows = decode(data,rule=method)
@@ -117,7 +145,7 @@ def gantt(path, data, rows, result):
 def run_one(method, input_path=DEFAULT_INPUT, seconds=30, seed=11, run_id=None):
     data = load(input_path)
     run_id = run_id or datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
-    output = ROOT/method/"results"/run_id/f"seed_{seed}"
+    output = runs_root(data)/method/"results"/run_id/f"seed_{seed}"
     output.mkdir(parents=True,exist_ok=True)
     if (output/"result.json").exists():
         raise FileExistsError(f"Refusing to overwrite saved run: {output}")
@@ -125,16 +153,17 @@ def run_one(method, input_path=DEFAULT_INPUT, seconds=30, seed=11, run_id=None):
     rows,meta = execute(data,method,seconds,seed)
     algorithm_seconds = time.perf_counter()-started
     sources = {p.relative_to(ROOT).as_posix(): p.read_text(encoding="utf-8")
-               for p in sorted(ROOT.rglob("*.py")) if "results" not in p.parts and "comparison" not in p.parts}
+               for p in sorted(ROOT.rglob("*.py")) if "results" not in p.parts and "runs" not in p.relative_to(ROOT).parts}
     code_hash = hashlib.sha256(json.dumps(sources,sort_keys=True).encode()).hexdigest()
     save_json(output/"source_snapshot.json",sources)
     result = {"method":method,"seed":seed,"run_id":run_id,"input_sha256":digest(data),"code_sha256":code_hash,
               "budget_seconds":seconds,"algorithm_seconds":algorithm_seconds,
               "environment":{"python":sys.version,"ortools":ortools.__version__,"platform":platform.platform(),
                              "processor":platform.processor(),"workers":1},**meta}
-    result["validation"] = validate(data,rows) if rows else {"valid":False,"errors":["No schedule returned"]}
+    check, score_of, draw = _engine(data)
+    result["validation"] = check(data,rows) if rows else {"valid":False,"errors":["No schedule returned"]}
     if rows:
-        metrics,details = evaluate(data,rows)
+        metrics,details = score_of(data,rows)
         result["metrics"] = metrics
         if "solver_objective" in meta and abs(metrics["objective"]-meta["solver_objective"]) > .01:
             raise ValueError(f"Solver/evaluator objective mismatch: {metrics['objective']} != {meta['solver_objective']}")
@@ -148,7 +177,7 @@ def run_one(method, input_path=DEFAULT_INPUT, seconds=30, seed=11, run_id=None):
         write_csv(output/"schedule.csv",rows)
         for name,records in details.items():
             write_csv(output/f"{name}.csv",records)
-        gantt(output/"gantt.html",data,rows,result)
+        draw(output/"gantt.html",data,rows,result)
     result["total_seconds"] = time.perf_counter()-started
     save_json(output/"result.json",result)
     save_json(output/"input.json",data)

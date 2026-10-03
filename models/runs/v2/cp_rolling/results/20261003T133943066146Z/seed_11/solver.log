@@ -1,0 +1,36 @@
+{
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 16.284846099999413,
+      "objective": 80016631
+    }
+  ],
+  "bound": null,
+  "bound_scope": "none; windows are solved separately",
+  "windows": [
+    {
+      "start": 0,
+      "cutoff": 5760,
+      "runs": 42,
+      "status": "FEASIBLE",
+      "seconds": 15.02,
+      "build_seconds": 0.19,
+      "committed": 26
+    },
+    {
+      "start": 2880,
+      "cutoff": null,
+      "runs": 16,
+      "status": "OPTIMAL",
+      "seconds": 1.26,
+      "build_seconds": 0.03,
+      "committed": 10
+    }
+  ],
+  "workers": 1,
+  "step_days": 2,
+  "lookahead_days": 4,
+  "max_runs": 60,
+  "reserve_days": 4
+}

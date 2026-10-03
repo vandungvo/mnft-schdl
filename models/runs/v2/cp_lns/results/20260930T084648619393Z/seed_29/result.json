@@ -1,0 +1,308 @@
+{
+  "method": "cp_lns",
+  "seed": 29,
+  "run_id": "20260930T084648619393Z",
+  "input_sha256": "3dbbcade341488a765d53181de5321dce61f1aed1f8fab00791b9bfd9e76b884",
+  "code_sha256": "f1d5424837322154121b85823fce394970fb1fbe6c565e2ea69b25201db97240",
+  "budget_seconds": 30.0,
+  "algorithm_seconds": 29.703308399999514,
+  "environment": {
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "ortools": "9.15.6755",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 23 Model 104 Stepping 1, AuthenticAMD",
+    "workers": 1
+  },
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.003221099999791477,
+      "objective": 17574,
+      "source": "EDD"
+    },
+    {
+      "seconds": 1.0476306999989902,
+      "objective": 17264,
+      "iteration": 1
+    },
+    {
+      "seconds": 2.3580469000007724,
+      "objective": 14431,
+      "iteration": 2
+    },
+    {
+      "seconds": 19.69612209999468,
+      "objective": 14341,
+      "iteration": 13
+    }
+  ],
+  "iterations": [
+    {
+      "released_runs": [
+        "F_BLACK_PAINT-RL002-1",
+        "F_CAST-RL002-1",
+        "F_MACH-RL001-1",
+        "F_MACH-RL002-1",
+        "R_BLACK_PAINT-01",
+        "R_CAST-01",
+        "R_CAST-02",
+        "R_MACH-03"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.07940469999448396,
+      "solve_seconds": 0.9598032000000001
+    },
+    {
+      "released_runs": [
+        "F_CAST-02",
+        "F_CAST-03",
+        "F_MACH-03",
+        "L002",
+        "L003",
+        "L005",
+        "R_BLACK_PAINT-01",
+        "R_CAST-03"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.08267609999893466,
+      "solve_seconds": 1.2225462
+    },
+    {
+      "released_runs": [
+        "F_HEAT-RL001-1",
+        "F_MACH-01",
+        "F_MACH-RL002-1",
+        "F_SILVER_PAINT-02",
+        "L003",
+        "L005",
+        "RL001",
+        "R_CAST-02"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.08288599999650614,
+      "solve_seconds": 0.7451605
+    },
+    {
+      "released_runs": [
+        "F_CAST-RL002-2",
+        "F_MACH-01",
+        "F_MACH-03",
+        "F_SILVER_PAINT-RL001-1",
+        "L003",
+        "L004",
+        "RL001",
+        "R_HEAT-01"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.07937829999718815,
+      "solve_seconds": 0.7429545000000001
+    },
+    {
+      "released_runs": [
+        "F_BLACK_PAINT-01",
+        "F_CAST-RL001-2",
+        "F_MACH-03",
+        "F_MACH-RL001-1",
+        "F_SILVER_PAINT-RL001-1",
+        "L003",
+        "L004",
+        "R_MACH-02"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.07929090000106953,
+      "solve_seconds": 0.7648170000000001
+    },
+    {
+      "released_runs": [
+        "F_BLACK_PAINT-01",
+        "F_CAST-RL001-2",
+        "F_HEAT-03",
+        "F_HEAT-RL002-1",
+        "L002",
+        "RL002",
+        "R_CAST-03",
+        "R_SILVER_PAINT-01"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.09268519999750424,
+      "solve_seconds": 0.9567937000000001
+    },
+    {
+      "released_runs": [
+        "F_CAST-RL002-1",
+        "F_HEAT-02",
+        "F_HEAT-03",
+        "F_SILVER_PAINT-02",
+        "L002",
+        "R_CAST-01",
+        "R_HEAT-01",
+        "R_MACH-01"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.08166139999957522,
+      "solve_seconds": 1.2082393
+    },
+    {
+      "released_runs": [
+        "F_CAST-RL001-1",
+        "F_HEAT-03",
+        "F_MACH-02",
+        "F_SILVER_PAINT-01",
+        "L003",
+        "L004",
+        "RL002",
+        "R_MACH-03"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.08084260000032373,
+      "solve_seconds": 0.9043645
+    },
+    {
+      "released_runs": [
+        "F_CAST-01",
+        "F_CAST-02",
+        "F_CAST-RL002-1",
+        "F_HEAT-02",
+        "L002",
+        "L003",
+        "L004",
+        "R_MACH-02"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.07850379999581492,
+      "solve_seconds": 2.2060325
+    },
+    {
+      "released_runs": [
+        "F_BLACK_PAINT-01",
+        "F_BLACK_PAINT-RL002-1",
+        "F_CAST-01",
+        "F_CAST-03",
+        "F_CAST-04",
+        "F_HEAT-01",
+        "F_HEAT-03",
+        "R_MACH-03"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.08079039999574888,
+      "solve_seconds": 1.8755509000000001
+    },
+    {
+      "released_runs": [
+        "F_CAST-01",
+        "F_CAST-03",
+        "F_CAST-04",
+        "F_HEAT-03",
+        "F_MACH-RL001-1",
+        "F_SILVER_PAINT-RL001-1",
+        "RL002",
+        "R_HEAT-02"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.08001599999988684,
+      "solve_seconds": 0.8848301000000001
+    },
+    {
+      "released_runs": [
+        "F_CAST-02",
+        "F_HEAT-RL001-1",
+        "F_MACH-01",
+        "F_MACH-03",
+        "L005",
+        "R_CAST-01",
+        "R_MACH-01",
+        "R_SILVER_PAINT-01"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.07786399999895366,
+      "solve_seconds": 1.0246328
+    },
+    {
+      "released_runs": [
+        "F_CAST-02",
+        "F_CAST-03",
+        "F_HEAT-01",
+        "F_HEAT-02",
+        "F_MACH-01",
+        "F_MACH-03",
+        "L001",
+        "R_HEAT-01"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.08854209999844898,
+      "solve_seconds": 5.0703744
+    },
+    {
+      "released_runs": [
+        "F_CAST-01",
+        "F_HEAT-01",
+        "F_MACH-01",
+        "F_MACH-02",
+        "F_MACH-03",
+        "F_MACH-04",
+        "F_SILVER_PAINT-02",
+        "RL001"
+      ],
+      "status": "FEASIBLE",
+      "build_seconds": 0.08192309999867575,
+      "solve_seconds": 9.9199566
+    }
+  ],
+  "bound": null,
+  "bound_scope": "none; neighborhood bounds are not global",
+  "initial_hint_objective": 17574,
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "operations_checked": 30,
+    "scope": "schema 5: fixed runs per stage, shared mold pool, one window per block"
+  },
+  "metrics": {
+    "makespan": 2110,
+    "mandatory_makespan": 2110,
+    "schedule_end": 2110,
+    "weighted_tardiness": 0,
+    "total_tardiness": 0,
+    "late_orders": 0,
+    "max_tardiness": 0,
+    "setup_minutes": 362,
+    "maintenance_minutes": 60,
+    "maintenance_count": 2,
+    "idle_minutes": 3653,
+    "safety_shortfall": 8,
+    "activated_shifts": 13,
+    "productive_utilization": 0.33739837398373984,
+    "processing_minutes": 2075,
+    "available_minutes": 6150,
+    "produced_quantity": 100,
+    "shipped_quantity": 108,
+    "end_inventory": {
+      "F_SILVER": 6,
+      "F_BLACK": 6,
+      "R_SILVER": 6,
+      "R_BLACK": 4
+    },
+    "btp_end": {
+      "F_CAST": 0,
+      "R_CAST": 20,
+      "F_HEAT": 16,
+      "R_HEAT": 0,
+      "F_MACH": 11,
+      "R_MACH": 14,
+      "F_SILVER_PAINT": 14,
+      "F_BLACK_PAINT": 8,
+      "R_SILVER_PAINT": 8,
+      "R_BLACK_PAINT": 7
+    },
+    "reserve_production": 1,
+    "reserve_quantity": 16,
+    "surplus_holding": 24,
+    "shift_opening": 0,
+    "reserve_options_chosen": [
+      "RB001"
+    ],
+    "objective": 14341
+  },
+  "gap": null,
+  "total_seconds": 29.72828689999733
+}

@@ -9,8 +9,17 @@ from .instance import STAGES, eligible
 
 
 def initial_genome(data):
+    # A08: optional lots are never dispatched by decode() (it pre-marks them
+    # done, see decoder.py) so their priority never actually matters here --
+    # they simply have no order to rank by. Sort them last with a neutral key
+    # instead of touching `orders[...]`, which would KeyError on `lot["order"]`.
     orders = {o["id"]:o for o in data["orders"]}
-    order = sorted(range(len(data["lots"])), key=lambda i:(orders[data["lots"][i]["order"]]["due"],-orders[data["lots"][i]["order"]]["priority"],i))
+    def key(i):
+        lot = data["lots"][i]
+        if lot.get("optional"):
+            return (float("inf"), 0, i)
+        return (orders[lot["order"]]["due"], -orders[lot["order"]]["priority"], i)
+    order = sorted(range(len(data["lots"])), key=key)
     rank = {idx:r for r,idx in enumerate(order)}
     return [float(rank[i]*4+k) for i in range(len(order)) for k in range(4)]
 

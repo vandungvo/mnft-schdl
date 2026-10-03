@@ -1,0 +1,81 @@
+{
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 104.14387960000022,
+      "objective": 92145097826
+    }
+  ],
+  "bound": null,
+  "bound_scope": "none; windows are solved separately",
+  "windows": [
+    {
+      "start": 0,
+      "cutoff": 5760,
+      "runs": 60,
+      "status": "FEASIBLE",
+      "seconds": 17.17,
+      "build_seconds": 0.24,
+      "committed": 60
+    },
+    {
+      "start": 2880,
+      "cutoff": 8640,
+      "runs": 60,
+      "status": "FEASIBLE",
+      "seconds": 17.18,
+      "build_seconds": 0.21,
+      "committed": 55
+    },
+    {
+      "start": 5760,
+      "cutoff": 11520,
+      "runs": 60,
+      "status": "FEASIBLE",
+      "seconds": 17.16,
+      "build_seconds": 0.33,
+      "committed": 60
+    },
+    {
+      "start": 8640,
+      "cutoff": 14400,
+      "runs": 45,
+      "status": "FEASIBLE",
+      "seconds": 17.15,
+      "build_seconds": 0.06,
+      "committed": 12
+    },
+    {
+      "start": 11520,
+      "cutoff": 17280,
+      "runs": 41,
+      "status": "FEASIBLE",
+      "seconds": 17.13,
+      "build_seconds": 0.07,
+      "committed": 29
+    },
+    {
+      "start": 14400,
+      "cutoff": 20160,
+      "runs": 53,
+      "status": "FEASIBLE",
+      "seconds": 17.12,
+      "build_seconds": 0.09,
+      "committed": 24
+    },
+    {
+      "start": 17280,
+      "cutoff": null,
+      "runs": 29,
+      "status": "OPTIMAL->EDD",
+      "seconds": 1.23,
+      "build_seconds": 0.05,
+      "committed": 0
+    }
+  ],
+  "workers": 1,
+  "step_days": 2,
+  "lookahead_days": 4,
+  "max_runs": 60,
+  "reserve_days": 4
+}

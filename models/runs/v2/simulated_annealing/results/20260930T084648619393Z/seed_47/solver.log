@@ -1,0 +1,65 @@
+{
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.0031366999974125065,
+      "objective": 17574,
+      "evaluations": 1
+    },
+    {
+      "seconds": 0.03168230000301264,
+      "objective": 16142,
+      "evaluations": 11
+    },
+    {
+      "seconds": 0.04291709999961313,
+      "objective": 16008,
+      "evaluations": 15
+    },
+    {
+      "seconds": 0.04865589999826625,
+      "objective": 15968,
+      "evaluations": 17
+    },
+    {
+      "seconds": 0.05154729999776464,
+      "objective": 14586,
+      "evaluations": 18
+    },
+    {
+      "seconds": 0.09190240000316408,
+      "objective": 14536,
+      "evaluations": 32
+    },
+    {
+      "seconds": 0.13024700000096345,
+      "objective": 13226,
+      "evaluations": 45
+    },
+    {
+      "seconds": 0.7218120000034105,
+      "objective": 13184,
+      "evaluations": 205
+    },
+    {
+      "seconds": 3.2469514999975218,
+      "objective": 13130,
+      "evaluations": 994
+    },
+    {
+      "seconds": 4.454507499998726,
+      "objective": 13110,
+      "evaluations": 1419
+    },
+    {
+      "seconds": 5.732549599997583,
+      "objective": 13100,
+      "evaluations": 1864
+    }
+  ],
+  "evaluations": 10427,
+  "bound": null,
+  "iterations": 10426,
+  "accepted_moves": 5953,
+  "initial_temperature_fraction": 0.04
+}

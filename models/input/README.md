@@ -1,6 +1,8 @@
 # Đầu vào chung: dây chuyền bánh xe trong hai tuần
 
-File duy nhất dùng cho mọi phương pháp: [wheel_factory.json](wheel_factory.json). Sinh xác định bằng `python -m models.common.instance` với seed `20260919`; không sinh lại hoặc đổi input giữa các phương pháp trong cùng đợt so sánh.
+Đây là input của **mô hình v1** (lô đi qua 4 công đoạn); input của v2 nằm ở `dataset/wheel-factory-small/`, xem [README chung](../README.md).
+
+File duy nhất dùng cho mọi phương pháp của v1: [wheel_factory.json](wheel_factory.json). Sinh xác định bằng `python -m models.common.instance` với seed `20260919`; không sinh lại hoặc đổi input giữa các phương pháp trong cùng đợt so sánh.
 
 Bản xem nhanh bằng Excel: [đơn hàng](orders.csv), [lô](lots.csv), [máy](machines.csv). Đây là bản xuất để đọc; chương trình chỉ đọc JSON, sửa CSV không làm thay đổi input solver.
 

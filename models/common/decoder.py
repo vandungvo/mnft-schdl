@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .instance import BTP_STAGES, STAGES, duration, eligible, setup
+from .instance import BTP_STAGES, STAGES, duration, eligible, setup, stage_item
 
 
 def _btp_ready_time(data, btp_events, consumed, code, qty):
@@ -25,7 +25,14 @@ def decode(data, rule="edd", priorities=None, machine_bias=None):
     """Serial schedule generation, append-only per machine, ready operations only."""
     orders = {o["id"]: o for o in data["orders"]}
     lots = data["lots"]
-    next_stage = {l["id"]: 0 for l in lots}
+    # A08: baselines never choose reserve (optional) work -- that is an economic
+    # trade-off decision, not a dispatch rule. Pre-mark optional lots as already
+    # past their last stage (k==4) so the dispatch loop below always skips them,
+    # while keeping `enumerate(lots)` over the FULL list so index-based callers
+    # (search.py's priorities/machine_bias, keyed by (lot_index, stage)) stay
+    # aligned -- filtering `lots` itself would shift those indices.
+    next_stage = {l["id"]: (4 if l.get("optional") else 0) for l in lots}
+    mandatory_ops = sum(4 for l in lots if not l.get("optional"))
     # BTP ledger (A09/A10/R12): stage k+1 draws from the shared pool built by ANY
     # routed lot's stage-k completion — same product or, sharing a BTP code, a
     # DIFFERENT product too (no more same-lot precedence). `btp_events` holds
@@ -36,7 +43,7 @@ def decode(data, rule="edd", priorities=None, machine_bias=None):
     states = {m: {"end": 0, "product": s["initial_product"],
                   "used": s.get("mold", {}).get("initial_cycles", 0)} for m,s in data["machines"].items()}
     rows = []
-    while len(rows) < len(lots)*4:
+    while len(rows) < mandatory_ops:
         candidates = []
         for index, lot in enumerate(lots):
             k = next_stage[lot["id"]]
@@ -61,7 +68,7 @@ def decode(data, rule="edd", priorities=None, machine_bias=None):
                     if used+cycles > mold["limit_cycles"]:
                         used, previous, maint = 0, mold["after_maintenance"], mold["maintenance_minutes"]
                     used += cycles
-                su, p = setup(data, mid, previous, lot["product"]), duration(data, lot, mid)
+                su, p = setup(data, mid, previous, stage_item(data, lot, stage)), duration(data, lot, mid)
                 for window in spec["windows"]:
                     begin = max(state["end"], lower_bound, window["start"])
                     if begin+maint+su+p <= window["end"]:
@@ -92,7 +99,7 @@ def decode(data, rule="edd", priorities=None, machine_bias=None):
         _, index, row = min(candidates, key=lambda x: x[0])
         lot = lots[index]
         rows.append(row)
-        states[row["machine"]] = {"end": row["end"], "product": lot["product"], "used": row["cycles_after"]}
+        states[row["machine"]] = {"end": row["end"], "product": stage_item(data, lot, row["stage"]), "used": row["cycles_after"]}
         committed_k = STAGES.index(row["stage"])
         if row["stage"] in BTP_STAGES:
             # Fixed transfer lag: BTP is only usable downstream transfer_minutes after

@@ -1,0 +1,16 @@
+CpSolverResponse summary:
+status: UNKNOWN
+objective: 7623720296649
+best_bound: 160007194
+integers: 55192
+booleans: 80473
+conflicts: 4044
+branches: 92364
+propagations: 15945792
+integer_propagations: 12701312
+restarts: 2
+lp_iterations: 27687
+walltime: 115.609
+usertime: 115.609
+deterministic_time: 16.9413
+gap_integral: 0

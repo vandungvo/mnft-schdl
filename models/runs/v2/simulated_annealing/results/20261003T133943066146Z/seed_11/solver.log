@@ -1,0 +1,191 @@
+{
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.004030199999760953,
+      "objective": 200017904,
+      "evaluations": 1
+    },
+    {
+      "seconds": 0.021973200000502402,
+      "objective": 160017906,
+      "evaluations": 5
+    },
+    {
+      "seconds": 0.039731500000925735,
+      "objective": 160017792,
+      "evaluations": 9
+    },
+    {
+      "seconds": 0.05086640000081388,
+      "objective": 160016366,
+      "evaluations": 11
+    },
+    {
+      "seconds": 0.12560119999943709,
+      "objective": 80019535,
+      "evaluations": 23
+    },
+    {
+      "seconds": 0.6125814999995782,
+      "objective": 40027086,
+      "evaluations": 88
+    },
+    {
+      "seconds": 0.6272435000009864,
+      "objective": 40027026,
+      "evaluations": 90
+    },
+    {
+      "seconds": 0.6347191000004386,
+      "objective": 40025586,
+      "evaluations": 91
+    },
+    {
+      "seconds": 0.6623478000001342,
+      "objective": 40024324,
+      "evaluations": 95
+    },
+    {
+      "seconds": 1.180759599999874,
+      "objective": 40022360,
+      "evaluations": 161
+    },
+    {
+      "seconds": 1.35736739999993,
+      "objective": 40022270,
+      "evaluations": 184
+    },
+    {
+      "seconds": 4.838057099999787,
+      "objective": 40019660,
+      "evaluations": 570
+    },
+    {
+      "seconds": 5.565679799999998,
+      "objective": 40019596,
+      "evaluations": 661
+    },
+    {
+      "seconds": 5.584006299999601,
+      "objective": 40019584,
+      "evaluations": 663
+    },
+    {
+      "seconds": 5.877289300000484,
+      "objective": 40019524,
+      "evaluations": 703
+    },
+    {
+      "seconds": 6.412287700000888,
+      "objective": 40019336,
+      "evaluations": 773
+    },
+    {
+      "seconds": 6.721509799999694,
+      "objective": 40019246,
+      "evaluations": 820
+    },
+    {
+      "seconds": 6.804663900000378,
+      "objective": 40019156,
+      "evaluations": 833
+    },
+    {
+      "seconds": 6.822693899999649,
+      "objective": 40017750,
+      "evaluations": 836
+    },
+    {
+      "seconds": 9.434935299999779,
+      "objective": 40017632,
+      "evaluations": 1185
+    },
+    {
+      "seconds": 9.494315199999619,
+      "objective": 40017582,
+      "evaluations": 1192
+    },
+    {
+      "seconds": 9.759193899999445,
+      "objective": 40017510,
+      "evaluations": 1223
+    },
+    {
+      "seconds": 10.320106000001033,
+      "objective": 40017490,
+      "evaluations": 1298
+    },
+    {
+      "seconds": 13.04130029999942,
+      "objective": 40017436,
+      "evaluations": 1670
+    },
+    {
+      "seconds": 13.149707500000659,
+      "objective": 40017432,
+      "evaluations": 1687
+    },
+    {
+      "seconds": 16.12771050000083,
+      "objective": 40016052,
+      "evaluations": 2101
+    },
+    {
+      "seconds": 16.38418670000101,
+      "objective": 40016032,
+      "evaluations": 2139
+    },
+    {
+      "seconds": 16.492515100000674,
+      "objective": 40016028,
+      "evaluations": 2155
+    },
+    {
+      "seconds": 17.383602800000517,
+      "objective": 40015972,
+      "evaluations": 2283
+    },
+    {
+      "seconds": 18.562974899999972,
+      "objective": 40015924,
+      "evaluations": 2456
+    },
+    {
+      "seconds": 18.999643000001015,
+      "objective": 40015810,
+      "evaluations": 2523
+    },
+    {
+      "seconds": 19.050505799999883,
+      "objective": 40015750,
+      "evaluations": 2530
+    },
+    {
+      "seconds": 19.698916800000006,
+      "objective": 40015746,
+      "evaluations": 2620
+    },
+    {
+      "seconds": 26.0650839000009,
+      "objective": 40015717,
+      "source": "compact"
+    }
+  ],
+  "evaluations": 3430,
+  "bound": null,
+  "patience_seconds": null,
+  "stop_reason": "budget",
+  "search_seconds": 25.50750220000009,
+  "genes": {
+    "delay_max": 960,
+    "options": [
+      "RB001",
+      "RL001",
+      "RL002"
+    ]
+  },
+  "iterations": 3429,
+  "accepted_moves": 1487,
+  "initial_temperature_fraction": 0.04
+}

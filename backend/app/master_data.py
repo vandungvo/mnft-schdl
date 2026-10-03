@@ -262,6 +262,16 @@ class MasterDataService:
                 raw["inventory_btp"][new_code] = raw["inventory_btp"].pop(code)
             if code in raw["btp_capacity"]:
                 raw["btp_capacity"][new_code] = raw["btp_capacity"].pop(code)
+            # schema_version 4: cast/cnc/paint machines are keyed by BTP code.
+            rename = lambda key: new_code if key == code else key  # noqa: E731
+            for machine in raw["machines"].values():
+                rates = machine["minutes_per_unit"]
+                machine["minutes_per_unit"] = {rename(k): v for k, v in rates.items()}
+                machine["setup"] = {
+                    rename(prev): {rename(k): v for k, v in row.items()}
+                    for prev, row in machine["setup"].items()
+                }
+                machine["initial_product"] = rename(machine["initial_product"])
 
         return self._mutate(dataset_id, expected_revision, mutate)
 
@@ -273,10 +283,17 @@ class MasterDataService:
             used = any(
                 mapped == code for stage_map in raw["btp_routing"].values() for mapped in stage_map.values()
             )
+            used = used or any(
+                code in machine["minutes_per_unit"]
+                or machine["initial_product"] == code
+                or code in machine["setup"]
+                for machine in raw["machines"].values()
+            )
             if used:
                 raise ApplicationError(
                     "BTP_CODE_IN_USE",
-                    f"BTP code '{code}' is referenced by a product/stage routing",
+                    f"BTP code '{code}' is referenced by a product/stage routing "
+                    "or machine configuration",
                     status_code=409,
                 )
             raw["btp_codes"].remove(code)

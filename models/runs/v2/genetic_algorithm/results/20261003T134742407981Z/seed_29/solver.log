@@ -1,0 +1,200 @@
+{
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.1810499000002892,
+      "objective": 323465104894,
+      "evaluations": 1
+    },
+    {
+      "seconds": 0.41742820000035863,
+      "objective": 244430115960,
+      "evaluations": 2
+    },
+    {
+      "seconds": 6.964245999999548,
+      "objective": 237830110356,
+      "evaluations": 31
+    },
+    {
+      "seconds": 8.791000400000485,
+      "objective": 230810113137,
+      "evaluations": 39
+    },
+    {
+      "seconds": 11.871657300000152,
+      "objective": 204230110426,
+      "evaluations": 53
+    },
+    {
+      "seconds": 13.000949699999182,
+      "objective": 149960115812,
+      "evaluations": 58
+    },
+    {
+      "seconds": 18.12530169999991,
+      "objective": 139760113027,
+      "evaluations": 81
+    },
+    {
+      "seconds": 20.791818699999567,
+      "objective": 128660110227,
+      "evaluations": 93
+    },
+    {
+      "seconds": 25.994316000000254,
+      "objective": 128660110159,
+      "evaluations": 113
+    },
+    {
+      "seconds": 26.240287500000704,
+      "objective": 128660108905,
+      "evaluations": 114
+    },
+    {
+      "seconds": 27.328482200000508,
+      "objective": 128120117362,
+      "evaluations": 118
+    },
+    {
+      "seconds": 28.815387900000133,
+      "objective": 118155113161,
+      "evaluations": 124
+    },
+    {
+      "seconds": 33.57388709999941,
+      "objective": 112875115820,
+      "evaluations": 145
+    },
+    {
+      "seconds": 34.814719399999376,
+      "objective": 102855113295,
+      "evaluations": 150
+    },
+    {
+      "seconds": 39.7319865999998,
+      "objective": 97530114717,
+      "evaluations": 173
+    },
+    {
+      "seconds": 45.389393100000234,
+      "objective": 97530113163,
+      "evaluations": 201
+    },
+    {
+      "seconds": 50.04557080000086,
+      "objective": 97530111999,
+      "evaluations": 226
+    },
+    {
+      "seconds": 51.80490649999956,
+      "objective": 96720114755,
+      "evaluations": 235
+    },
+    {
+      "seconds": 54.134488199999396,
+      "objective": 91440115003,
+      "evaluations": 247
+    },
+    {
+      "seconds": 58.87657129999934,
+      "objective": 84750118899,
+      "evaluations": 271
+    },
+    {
+      "seconds": 60.44694100000015,
+      "objective": 84750116303,
+      "evaluations": 279
+    },
+    {
+      "seconds": 63.03355240000019,
+      "objective": 74055113782,
+      "evaluations": 293
+    },
+    {
+      "seconds": 68.20360459999938,
+      "objective": 74055112522,
+      "evaluations": 318
+    },
+    {
+      "seconds": 72.6099592999999,
+      "objective": 68730115072,
+      "evaluations": 339
+    },
+    {
+      "seconds": 75.4857561000008,
+      "objective": 68730112316,
+      "evaluations": 355
+    },
+    {
+      "seconds": 80.34087700000055,
+      "objective": 61450113866,
+      "evaluations": 384
+    },
+    {
+      "seconds": 83.53906160000042,
+      "objective": 61450110822,
+      "evaluations": 403
+    },
+    {
+      "seconds": 86.67842759999985,
+      "objective": 61360108138,
+      "evaluations": 423
+    },
+    {
+      "seconds": 88.90409229999932,
+      "objective": 58570112520,
+      "evaluations": 437
+    },
+    {
+      "seconds": 92.6359496999994,
+      "objective": 58570112384,
+      "evaluations": 461
+    },
+    {
+      "seconds": 95.13318649999928,
+      "objective": 55810110868,
+      "evaluations": 477
+    },
+    {
+      "seconds": 98.3707233999994,
+      "objective": 48670113850,
+      "evaluations": 497
+    },
+    {
+      "seconds": 100.87292420000085,
+      "objective": 48670112460,
+      "evaluations": 512
+    },
+    {
+      "seconds": 102.08970840000075,
+      "objective": 45745116652,
+      "evaluations": 519
+    },
+    {
+      "seconds": 120.5990497999992,
+      "objective": 45745106462,
+      "source": "compact"
+    }
+  ],
+  "evaluations": 519,
+  "bound": null,
+  "patience_seconds": null,
+  "stop_reason": "budget",
+  "search_seconds": 102.08975269999974,
+  "genes": {
+    "delay_max": 960,
+    "options": [
+      "RB001",
+      "RB002",
+      "RL001",
+      "RL002",
+      "RL003"
+    ]
+  },
+  "generations": 43,
+  "population_size": 14,
+  "elite": 2,
+  "selection": "tournament_3",
+  "crossover": "uniform_random_keys"
+}

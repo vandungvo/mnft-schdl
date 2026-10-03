@@ -10,6 +10,7 @@ from typing import Any
 import ortools
 from models.common.evaluate import evaluate, validate
 from models.common.experiment import execute
+from models.common.instance import upgrade_input
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,6 +46,9 @@ class SchedulingEngine:
         time_budget_seconds: float,
         seed: int,
     ) -> EngineResult:
+        # Runs created before schema_version 4 keep their stored v3 snapshot
+        # untouched (reproducibility); it is relabelled explicitly here.
+        input_data = upgrade_input(input_data)
         started = time.perf_counter()
         operations, metadata = execute(
             copy.deepcopy(input_data), algorithm, time_budget_seconds, seed

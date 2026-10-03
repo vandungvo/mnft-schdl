@@ -1,0 +1,273 @@
+{
+  "method": "genetic_algorithm",
+  "seed": 29,
+  "run_id": "20261003T134742407981Z",
+  "input_sha256": "ff97168ecb584636c3b40cb31047b7e5c84dc5e91a754ce3b430052a8adc6a6a",
+  "code_sha256": "f9a4d4277d56801ca574f6cc809f8a319b556e08a57fd80c97d905ea7cca8983",
+  "budget_seconds": 120.0,
+  "algorithm_seconds": 120.59921860000031,
+  "environment": {
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "ortools": "9.15.6755",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 23 Model 104 Stepping 1, AuthenticAMD",
+    "workers": 1
+  },
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.1810499000002892,
+      "objective": 323465104894,
+      "evaluations": 1
+    },
+    {
+      "seconds": 0.41742820000035863,
+      "objective": 244430115960,
+      "evaluations": 2
+    },
+    {
+      "seconds": 6.964245999999548,
+      "objective": 237830110356,
+      "evaluations": 31
+    },
+    {
+      "seconds": 8.791000400000485,
+      "objective": 230810113137,
+      "evaluations": 39
+    },
+    {
+      "seconds": 11.871657300000152,
+      "objective": 204230110426,
+      "evaluations": 53
+    },
+    {
+      "seconds": 13.000949699999182,
+      "objective": 149960115812,
+      "evaluations": 58
+    },
+    {
+      "seconds": 18.12530169999991,
+      "objective": 139760113027,
+      "evaluations": 81
+    },
+    {
+      "seconds": 20.791818699999567,
+      "objective": 128660110227,
+      "evaluations": 93
+    },
+    {
+      "seconds": 25.994316000000254,
+      "objective": 128660110159,
+      "evaluations": 113
+    },
+    {
+      "seconds": 26.240287500000704,
+      "objective": 128660108905,
+      "evaluations": 114
+    },
+    {
+      "seconds": 27.328482200000508,
+      "objective": 128120117362,
+      "evaluations": 118
+    },
+    {
+      "seconds": 28.815387900000133,
+      "objective": 118155113161,
+      "evaluations": 124
+    },
+    {
+      "seconds": 33.57388709999941,
+      "objective": 112875115820,
+      "evaluations": 145
+    },
+    {
+      "seconds": 34.814719399999376,
+      "objective": 102855113295,
+      "evaluations": 150
+    },
+    {
+      "seconds": 39.7319865999998,
+      "objective": 97530114717,
+      "evaluations": 173
+    },
+    {
+      "seconds": 45.389393100000234,
+      "objective": 97530113163,
+      "evaluations": 201
+    },
+    {
+      "seconds": 50.04557080000086,
+      "objective": 97530111999,
+      "evaluations": 226
+    },
+    {
+      "seconds": 51.80490649999956,
+      "objective": 96720114755,
+      "evaluations": 235
+    },
+    {
+      "seconds": 54.134488199999396,
+      "objective": 91440115003,
+      "evaluations": 247
+    },
+    {
+      "seconds": 58.87657129999934,
+      "objective": 84750118899,
+      "evaluations": 271
+    },
+    {
+      "seconds": 60.44694100000015,
+      "objective": 84750116303,
+      "evaluations": 279
+    },
+    {
+      "seconds": 63.03355240000019,
+      "objective": 74055113782,
+      "evaluations": 293
+    },
+    {
+      "seconds": 68.20360459999938,
+      "objective": 74055112522,
+      "evaluations": 318
+    },
+    {
+      "seconds": 72.6099592999999,
+      "objective": 68730115072,
+      "evaluations": 339
+    },
+    {
+      "seconds": 75.4857561000008,
+      "objective": 68730112316,
+      "evaluations": 355
+    },
+    {
+      "seconds": 80.34087700000055,
+      "objective": 61450113866,
+      "evaluations": 384
+    },
+    {
+      "seconds": 83.53906160000042,
+      "objective": 61450110822,
+      "evaluations": 403
+    },
+    {
+      "seconds": 86.67842759999985,
+      "objective": 61360108138,
+      "evaluations": 423
+    },
+    {
+      "seconds": 88.90409229999932,
+      "objective": 58570112520,
+      "evaluations": 437
+    },
+    {
+      "seconds": 92.6359496999994,
+      "objective": 58570112384,
+      "evaluations": 461
+    },
+    {
+      "seconds": 95.13318649999928,
+      "objective": 55810110868,
+      "evaluations": 477
+    },
+    {
+      "seconds": 98.3707233999994,
+      "objective": 48670113850,
+      "evaluations": 497
+    },
+    {
+      "seconds": 100.87292420000085,
+      "objective": 48670112460,
+      "evaluations": 512
+    },
+    {
+      "seconds": 102.08970840000075,
+      "objective": 45745116652,
+      "evaluations": 519
+    },
+    {
+      "seconds": 120.5990497999992,
+      "objective": 45745106462,
+      "source": "compact"
+    }
+  ],
+  "evaluations": 519,
+  "bound": null,
+  "patience_seconds": null,
+  "stop_reason": "budget",
+  "search_seconds": 102.08975269999974,
+  "genes": {
+    "delay_max": 960,
+    "options": [
+      "RB001",
+      "RB002",
+      "RL001",
+      "RL002",
+      "RL003"
+    ]
+  },
+  "generations": 43,
+  "population_size": 14,
+  "elite": 2,
+  "selection": "tournament_3",
+  "crossover": "uniform_random_keys",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "operations_checked": 241,
+    "scope": "schema 5: fixed runs per stage, shared mold pool, one window per block"
+  },
+  "metrics": {
+    "makespan": 14439,
+    "mandatory_makespan": 14439,
+    "schedule_end": 14439,
+    "weighted_tardiness": 3023,
+    "total_tardiness": 3023,
+    "late_orders": 1,
+    "max_tardiness": 3023,
+    "setup_minutes": 1878,
+    "maintenance_minutes": 720,
+    "maintenance_count": 24,
+    "idle_minutes": 26185,
+    "safety_shortfall": 20,
+    "activated_shifts": 96,
+    "productive_utilization": 0.35737887921411027,
+    "processing_minutes": 16007,
+    "available_minutes": 44790,
+    "produced_quantity": 980,
+    "shipped_quantity": 980,
+    "end_inventory": {
+      "F_SILVER": 26,
+      "F_BLACK": 12,
+      "R_SILVER": 30,
+      "R_BLACK": 8
+    },
+    "btp_end": {
+      "F_CAST": 8,
+      "R_CAST": 20,
+      "F_HEAT": 12,
+      "R_HEAT": 16,
+      "F_MACH": 2,
+      "R_MACH": 15,
+      "F_SILVER_PAINT": 1,
+      "F_BLACK_PAINT": 19,
+      "R_SILVER_PAINT": 20,
+      "R_BLACK_PAINT": 23
+    },
+    "reserve_production": 1,
+    "reserve_quantity": 16,
+    "surplus_holding": 2908,
+    "shift_opening": 0,
+    "reserve_options_chosen": [
+      "RB002"
+    ],
+    "nonproductive_minutes": 28783,
+    "reserve_units": 16,
+    "btp_end_units": 136,
+    "objective_tier1": 45745,
+    "objective_tier2": 106462,
+    "objective": 45745106462
+  },
+  "gap": null,
+  "total_seconds": 120.7208539000003
+}

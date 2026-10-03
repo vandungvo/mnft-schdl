@@ -1,0 +1,489 @@
+{
+  "name": "wheel_factory_small_5stages_3days",
+  "origin": "2026-09-28T00:00:00+07:00",
+  "time_unit": "minute",
+  "horizon": 4320,
+  "stages": [
+    "cast",
+    "heat",
+    "machining",
+    "paint",
+    "qc"
+  ],
+  "run_size": {
+    "cast": 16,
+    "heat": 24,
+    "machining": 20,
+    "paint": 25,
+    "qc": 20
+  },
+  "transfer_minutes": {
+    "cast": 10,
+    "heat": 10,
+    "machining": 10,
+    "paint": 120
+  },
+  "checkpoints": [
+    1440,
+    2880,
+    4320
+  ],
+  "machine_initial_state": "INITIAL",
+  "shift_template": {
+    "S1": {
+      "start": 0,
+      "end": 480
+    },
+    "S2": {
+      "start": 480,
+      "end": 960,
+      "breaks": [
+        [
+          720,
+          750
+        ]
+      ]
+    },
+    "S3": {
+      "start": 960,
+      "end": 1440
+    }
+  },
+  "products": {
+    "F_SILVER": {
+      "route": {
+        "cast": "F_CAST",
+        "heat": "F_HEAT",
+        "machining": "F_MACH",
+        "paint": "F_SILVER_PAINT"
+      },
+      "initial_stock": 10,
+      "safety_stock": 8,
+      "stock_cap": 40
+    },
+    "F_BLACK": {
+      "route": {
+        "cast": "F_CAST",
+        "heat": "F_HEAT",
+        "machining": "F_MACH",
+        "paint": "F_BLACK_PAINT"
+      },
+      "initial_stock": 6,
+      "safety_stock": 6,
+      "stock_cap": 35
+    },
+    "R_SILVER": {
+      "route": {
+        "cast": "R_CAST",
+        "heat": "R_HEAT",
+        "machining": "R_MACH",
+        "paint": "R_SILVER_PAINT"
+      },
+      "initial_stock": 6,
+      "safety_stock": 6,
+      "stock_cap": 15
+    },
+    "R_BLACK": {
+      "route": {
+        "cast": "R_CAST",
+        "heat": "R_HEAT",
+        "machining": "R_MACH",
+        "paint": "R_BLACK_PAINT"
+      },
+      "initial_stock": 8,
+      "safety_stock": 6,
+      "stock_cap": 15
+    }
+  },
+  "btp": {
+    "F_CAST": {
+      "initial_stock": 8
+    },
+    "R_CAST": {
+      "initial_stock": 4
+    },
+    "F_HEAT": {
+      "initial_stock": 24
+    },
+    "R_HEAT": {
+      "initial_stock": 12
+    },
+    "F_MACH": {
+      "initial_stock": 6
+    },
+    "R_MACH": {
+      "initial_stock": 4
+    },
+    "F_SILVER_PAINT": {
+      "initial_stock": 4
+    },
+    "F_BLACK_PAINT": {
+      "initial_stock": 3
+    },
+    "R_SILVER_PAINT": {
+      "initial_stock": 3
+    },
+    "R_BLACK_PAINT": {
+      "initial_stock": 2
+    }
+  },
+  "machines": {
+    "CAST_1": {
+      "stage": "cast",
+      "minutes_per_unit": {
+        "F_CAST": 4.0,
+        "R_CAST": 4.0
+      },
+      "fixed_minutes": 10,
+      "mold_change_minutes": 60,
+      "setup": {
+        "INITIAL": {
+          "F_CAST": 60,
+          "R_CAST": 60
+        },
+        "F_CAST": {
+          "F_CAST": 0,
+          "R_CAST": 60
+        },
+        "R_CAST": {
+          "F_CAST": 60,
+          "R_CAST": 0
+        },
+        "CLEAN": {
+          "F_CAST": 30,
+          "R_CAST": 30
+        }
+      }
+    },
+    "CAST_2": {
+      "stage": "cast",
+      "minutes_per_unit": {
+        "F_CAST": 4.5,
+        "R_CAST": 4.5
+      },
+      "fixed_minutes": 10,
+      "mold_change_minutes": 60,
+      "setup": {
+        "INITIAL": {
+          "F_CAST": 60,
+          "R_CAST": 60
+        },
+        "F_CAST": {
+          "F_CAST": 0,
+          "R_CAST": 60
+        },
+        "R_CAST": {
+          "F_CAST": 60,
+          "R_CAST": 0
+        },
+        "CLEAN": {
+          "F_CAST": 30,
+          "R_CAST": 30
+        }
+      }
+    },
+    "HT_1": {
+      "stage": "heat",
+      "calendar": "continuous",
+      "minutes_per_unit": {
+        "F_HEAT": 0,
+        "R_HEAT": 0
+      },
+      "fixed_minutes": 480,
+      "setup": {
+        "INITIAL": {
+          "F_HEAT": 0,
+          "R_HEAT": 0
+        },
+        "F_HEAT": {
+          "F_HEAT": 0,
+          "R_HEAT": 0
+        },
+        "R_HEAT": {
+          "F_HEAT": 0,
+          "R_HEAT": 0
+        }
+      }
+    },
+    "HT_2": {
+      "stage": "heat",
+      "calendar": "continuous",
+      "minutes_per_unit": {
+        "F_HEAT": 0,
+        "R_HEAT": 0
+      },
+      "fixed_minutes": 480,
+      "setup": {
+        "INITIAL": {
+          "F_HEAT": 0,
+          "R_HEAT": 0
+        },
+        "F_HEAT": {
+          "F_HEAT": 0,
+          "R_HEAT": 0
+        },
+        "R_HEAT": {
+          "F_HEAT": 0,
+          "R_HEAT": 0
+        }
+      }
+    },
+    "CNC_1": {
+      "stage": "machining",
+      "minutes_per_unit": {
+        "F_MACH": 6.0,
+        "R_MACH": 6.0
+      },
+      "fixed_minutes": 28,
+      "setup": {
+        "INITIAL": {
+          "F_MACH": 10,
+          "R_MACH": 10
+        },
+        "F_MACH": {
+          "F_MACH": 0,
+          "R_MACH": 18
+        },
+        "R_MACH": {
+          "F_MACH": 18,
+          "R_MACH": 0
+        }
+      }
+    },
+    "CNC_2": {
+      "stage": "machining",
+      "minutes_per_unit": {
+        "F_MACH": 7.0,
+        "R_MACH": 7.0
+      },
+      "fixed_minutes": 28,
+      "downtime": [
+        [
+          900,
+          930
+        ]
+      ],
+      "setup": {
+        "INITIAL": {
+          "F_MACH": 10,
+          "R_MACH": 10
+        },
+        "F_MACH": {
+          "F_MACH": 0,
+          "R_MACH": 18
+        },
+        "R_MACH": {
+          "F_MACH": 18,
+          "R_MACH": 0
+        }
+      }
+    },
+    "PAINT_1": {
+      "stage": "paint",
+      "minutes_per_unit": {
+        "F_SILVER_PAINT": 1.0,
+        "F_BLACK_PAINT": 1.0,
+        "R_SILVER_PAINT": 1.0,
+        "R_BLACK_PAINT": 1.0
+      },
+      "fixed_minutes": 15,
+      "setup": {
+        "INITIAL": {
+          "F_SILVER_PAINT": 10,
+          "F_BLACK_PAINT": 10,
+          "R_SILVER_PAINT": 10,
+          "R_BLACK_PAINT": 10
+        },
+        "F_SILVER_PAINT": {
+          "F_SILVER_PAINT": 0,
+          "F_BLACK_PAINT": 12,
+          "R_SILVER_PAINT": 0,
+          "R_BLACK_PAINT": 12
+        },
+        "F_BLACK_PAINT": {
+          "F_SILVER_PAINT": 24,
+          "F_BLACK_PAINT": 0,
+          "R_SILVER_PAINT": 24,
+          "R_BLACK_PAINT": 0
+        },
+        "R_SILVER_PAINT": {
+          "F_SILVER_PAINT": 0,
+          "F_BLACK_PAINT": 12,
+          "R_SILVER_PAINT": 0,
+          "R_BLACK_PAINT": 12
+        },
+        "R_BLACK_PAINT": {
+          "F_SILVER_PAINT": 24,
+          "F_BLACK_PAINT": 0,
+          "R_SILVER_PAINT": 24,
+          "R_BLACK_PAINT": 0
+        }
+      }
+    },
+    "QC_1": {
+      "stage": "qc",
+      "minutes_per_unit": {
+        "F_SILVER": 1.0,
+        "F_BLACK": 1.0,
+        "R_SILVER": 1.0,
+        "R_BLACK": 1.0
+      },
+      "fixed_minutes": 15,
+      "setup": {
+        "INITIAL": {
+          "F_SILVER": 10,
+          "F_BLACK": 10,
+          "R_SILVER": 10,
+          "R_BLACK": 10
+        },
+        "F_SILVER": {
+          "F_SILVER": 0,
+          "F_BLACK": 4,
+          "R_SILVER": 4,
+          "R_BLACK": 4
+        },
+        "F_BLACK": {
+          "F_SILVER": 4,
+          "F_BLACK": 0,
+          "R_SILVER": 4,
+          "R_BLACK": 4
+        },
+        "R_SILVER": {
+          "F_SILVER": 4,
+          "F_BLACK": 4,
+          "R_SILVER": 0,
+          "R_BLACK": 4
+        },
+        "R_BLACK": {
+          "F_SILVER": 4,
+          "F_BLACK": 4,
+          "R_SILVER": 4,
+          "R_BLACK": 0
+        }
+      }
+    }
+  },
+  "molds": {
+    "MOLD_F1": {
+      "item": "F_CAST",
+      "cavities": 1,
+      "limit_cycles": 48,
+      "initial_cycles": 32,
+      "maintenance_minutes": 30,
+      "after_maintenance": "CLEAN"
+    },
+    "MOLD_F2": {
+      "item": "F_CAST",
+      "cavities": 1,
+      "limit_cycles": 48,
+      "initial_cycles": 0,
+      "maintenance_minutes": 30,
+      "after_maintenance": "CLEAN"
+    },
+    "MOLD_R1": {
+      "item": "R_CAST",
+      "cavities": 1,
+      "limit_cycles": 40,
+      "initial_cycles": 8,
+      "maintenance_minutes": 30,
+      "after_maintenance": "CLEAN"
+    },
+    "MOLD_R2": {
+      "item": "R_CAST",
+      "cavities": 1,
+      "limit_cycles": 40,
+      "initial_cycles": 32,
+      "maintenance_minutes": 30,
+      "after_maintenance": "CLEAN"
+    }
+  },
+  "orders": [
+    {
+      "id": "O001",
+      "product": "F_SILVER",
+      "quantity": 44,
+      "due": 2400,
+      "priority": 4,
+      "release": 0,
+      "initial_allocated": 4
+    },
+    {
+      "id": "O002",
+      "product": "F_BLACK",
+      "quantity": 20,
+      "due": 3600,
+      "priority": 2,
+      "release": 0,
+      "initial_allocated": 0
+    },
+    {
+      "id": "O003",
+      "product": "R_SILVER",
+      "quantity": 20,
+      "due": 3840,
+      "priority": 1,
+      "release": 0,
+      "initial_allocated": 0
+    },
+    {
+      "id": "O004",
+      "product": "R_BLACK",
+      "quantity": 24,
+      "due": 4200,
+      "priority": 2,
+      "release": 0,
+      "initial_allocated": 4
+    }
+  ],
+  "long_term_orders": [
+    {
+      "id": "LT001",
+      "product": "F_SILVER",
+      "quantity": 50,
+      "due": 9600
+    },
+    {
+      "id": "LT002",
+      "product": "F_BLACK",
+      "quantity": 25,
+      "due": 11040
+    },
+    {
+      "id": "LT003",
+      "product": "R_SILVER",
+      "quantity": 20,
+      "due": 12480
+    }
+  ],
+  "reserve_policy": {
+    "F_SILVER": {
+      "finished_lots": 1
+    },
+    "F_BLACK": {
+      "finished_lots": 1
+    },
+    "R_SILVER": {
+      "btp_runs": {
+        "cast": 1
+      }
+    }
+  },
+  "weights": {
+    "weighted_tardiness": 15,
+    "safety_shortfall": 20,
+    "makespan": 1,
+    "nonproductive_minutes": 3,
+    "setup_minutes": 1,
+    "maintenance_minutes": 1,
+    "reserve_units": 2,
+    "surplus_holding": 1,
+    "btp_end_units": 1
+  },
+  "objective_tiers": {
+    "tier1": [
+      "weighted_tardiness",
+      "safety_shortfall"
+    ],
+    "scale": 1000000
+  }
+}

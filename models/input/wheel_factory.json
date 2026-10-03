@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "name": "wheel_factory_48_lots_2weeks",
   "seed": 20260919,
   "origin": "2026-09-21T00:00:00+07:00",
@@ -115,41 +115,41 @@
     "CAST_F": {
       "stage": "cast",
       "minutes_per_unit": {
-        "F_SILVER": 1.05,
-        "F_BLACK": 1.05
+        "F_SILVER_CAST": 1.05,
+        "F_BLACK_CAST": 1.05
       },
       "fixed_minutes": 5,
-      "initial_product": "F_SILVER",
+      "initial_product": "F_SILVER_CAST",
       "setup": {
-        "F_SILVER": {
-          "F_SILVER": 0,
-          "F_BLACK": 12,
-          "R_SILVER": 12,
-          "R_BLACK": 12
+        "F_SILVER_CAST": {
+          "F_SILVER_CAST": 0,
+          "F_BLACK_CAST": 12,
+          "R_SILVER_CAST": 12,
+          "R_BLACK_CAST": 12
         },
-        "F_BLACK": {
-          "F_SILVER": 12,
-          "F_BLACK": 0,
-          "R_SILVER": 12,
-          "R_BLACK": 12
+        "F_BLACK_CAST": {
+          "F_SILVER_CAST": 12,
+          "F_BLACK_CAST": 0,
+          "R_SILVER_CAST": 12,
+          "R_BLACK_CAST": 12
         },
-        "R_SILVER": {
-          "F_SILVER": 12,
-          "F_BLACK": 12,
-          "R_SILVER": 0,
-          "R_BLACK": 12
+        "R_SILVER_CAST": {
+          "F_SILVER_CAST": 12,
+          "F_BLACK_CAST": 12,
+          "R_SILVER_CAST": 0,
+          "R_BLACK_CAST": 12
         },
-        "R_BLACK": {
-          "F_SILVER": 12,
-          "F_BLACK": 12,
-          "R_SILVER": 12,
-          "R_BLACK": 0
+        "R_BLACK_CAST": {
+          "F_SILVER_CAST": 12,
+          "F_BLACK_CAST": 12,
+          "R_SILVER_CAST": 12,
+          "R_BLACK_CAST": 0
         },
         "CLEAN": {
-          "F_SILVER": 16,
-          "F_BLACK": 16,
-          "R_SILVER": 16,
-          "R_BLACK": 16
+          "F_SILVER_CAST": 16,
+          "F_BLACK_CAST": 16,
+          "R_SILVER_CAST": 16,
+          "R_BLACK_CAST": 16
         }
       },
       "windows": [
@@ -549,41 +549,41 @@
     "CAST_R": {
       "stage": "cast",
       "minutes_per_unit": {
-        "R_SILVER": 1.2,
-        "R_BLACK": 1.2
+        "R_SILVER_CAST": 1.2,
+        "R_BLACK_CAST": 1.2
       },
       "fixed_minutes": 5,
-      "initial_product": "R_SILVER",
+      "initial_product": "R_SILVER_CAST",
       "setup": {
-        "F_SILVER": {
-          "F_SILVER": 0,
-          "F_BLACK": 12,
-          "R_SILVER": 12,
-          "R_BLACK": 12
+        "F_SILVER_CAST": {
+          "F_SILVER_CAST": 0,
+          "F_BLACK_CAST": 12,
+          "R_SILVER_CAST": 12,
+          "R_BLACK_CAST": 12
         },
-        "F_BLACK": {
-          "F_SILVER": 12,
-          "F_BLACK": 0,
-          "R_SILVER": 12,
-          "R_BLACK": 12
+        "F_BLACK_CAST": {
+          "F_SILVER_CAST": 12,
+          "F_BLACK_CAST": 0,
+          "R_SILVER_CAST": 12,
+          "R_BLACK_CAST": 12
         },
-        "R_SILVER": {
-          "F_SILVER": 12,
-          "F_BLACK": 12,
-          "R_SILVER": 0,
-          "R_BLACK": 12
+        "R_SILVER_CAST": {
+          "F_SILVER_CAST": 12,
+          "F_BLACK_CAST": 12,
+          "R_SILVER_CAST": 0,
+          "R_BLACK_CAST": 12
         },
-        "R_BLACK": {
-          "F_SILVER": 12,
-          "F_BLACK": 12,
-          "R_SILVER": 12,
-          "R_BLACK": 0
+        "R_BLACK_CAST": {
+          "F_SILVER_CAST": 12,
+          "F_BLACK_CAST": 12,
+          "R_SILVER_CAST": 12,
+          "R_BLACK_CAST": 0
         },
         "CLEAN": {
-          "F_SILVER": 16,
-          "F_BLACK": 16,
-          "R_SILVER": 16,
-          "R_BLACK": 16
+          "F_SILVER_CAST": 16,
+          "F_BLACK_CAST": 16,
+          "R_SILVER_CAST": 16,
+          "R_BLACK_CAST": 16
         }
       },
       "windows": [
@@ -983,42 +983,42 @@
     "CNC_1": {
       "stage": "cnc",
       "minutes_per_unit": {
-        "F_SILVER": 1.65,
-        "F_BLACK": 1.65,
-        "R_SILVER": 1.65
+        "F_SILVER_CNC": 1.65,
+        "F_BLACK_CNC": 1.65,
+        "R_SILVER_CNC": 1.65
       },
       "fixed_minutes": 8,
-      "initial_product": "F_SILVER",
+      "initial_product": "F_SILVER_CNC",
       "setup": {
-        "F_SILVER": {
-          "F_SILVER": 0,
-          "F_BLACK": 18,
-          "R_SILVER": 18,
-          "R_BLACK": 18
+        "F_SILVER_CNC": {
+          "F_SILVER_CNC": 0,
+          "F_BLACK_CNC": 18,
+          "R_SILVER_CNC": 18,
+          "R_BLACK_CNC": 18
         },
-        "F_BLACK": {
-          "F_SILVER": 18,
-          "F_BLACK": 0,
-          "R_SILVER": 18,
-          "R_BLACK": 18
+        "F_BLACK_CNC": {
+          "F_SILVER_CNC": 18,
+          "F_BLACK_CNC": 0,
+          "R_SILVER_CNC": 18,
+          "R_BLACK_CNC": 18
         },
-        "R_SILVER": {
-          "F_SILVER": 18,
-          "F_BLACK": 18,
-          "R_SILVER": 0,
-          "R_BLACK": 18
+        "R_SILVER_CNC": {
+          "F_SILVER_CNC": 18,
+          "F_BLACK_CNC": 18,
+          "R_SILVER_CNC": 0,
+          "R_BLACK_CNC": 18
         },
-        "R_BLACK": {
-          "F_SILVER": 18,
-          "F_BLACK": 18,
-          "R_SILVER": 18,
-          "R_BLACK": 0
+        "R_BLACK_CNC": {
+          "F_SILVER_CNC": 18,
+          "F_BLACK_CNC": 18,
+          "R_SILVER_CNC": 18,
+          "R_BLACK_CNC": 0
         },
         "CLEAN": {
-          "F_SILVER": 22,
-          "F_BLACK": 22,
-          "R_SILVER": 22,
-          "R_BLACK": 22
+          "F_SILVER_CNC": 22,
+          "F_BLACK_CNC": 22,
+          "R_SILVER_CNC": 22,
+          "R_BLACK_CNC": 22
         }
       },
       "windows": [
@@ -1415,43 +1415,43 @@
     "CNC_2": {
       "stage": "cnc",
       "minutes_per_unit": {
-        "F_SILVER": 1.85,
-        "F_BLACK": 1.85,
-        "R_SILVER": 1.85,
-        "R_BLACK": 1.85
+        "F_SILVER_CNC": 1.85,
+        "F_BLACK_CNC": 1.85,
+        "R_SILVER_CNC": 1.85,
+        "R_BLACK_CNC": 1.85
       },
       "fixed_minutes": 8,
-      "initial_product": "F_SILVER",
+      "initial_product": "F_SILVER_CNC",
       "setup": {
-        "F_SILVER": {
-          "F_SILVER": 0,
-          "F_BLACK": 18,
-          "R_SILVER": 18,
-          "R_BLACK": 18
+        "F_SILVER_CNC": {
+          "F_SILVER_CNC": 0,
+          "F_BLACK_CNC": 18,
+          "R_SILVER_CNC": 18,
+          "R_BLACK_CNC": 18
         },
-        "F_BLACK": {
-          "F_SILVER": 18,
-          "F_BLACK": 0,
-          "R_SILVER": 18,
-          "R_BLACK": 18
+        "F_BLACK_CNC": {
+          "F_SILVER_CNC": 18,
+          "F_BLACK_CNC": 0,
+          "R_SILVER_CNC": 18,
+          "R_BLACK_CNC": 18
         },
-        "R_SILVER": {
-          "F_SILVER": 18,
-          "F_BLACK": 18,
-          "R_SILVER": 0,
-          "R_BLACK": 18
+        "R_SILVER_CNC": {
+          "F_SILVER_CNC": 18,
+          "F_BLACK_CNC": 18,
+          "R_SILVER_CNC": 0,
+          "R_BLACK_CNC": 18
         },
-        "R_BLACK": {
-          "F_SILVER": 18,
-          "F_BLACK": 18,
-          "R_SILVER": 18,
-          "R_BLACK": 0
+        "R_BLACK_CNC": {
+          "F_SILVER_CNC": 18,
+          "F_BLACK_CNC": 18,
+          "R_SILVER_CNC": 18,
+          "R_BLACK_CNC": 0
         },
         "CLEAN": {
-          "F_SILVER": 22,
-          "F_BLACK": 22,
-          "R_SILVER": 22,
-          "R_BLACK": 22
+          "F_SILVER_CNC": 22,
+          "F_BLACK_CNC": 22,
+          "R_SILVER_CNC": 22,
+          "R_BLACK_CNC": 22
         }
       },
       "windows": [
@@ -1843,43 +1843,43 @@
     "PAINT_1": {
       "stage": "paint",
       "minutes_per_unit": {
-        "F_SILVER": 0.7,
-        "F_BLACK": 0.7,
-        "R_SILVER": 0.7,
-        "R_BLACK": 0.7
+        "F_SILVER_PAINT": 0.7,
+        "F_BLACK_PAINT": 0.7,
+        "R_SILVER_PAINT": 0.7,
+        "R_BLACK_PAINT": 0.7
       },
       "fixed_minutes": 30,
-      "initial_product": "F_SILVER",
+      "initial_product": "F_SILVER_PAINT",
       "setup": {
-        "F_SILVER": {
-          "F_SILVER": 0,
-          "F_BLACK": 12,
-          "R_SILVER": 0,
-          "R_BLACK": 12
+        "F_SILVER_PAINT": {
+          "F_SILVER_PAINT": 0,
+          "F_BLACK_PAINT": 12,
+          "R_SILVER_PAINT": 0,
+          "R_BLACK_PAINT": 12
         },
-        "F_BLACK": {
-          "F_SILVER": 24,
-          "F_BLACK": 0,
-          "R_SILVER": 24,
-          "R_BLACK": 0
+        "F_BLACK_PAINT": {
+          "F_SILVER_PAINT": 24,
+          "F_BLACK_PAINT": 0,
+          "R_SILVER_PAINT": 24,
+          "R_BLACK_PAINT": 0
         },
-        "R_SILVER": {
-          "F_SILVER": 0,
-          "F_BLACK": 12,
-          "R_SILVER": 0,
-          "R_BLACK": 12
+        "R_SILVER_PAINT": {
+          "F_SILVER_PAINT": 0,
+          "F_BLACK_PAINT": 12,
+          "R_SILVER_PAINT": 0,
+          "R_BLACK_PAINT": 12
         },
-        "R_BLACK": {
-          "F_SILVER": 24,
-          "F_BLACK": 0,
-          "R_SILVER": 24,
-          "R_BLACK": 0
+        "R_BLACK_PAINT": {
+          "F_SILVER_PAINT": 24,
+          "F_BLACK_PAINT": 0,
+          "R_SILVER_PAINT": 24,
+          "R_BLACK_PAINT": 0
         },
         "CLEAN": {
-          "F_SILVER": 24,
-          "F_BLACK": 24,
-          "R_SILVER": 24,
-          "R_BLACK": 24
+          "F_SILVER_PAINT": 24,
+          "F_BLACK_PAINT": 24,
+          "R_SILVER_PAINT": 24,
+          "R_BLACK_PAINT": 24
         }
       },
       "windows": [
@@ -2270,43 +2270,43 @@
     "PAINT_2": {
       "stage": "paint",
       "minutes_per_unit": {
-        "F_SILVER": 0.85,
-        "F_BLACK": 0.85,
-        "R_SILVER": 0.85,
-        "R_BLACK": 0.85
+        "F_SILVER_PAINT": 0.85,
+        "F_BLACK_PAINT": 0.85,
+        "R_SILVER_PAINT": 0.85,
+        "R_BLACK_PAINT": 0.85
       },
       "fixed_minutes": 30,
-      "initial_product": "F_SILVER",
+      "initial_product": "F_SILVER_PAINT",
       "setup": {
-        "F_SILVER": {
-          "F_SILVER": 0,
-          "F_BLACK": 12,
-          "R_SILVER": 0,
-          "R_BLACK": 12
+        "F_SILVER_PAINT": {
+          "F_SILVER_PAINT": 0,
+          "F_BLACK_PAINT": 12,
+          "R_SILVER_PAINT": 0,
+          "R_BLACK_PAINT": 12
         },
-        "F_BLACK": {
-          "F_SILVER": 24,
-          "F_BLACK": 0,
-          "R_SILVER": 24,
-          "R_BLACK": 0
+        "F_BLACK_PAINT": {
+          "F_SILVER_PAINT": 24,
+          "F_BLACK_PAINT": 0,
+          "R_SILVER_PAINT": 24,
+          "R_BLACK_PAINT": 0
         },
-        "R_SILVER": {
-          "F_SILVER": 0,
-          "F_BLACK": 12,
-          "R_SILVER": 0,
-          "R_BLACK": 12
+        "R_SILVER_PAINT": {
+          "F_SILVER_PAINT": 0,
+          "F_BLACK_PAINT": 12,
+          "R_SILVER_PAINT": 0,
+          "R_BLACK_PAINT": 12
         },
-        "R_BLACK": {
-          "F_SILVER": 24,
-          "F_BLACK": 0,
-          "R_SILVER": 24,
-          "R_BLACK": 0
+        "R_BLACK_PAINT": {
+          "F_SILVER_PAINT": 24,
+          "F_BLACK_PAINT": 0,
+          "R_SILVER_PAINT": 24,
+          "R_BLACK_PAINT": 0
         },
         "CLEAN": {
-          "F_SILVER": 24,
-          "F_BLACK": 24,
-          "R_SILVER": 24,
-          "R_BLACK": 24
+          "F_SILVER_PAINT": 24,
+          "F_BLACK_PAINT": 24,
+          "R_SILVER_PAINT": 24,
+          "R_BLACK_PAINT": 24
         }
       },
       "windows": [

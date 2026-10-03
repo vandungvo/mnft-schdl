@@ -1,0 +1,270 @@
+{
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 2.355947500000184,
+      "objective": 160016408,
+      "source": "FIFO + d\u1ed3n ca"
+    },
+    {
+      "seconds": 12.37679770000068,
+      "objective": 80019209,
+      "iteration": 1,
+      "neighbourhood": "time"
+    },
+    {
+      "seconds": 14.623280400001022,
+      "objective": 40018621,
+      "iteration": 3,
+      "neighbourhood": "stage"
+    },
+    {
+      "seconds": 22.392488299999968,
+      "objective": 40014818,
+      "iteration": 9,
+      "neighbourhood": "time"
+    },
+    {
+      "seconds": 22.97123730000021,
+      "objective": 40013468,
+      "iteration": 10,
+      "neighbourhood": "machine"
+    },
+    {
+      "seconds": 25.337316300001476,
+      "objective": 40010564,
+      "iteration": 11,
+      "neighbourhood": "stage"
+    }
+  ],
+  "iterations": [
+    {
+      "neighbourhood": "time",
+      "released_runs": [
+        "F_HEAT-01",
+        "F_HEAT-02",
+        "F_HEAT-03",
+        "F_MACH-02",
+        "F_MACH-03",
+        "F_MACH-04",
+        "F_SILVER_PAINT-01",
+        "L003",
+        "R_HEAT-01",
+        "R_HEAT-02",
+        "R_MACH-01"
+      ],
+      "status": "FEASIBLE",
+      "build_seconds": 0.2380206999987422,
+      "solve_seconds": 9.767297000000001
+    },
+    {
+      "neighbourhood": "machine",
+      "released_runs": [
+        "F_CAST-01",
+        "F_MACH-01",
+        "F_MACH-02",
+        "F_MACH-03",
+        "F_MACH-RL001-1",
+        "R_CAST-01",
+        "R_CAST-02",
+        "R_MACH-02"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.260003900000811,
+      "solve_seconds": 0.8868616
+    },
+    {
+      "neighbourhood": "stage",
+      "released_runs": [
+        "L001",
+        "L002",
+        "L003",
+        "L004",
+        "L005",
+        "RL001",
+        "RL002"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.28624149999996007,
+      "solve_seconds": 0.7847838
+    },
+    {
+      "neighbourhood": "random",
+      "released_runs": [
+        "F_CAST-02",
+        "F_CAST-03",
+        "F_MACH-03",
+        "L002",
+        "L003",
+        "L005",
+        "R_BLACK_PAINT-01",
+        "R_CAST-03"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.24767549999887706,
+      "solve_seconds": 0.739203
+    },
+    {
+      "neighbourhood": "time",
+      "released_runs": [
+        "L005"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.25054910000108066,
+      "solve_seconds": 0.5296679000000001
+    },
+    {
+      "neighbourhood": "machine",
+      "released_runs": [
+        "F_HEAT-01",
+        "F_HEAT-03",
+        "L001",
+        "L002",
+        "L003",
+        "L004",
+        "L005",
+        "RL001",
+        "R_HEAT-02"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.2620764000002964,
+      "solve_seconds": 0.6871731000000001
+    },
+    {
+      "neighbourhood": "stage",
+      "released_runs": [
+        "L001",
+        "L002",
+        "L003",
+        "L004",
+        "L005",
+        "RL001",
+        "RL002"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.3179256000003079,
+      "solve_seconds": 0.5731702000000001
+    },
+    {
+      "neighbourhood": "random",
+      "released_runs": [
+        "F_MACH-01",
+        "F_MACH-03",
+        "L003",
+        "L004",
+        "L005",
+        "RL001",
+        "RL002",
+        "R_HEAT-01"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.2114103999992949,
+      "solve_seconds": 0.5446687
+    },
+    {
+      "neighbourhood": "time",
+      "released_runs": [
+        "F_HEAT-RL001-1",
+        "F_MACH-04",
+        "F_SILVER_PAINT-RL001-1",
+        "L001",
+        "L002",
+        "L003",
+        "L004",
+        "RL001",
+        "R_BLACK_PAINT-01",
+        "R_HEAT-02",
+        "R_MACH-02",
+        "R_MACH-03",
+        "R_SILVER_PAINT-01"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.25854830000025686,
+      "solve_seconds": 3.0733903000000002
+    },
+    {
+      "neighbourhood": "machine",
+      "released_runs": [
+        "F_BLACK_PAINT-01",
+        "F_BLACK_PAINT-RL002-1",
+        "F_HEAT-01",
+        "F_HEAT-03",
+        "F_HEAT-RL001-1",
+        "F_HEAT-RL002-1",
+        "F_SILVER_PAINT-01",
+        "F_SILVER_PAINT-02",
+        "F_SILVER_PAINT-RL001-1",
+        "R_BLACK_PAINT-01",
+        "R_SILVER_PAINT-01"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.23873440000170376,
+      "solve_seconds": 0.329268
+    },
+    {
+      "neighbourhood": "stage",
+      "released_runs": [
+        "F_MACH-01",
+        "F_MACH-02",
+        "F_MACH-03",
+        "F_MACH-04",
+        "F_MACH-RL001-1",
+        "F_MACH-RL002-1",
+        "R_MACH-01",
+        "R_MACH-02",
+        "R_MACH-03"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.20454889999928128,
+      "solve_seconds": 2.1504474
+    },
+    {
+      "neighbourhood": "random",
+      "released_runs": [
+        "F_BLACK_PAINT-01",
+        "F_CAST-RL001-2",
+        "F_CAST-RL002-1",
+        "F_HEAT-03",
+        "F_MACH-03",
+        "F_MACH-RL001-1",
+        "F_SILVER_PAINT-RL001-1",
+        "L003"
+      ],
+      "status": "OPTIMAL",
+      "build_seconds": 0.19897020000098564,
+      "solve_seconds": 0.2675484
+    },
+    {
+      "neighbourhood": "time",
+      "released_runs": [],
+      "status": "OPTIMAL",
+      "build_seconds": 0.3231204000003345,
+      "solve_seconds": 0.074768
+    },
+    {
+      "neighbourhood": "machine",
+      "released_runs": [
+        "F_CAST-02",
+        "F_CAST-03",
+        "F_CAST-04",
+        "F_CAST-RL001-1",
+        "F_CAST-RL001-2",
+        "F_CAST-RL002-2",
+        "F_MACH-RL001-1",
+        "F_MACH-RL002-1",
+        "R_CAST-03",
+        "R_CAST-RB001"
+      ],
+      "status": "FEASIBLE",
+      "build_seconds": 0.19127190000108385,
+      "solve_seconds": 3.5909579000000003
+    }
+  ],
+  "bound": null,
+  "bound_scope": "none; neighborhood bounds are not global",
+  "initial_hint_objective": 160016408,
+  "hint_source": "FIFO + d\u1ed3n ca",
+  "workers": 1,
+  "patience_seconds": null,
+  "stop_reason": "budget"
+}

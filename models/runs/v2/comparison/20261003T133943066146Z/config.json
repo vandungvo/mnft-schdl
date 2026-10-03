@@ -1,0 +1,22 @@
+{
+  "run_id": "20261003T133943066146Z",
+  "input_sha256": "2df0591662b22157f904dc480f1bce0adcf6f1e5a442b10f5fae7e63a212452b",
+  "seconds": 30.0,
+  "seeds": [
+    11,
+    29,
+    47
+  ],
+  "methods": [
+    "fifo",
+    "edd",
+    "spt",
+    "simulated_annealing",
+    "genetic_algorithm",
+    "cp_sat",
+    "cp_sat_hint",
+    "cp_lns",
+    "cp_rolling"
+  ],
+  "execution": "sequential, 1 CP-SAT worker"
+}

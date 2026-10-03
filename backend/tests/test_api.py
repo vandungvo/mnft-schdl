@@ -579,39 +579,63 @@ def test_entity_edits_are_validated_and_use_optimistic_revision(client, scheduli
     assert route_unused_sku.json()["revision"] == 7
     assert route_unused_sku.json()["input"]["btp_routing"]["UNUSED_SKU"]["cast"] == "SHARED_CAST"
 
-    route_f_silver = client.put(
+    # schema_version 4: machines are keyed by the BTP code they produce, so
+    # F_SILVER cannot be routed to SHARED_CAST until a casting machine can make it.
+    route_f_silver_early = client.put(
         f"/api/v1/master-data/datasets/{dataset_id}/products/F_SILVER/routing/cast",
         json={"expected_revision": 7, "btp_code": "SHARED_CAST"},
     )
+    assert route_f_silver_early.status_code == 422
+    assert route_f_silver_early.json()["error"]["code"] == "MASTER_DATA_VALIDATION_ERROR"
+
+    cast_f = route_unused_sku.json()["input"]["machines"]["CAST_F"]
+    cast_f["minutes_per_unit"]["SHARED_CAST"] = cast_f["minutes_per_unit"]["F_SILVER_CAST"]
+    for row in cast_f["setup"].values():
+        row["SHARED_CAST"] = row["F_SILVER_CAST"]
+    cast_f["setup"]["SHARED_CAST"] = {**cast_f["setup"]["F_SILVER_CAST"], "SHARED_CAST": 0}
+    capability_added = client.put(
+        f"/api/v1/master-data/datasets/{dataset_id}/machines/CAST_F",
+        json={"expected_revision": 7, "machine": cast_f},
+    )
+    assert capability_added.status_code == 200, capability_added.text
+    assert capability_added.json()["revision"] == 8
+
+    route_f_silver = client.put(
+        f"/api/v1/master-data/datasets/{dataset_id}/products/F_SILVER/routing/cast",
+        json={"expected_revision": 8, "btp_code": "SHARED_CAST"},
+    )
     assert route_f_silver.status_code == 200, route_f_silver.text
-    assert route_f_silver.json()["revision"] == 8
+    assert route_f_silver.json()["revision"] == 9
     assert route_f_silver.json()["input"]["btp_routing"]["F_SILVER"]["cast"] == "SHARED_CAST"
 
     btp_delete_blocked = client.delete(
         f"/api/v1/master-data/datasets/{dataset_id}/btp-codes/SHARED_CAST",
-        params={"expected_revision": 8},
+        params={"expected_revision": 9},
     )
     assert btp_delete_blocked.status_code == 409
     assert btp_delete_blocked.json()["error"]["code"] == "BTP_CODE_IN_USE"
 
     btp_renamed = client.patch(
         f"/api/v1/master-data/datasets/{dataset_id}/btp-codes/SHARED_CAST",
-        json={"expected_revision": 8, "code": "shared_cast_v2"},
+        json={"expected_revision": 9, "code": "shared_cast_v2"},
     )
     assert btp_renamed.status_code == 200, btp_renamed.text
-    assert btp_renamed.json()["revision"] == 9
+    assert btp_renamed.json()["revision"] == 10
     renamed_input = btp_renamed.json()["input"]
     assert "SHARED_CAST_V2" in renamed_input["btp_codes"]
     assert renamed_input["btp_routing"]["UNUSED_SKU"]["cast"] == "SHARED_CAST_V2"
     assert renamed_input["btp_routing"]["F_SILVER"]["cast"] == "SHARED_CAST_V2"
     assert renamed_input["inventory_btp"]["SHARED_CAST_V2"] == 0
+    # The rename follows the code into machine configuration too.
+    assert "SHARED_CAST_V2" in renamed_input["machines"]["CAST_F"]["minutes_per_unit"]
+    assert "SHARED_CAST" not in renamed_input["machines"]["CAST_F"]["setup"]
 
     deleted = client.delete(
         f"/api/v1/master-data/datasets/{dataset_id}/products/UNUSED_SKU",
-        params={"expected_revision": 9},
+        params={"expected_revision": 10},
     )
     assert deleted.status_code == 200, deleted.text
-    assert deleted.json()["revision"] == 10
+    assert deleted.json()["revision"] == 11
     # F_SILVER's own routing to the shared code (untouched by UNUSED_SKU's
     # deletion) proves the code survives losing one of its two routers.
     assert deleted.json()["input"]["btp_routing"]["F_SILVER"]["cast"] == "SHARED_CAST_V2"

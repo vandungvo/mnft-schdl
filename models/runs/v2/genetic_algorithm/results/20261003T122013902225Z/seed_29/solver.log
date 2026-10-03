@@ -1,0 +1,102 @@
+{
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.23260089999894262,
+      "objective": 323465104894,
+      "evaluations": 1
+    },
+    {
+      "seconds": 0.5201856999992742,
+      "objective": 244430115960,
+      "evaluations": 2
+    },
+    {
+      "seconds": 8.698277599998619,
+      "objective": 237830110356,
+      "evaluations": 31
+    },
+    {
+      "seconds": 10.90038800000002,
+      "objective": 230810113137,
+      "evaluations": 39
+    },
+    {
+      "seconds": 14.430293999999776,
+      "objective": 204230110426,
+      "evaluations": 53
+    },
+    {
+      "seconds": 15.761587799999688,
+      "objective": 149960115812,
+      "evaluations": 58
+    },
+    {
+      "seconds": 32.098351900000125,
+      "objective": 139760113027,
+      "evaluations": 81
+    },
+    {
+      "seconds": 40.808079099999304,
+      "objective": 128660110227,
+      "evaluations": 93
+    },
+    {
+      "seconds": 57.69675389999975,
+      "objective": 128660110159,
+      "evaluations": 113
+    },
+    {
+      "seconds": 58.43525059999956,
+      "objective": 128660108905,
+      "evaluations": 114
+    },
+    {
+      "seconds": 61.68368829999963,
+      "objective": 128120117362,
+      "evaluations": 118
+    },
+    {
+      "seconds": 65.93873239999994,
+      "objective": 118155113161,
+      "evaluations": 124
+    },
+    {
+      "seconds": 80.8305419999997,
+      "objective": 112875115820,
+      "evaluations": 145
+    },
+    {
+      "seconds": 84.27491249999912,
+      "objective": 102855113295,
+      "evaluations": 150
+    },
+    {
+      "seconds": 100.0705696999994,
+      "objective": 97530114717,
+      "evaluations": 173
+    },
+    {
+      "seconds": 120.37868459999845,
+      "objective": 97530103647,
+      "source": "compact"
+    }
+  ],
+  "evaluations": 176,
+  "bound": null,
+  "genes": {
+    "delay_max": 960,
+    "options": [
+      "RB001",
+      "RB002",
+      "RL001",
+      "RL002",
+      "RL003"
+    ]
+  },
+  "generations": 14,
+  "population_size": 14,
+  "elite": 2,
+  "selection": "tournament_3",
+  "crossover": "uniform_random_keys"
+}

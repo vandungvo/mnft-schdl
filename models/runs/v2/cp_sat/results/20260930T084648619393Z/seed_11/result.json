@@ -1,0 +1,252 @@
+{
+  "method": "cp_sat",
+  "seed": 11,
+  "run_id": "20260930T084648619393Z",
+  "input_sha256": "3dbbcade341488a765d53181de5321dce61f1aed1f8fab00791b9bfd9e76b884",
+  "code_sha256": "f1d5424837322154121b85823fce394970fb1fbe6c565e2ea69b25201db97240",
+  "budget_seconds": 30.0,
+  "algorithm_seconds": 30.695655400006217,
+  "environment": {
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "ortools": "9.15.6755",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 23 Model 104 Stepping 1, AuthenticAMD",
+    "workers": 1
+  },
+  "status": "FEASIBLE",
+  "build_seconds": 0.06822599999577506,
+  "solve_seconds": 29.9376563,
+  "history": [
+    {
+      "seconds": 5.99008799999865,
+      "objective": 153337.0
+    },
+    {
+      "seconds": 6.386766899995564,
+      "objective": 152107.0
+    },
+    {
+      "seconds": 6.627917799996794,
+      "objective": 152046.0
+    },
+    {
+      "seconds": 6.820663300000888,
+      "objective": 151985.0
+    },
+    {
+      "seconds": 6.985607800001162,
+      "objective": 151924.0
+    },
+    {
+      "seconds": 7.158390999997209,
+      "objective": 151863.0
+    },
+    {
+      "seconds": 7.595446100000117,
+      "objective": 151802.0
+    },
+    {
+      "seconds": 7.773455700000341,
+      "objective": 151741.0
+    },
+    {
+      "seconds": 7.959936999999627,
+      "objective": 151680.0
+    },
+    {
+      "seconds": 8.153376099995512,
+      "objective": 151619.0
+    },
+    {
+      "seconds": 8.599950399999216,
+      "objective": 151558.0
+    },
+    {
+      "seconds": 8.781266300000425,
+      "objective": 151497.0
+    },
+    {
+      "seconds": 8.94715819999692,
+      "objective": 151436.0
+    },
+    {
+      "seconds": 10.696286999998847,
+      "objective": 151394.0
+    },
+    {
+      "seconds": 11.085953299996618,
+      "objective": 144014.0
+    },
+    {
+      "seconds": 11.246348200002103,
+      "objective": 141449.0
+    },
+    {
+      "seconds": 11.726749199995538,
+      "objective": 141359.0
+    },
+    {
+      "seconds": 11.952979900001083,
+      "objective": 137099.0
+    },
+    {
+      "seconds": 12.128140399996482,
+      "objective": 137009.0
+    },
+    {
+      "seconds": 12.567874100001063,
+      "objective": 136994.0
+    },
+    {
+      "seconds": 12.764668999996502,
+      "objective": 136904.0
+    },
+    {
+      "seconds": 13.079794299999776,
+      "objective": 136880.0
+    },
+    {
+      "seconds": 13.32839740000054,
+      "objective": 131134.0
+    },
+    {
+      "seconds": 13.831753099999332,
+      "objective": 128794.0
+    },
+    {
+      "seconds": 14.07105159999628,
+      "objective": 126394.0
+    },
+    {
+      "seconds": 14.273651600000449,
+      "objective": 120034.0
+    },
+    {
+      "seconds": 14.74497419999534,
+      "objective": 119134.0
+    },
+    {
+      "seconds": 14.951282000001811,
+      "objective": 118204.0
+    },
+    {
+      "seconds": 15.182440500000666,
+      "objective": 118144.0
+    },
+    {
+      "seconds": 15.671430499998678,
+      "objective": 115144.0
+    },
+    {
+      "seconds": 15.902465499995742,
+      "objective": 107884.0
+    },
+    {
+      "seconds": 16.198424199996225,
+      "objective": 106984.0
+    },
+    {
+      "seconds": 21.2351525999984,
+      "objective": 105634.0
+    },
+    {
+      "seconds": 21.535481899998558,
+      "objective": 105610.0
+    },
+    {
+      "seconds": 23.43667280000227,
+      "objective": 104260.0
+    },
+    {
+      "seconds": 23.929665399999067,
+      "objective": 104236.0
+    },
+    {
+      "seconds": 24.210109300001932,
+      "objective": 104176.0
+    },
+    {
+      "seconds": 24.903658199997153,
+      "objective": 103936.0
+    },
+    {
+      "seconds": 25.151929100000416,
+      "objective": 103876.0
+    },
+    {
+      "seconds": 25.392373199996655,
+      "objective": 103812.0
+    },
+    {
+      "seconds": 26.221279999997932,
+      "objective": 103252.0
+    },
+    {
+      "seconds": 29.583198299995274,
+      "objective": 101746.0
+    }
+  ],
+  "bound": 1247.0,
+  "bound_scope": "full_static_model",
+  "response_stats": "CpSolverResponse summary:\nstatus: FEASIBLE\nobjective: 101746\nbest_bound: 1247\nintegers: 1513\nbooleans: 4528\nconflicts: 3282\nbranches: 537464\npropagations: 11821264\ninteger_propagations: 8419355\nrestarts: 31\nlp_iterations: 108909\nwalltime: 29.9377\nusertime: 29.9377\ndeterministic_time: 11.7456\ngap_integral: 0\nsolution_fingerprint: 0x140cce5804bf6db6\n",
+  "solver_objective": 101746.0,
+  "reserve_options_chosen": [
+    "RB001",
+    "RL001"
+  ],
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "operations_checked": 36,
+    "scope": "schema 5: fixed runs per stage, shared mold pool, one window per block"
+  },
+  "metrics": {
+    "makespan": 4215,
+    "mandatory_makespan": 4215,
+    "schedule_end": 4215,
+    "weighted_tardiness": 5435,
+    "total_tardiness": 1640,
+    "late_orders": 2,
+    "max_tardiness": 1265,
+    "setup_minutes": 482,
+    "maintenance_minutes": 90,
+    "maintenance_count": 3,
+    "idle_minutes": 4830,
+    "safety_shortfall": 2,
+    "activated_shifts": 17,
+    "productive_utilization": 0.31792929292929295,
+    "processing_minutes": 2518,
+    "available_minutes": 7920,
+    "produced_quantity": 120,
+    "shipped_quantity": 108,
+    "end_inventory": {
+      "F_SILVER": 26,
+      "F_BLACK": 6,
+      "R_SILVER": 6,
+      "R_BLACK": 4
+    },
+    "btp_end": {
+      "F_CAST": 8,
+      "R_CAST": 20,
+      "F_HEAT": 20,
+      "R_HEAT": 0,
+      "F_MACH": 6,
+      "R_MACH": 14,
+      "F_SILVER_PAINT": 19,
+      "F_BLACK_PAINT": 8,
+      "R_SILVER_PAINT": 8,
+      "R_BLACK_PAINT": 7
+    },
+    "reserve_production": 2,
+    "reserve_quantity": 36,
+    "surplus_holding": 26,
+    "shift_opening": 0,
+    "reserve_options_chosen": [
+      "RB001",
+      "RL001"
+    ],
+    "objective": 101746
+  },
+  "gap": 0.9877439899357223,
+  "total_seconds": 30.71955980000348
+}

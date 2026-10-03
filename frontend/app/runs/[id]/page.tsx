@@ -15,7 +15,8 @@ import type { ScheduleRunDetail } from "@/lib/types";
 
 const metricLabels: Record<string, string> = {
   objective: "Điểm mục tiêu",
-  makespan: "Thời gian hoàn tất",
+  makespan: "Hoàn tất lô bắt buộc",
+  schedule_end: "Kết thúc lịch (gồm làm trước)",
   weighted_tardiness: "Độ trễ có trọng số",
   setup_minutes: "Thời gian chuẩn bị",
   idle_minutes: "Thời gian nhàn rỗi",
@@ -25,7 +26,7 @@ const metricLabels: Record<string, string> = {
 
 function formatMetric(key: string, value: number) {
   if (key.includes("utilization")) return new Intl.NumberFormat("vi-VN", { style: "percent", maximumFractionDigits: 1 }).format(value);
-  if (["makespan", "setup_minutes", "idle_minutes"].includes(key)) return formatDuration(value);
+  if (["makespan", "schedule_end", "setup_minutes", "idle_minutes"].includes(key)) return formatDuration(value);
   if (key === "safety_shortfall") return `${new Intl.NumberFormat("vi-VN").format(value)} đơn vị`;
   return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 2 }).format(value);
 }

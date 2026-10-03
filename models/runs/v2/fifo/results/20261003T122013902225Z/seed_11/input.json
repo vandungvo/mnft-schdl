@@ -1,0 +1,2264 @@
+{
+  "schema_version": 5,
+  "derived_from": "raw_input.json",
+  "name": "wheel_factory_5stages_2weeks",
+  "origin": "2026-10-05T00:00:00+07:00",
+  "time_unit": "minute",
+  "horizon": 20160,
+  "stages": [
+    "cast",
+    "heat",
+    "machining",
+    "paint",
+    "qc"
+  ],
+  "run_size": {
+    "cast": 16,
+    "heat": 24,
+    "machining": 20,
+    "paint": 25,
+    "qc": 20
+  },
+  "transfer_minutes": {
+    "cast": 10,
+    "heat": 10,
+    "machining": 10,
+    "paint": 120
+  },
+  "checkpoints": [
+    1440,
+    2880,
+    4320,
+    5760,
+    7200,
+    8640,
+    10080,
+    11520,
+    12960,
+    14400,
+    15840,
+    17280,
+    18720,
+    20160
+  ],
+  "machine_initial_state": "INITIAL",
+  "shift_template": {
+    "S1": {
+      "start": 0,
+      "end": 480
+    },
+    "S2": {
+      "start": 480,
+      "end": 960,
+      "breaks": [
+        [
+          720,
+          750
+        ]
+      ]
+    },
+    "S3": {
+      "start": 960,
+      "end": 1440
+    }
+  },
+  "products": {
+    "F_SILVER": {
+      "route": {
+        "cast": "F_CAST",
+        "heat": "F_HEAT",
+        "machining": "F_MACH",
+        "paint": "F_SILVER_PAINT"
+      },
+      "initial_stock": 18,
+      "safety_stock": 24,
+      "stock_cap": 160
+    },
+    "F_BLACK": {
+      "route": {
+        "cast": "F_CAST",
+        "heat": "F_HEAT",
+        "machining": "F_MACH",
+        "paint": "F_BLACK_PAINT"
+      },
+      "initial_stock": 20,
+      "safety_stock": 12,
+      "stock_cap": 90
+    },
+    "R_SILVER": {
+      "route": {
+        "cast": "R_CAST",
+        "heat": "R_HEAT",
+        "machining": "R_MACH",
+        "paint": "R_SILVER_PAINT"
+      },
+      "initial_stock": 30,
+      "safety_stock": 18,
+      "stock_cap": 120
+    },
+    "R_BLACK": {
+      "route": {
+        "cast": "R_CAST",
+        "heat": "R_HEAT",
+        "machining": "R_MACH",
+        "paint": "R_BLACK_PAINT"
+      },
+      "initial_stock": 8,
+      "safety_stock": 12,
+      "stock_cap": 80
+    }
+  },
+  "btp": {
+    "F_CAST": {
+      "initial_stock": 16
+    },
+    "R_CAST": {
+      "initial_stock": 12
+    },
+    "F_HEAT": {
+      "initial_stock": 48
+    },
+    "R_HEAT": {
+      "initial_stock": 40
+    },
+    "F_MACH": {
+      "initial_stock": 12
+    },
+    "R_MACH": {
+      "initial_stock": 10
+    },
+    "F_SILVER_PAINT": {
+      "initial_stock": 6
+    },
+    "F_BLACK_PAINT": {
+      "initial_stock": 4
+    },
+    "R_SILVER_PAINT": {
+      "initial_stock": 5
+    },
+    "R_BLACK_PAINT": {
+      "initial_stock": 3
+    }
+  },
+  "machines": {
+    "CAST_1": {
+      "stage": "cast",
+      "minutes_per_unit": {
+        "F_CAST": 4.0,
+        "R_CAST": 4.0
+      },
+      "fixed_minutes": 10,
+      "mold_change_minutes": 60,
+      "setup": {
+        "INITIAL": {
+          "F_CAST": 60,
+          "R_CAST": 60
+        },
+        "F_CAST": {
+          "F_CAST": 0,
+          "R_CAST": 60
+        },
+        "R_CAST": {
+          "F_CAST": 60,
+          "R_CAST": 0
+        },
+        "CLEAN": {
+          "F_CAST": 30,
+          "R_CAST": 30
+        }
+      },
+      "downtime": [
+        [
+          8640,
+          10080
+        ],
+        [
+          18720,
+          20160
+        ]
+      ]
+    },
+    "CAST_2": {
+      "stage": "cast",
+      "minutes_per_unit": {
+        "F_CAST": 4.5,
+        "R_CAST": 4.5
+      },
+      "fixed_minutes": 10,
+      "mold_change_minutes": 60,
+      "setup": {
+        "INITIAL": {
+          "F_CAST": 60,
+          "R_CAST": 60
+        },
+        "F_CAST": {
+          "F_CAST": 0,
+          "R_CAST": 60
+        },
+        "R_CAST": {
+          "F_CAST": 60,
+          "R_CAST": 0
+        },
+        "CLEAN": {
+          "F_CAST": 30,
+          "R_CAST": 30
+        }
+      },
+      "downtime": [
+        [
+          8640,
+          10080
+        ],
+        [
+          18720,
+          20160
+        ]
+      ]
+    },
+    "HT_1": {
+      "stage": "heat",
+      "calendar": "continuous",
+      "minutes_per_unit": {
+        "F_HEAT": 0,
+        "R_HEAT": 0
+      },
+      "fixed_minutes": 480,
+      "setup": {
+        "INITIAL": {
+          "F_HEAT": 0,
+          "R_HEAT": 0
+        },
+        "F_HEAT": {
+          "F_HEAT": 0,
+          "R_HEAT": 0
+        },
+        "R_HEAT": {
+          "F_HEAT": 0,
+          "R_HEAT": 0
+        }
+      },
+      "downtime": [
+        [
+          8640,
+          10080
+        ],
+        [
+          18720,
+          20160
+        ]
+      ]
+    },
+    "HT_2": {
+      "stage": "heat",
+      "calendar": "continuous",
+      "minutes_per_unit": {
+        "F_HEAT": 0,
+        "R_HEAT": 0
+      },
+      "fixed_minutes": 480,
+      "setup": {
+        "INITIAL": {
+          "F_HEAT": 0,
+          "R_HEAT": 0
+        },
+        "F_HEAT": {
+          "F_HEAT": 0,
+          "R_HEAT": 0
+        },
+        "R_HEAT": {
+          "F_HEAT": 0,
+          "R_HEAT": 0
+        }
+      },
+      "downtime": [
+        [
+          8640,
+          10080
+        ],
+        [
+          12000,
+          12480
+        ],
+        [
+          18720,
+          20160
+        ]
+      ]
+    },
+    "CNC_1": {
+      "stage": "machining",
+      "minutes_per_unit": {
+        "F_MACH": 6.0,
+        "R_MACH": 6.0
+      },
+      "fixed_minutes": 28,
+      "setup": {
+        "INITIAL": {
+          "F_MACH": 10,
+          "R_MACH": 10
+        },
+        "F_MACH": {
+          "F_MACH": 0,
+          "R_MACH": 18
+        },
+        "R_MACH": {
+          "F_MACH": 18,
+          "R_MACH": 0
+        }
+      },
+      "downtime": [
+        [
+          8640,
+          10080
+        ],
+        [
+          18720,
+          20160
+        ]
+      ]
+    },
+    "CNC_2": {
+      "stage": "machining",
+      "minutes_per_unit": {
+        "F_MACH": 7.0,
+        "R_MACH": 7.0
+      },
+      "fixed_minutes": 28,
+      "downtime": [
+        [
+          4800,
+          5040
+        ],
+        [
+          8640,
+          10080
+        ],
+        [
+          18720,
+          20160
+        ]
+      ],
+      "setup": {
+        "INITIAL": {
+          "F_MACH": 10,
+          "R_MACH": 10
+        },
+        "F_MACH": {
+          "F_MACH": 0,
+          "R_MACH": 18
+        },
+        "R_MACH": {
+          "F_MACH": 18,
+          "R_MACH": 0
+        }
+      }
+    },
+    "PAINT_1": {
+      "stage": "paint",
+      "minutes_per_unit": {
+        "F_SILVER_PAINT": 1.0,
+        "F_BLACK_PAINT": 1.0,
+        "R_SILVER_PAINT": 1.0,
+        "R_BLACK_PAINT": 1.0
+      },
+      "fixed_minutes": 15,
+      "setup": {
+        "INITIAL": {
+          "F_SILVER_PAINT": 10,
+          "F_BLACK_PAINT": 10,
+          "R_SILVER_PAINT": 10,
+          "R_BLACK_PAINT": 10
+        },
+        "F_SILVER_PAINT": {
+          "F_SILVER_PAINT": 0,
+          "F_BLACK_PAINT": 12,
+          "R_SILVER_PAINT": 0,
+          "R_BLACK_PAINT": 12
+        },
+        "F_BLACK_PAINT": {
+          "F_SILVER_PAINT": 24,
+          "F_BLACK_PAINT": 0,
+          "R_SILVER_PAINT": 24,
+          "R_BLACK_PAINT": 0
+        },
+        "R_SILVER_PAINT": {
+          "F_SILVER_PAINT": 0,
+          "F_BLACK_PAINT": 12,
+          "R_SILVER_PAINT": 0,
+          "R_BLACK_PAINT": 12
+        },
+        "R_BLACK_PAINT": {
+          "F_SILVER_PAINT": 24,
+          "F_BLACK_PAINT": 0,
+          "R_SILVER_PAINT": 24,
+          "R_BLACK_PAINT": 0
+        }
+      },
+      "downtime": [
+        [
+          8640,
+          10080
+        ],
+        [
+          18720,
+          20160
+        ]
+      ]
+    },
+    "QC_1": {
+      "stage": "qc",
+      "minutes_per_unit": {
+        "F_SILVER": 1.0,
+        "F_BLACK": 1.0,
+        "R_SILVER": 1.0,
+        "R_BLACK": 1.0
+      },
+      "fixed_minutes": 15,
+      "setup": {
+        "INITIAL": {
+          "F_SILVER": 10,
+          "F_BLACK": 10,
+          "R_SILVER": 10,
+          "R_BLACK": 10
+        },
+        "F_SILVER": {
+          "F_SILVER": 0,
+          "F_BLACK": 4,
+          "R_SILVER": 4,
+          "R_BLACK": 4
+        },
+        "F_BLACK": {
+          "F_SILVER": 4,
+          "F_BLACK": 0,
+          "R_SILVER": 4,
+          "R_BLACK": 4
+        },
+        "R_SILVER": {
+          "F_SILVER": 4,
+          "F_BLACK": 4,
+          "R_SILVER": 0,
+          "R_BLACK": 4
+        },
+        "R_BLACK": {
+          "F_SILVER": 4,
+          "F_BLACK": 4,
+          "R_SILVER": 4,
+          "R_BLACK": 0
+        }
+      },
+      "downtime": [
+        [
+          8640,
+          10080
+        ],
+        [
+          18720,
+          20160
+        ]
+      ]
+    }
+  },
+  "molds": {
+    "MOLD_F1": {
+      "item": "F_CAST",
+      "cavities": 1,
+      "limit_cycles": 48,
+      "initial_cycles": 32,
+      "maintenance_minutes": 30,
+      "after_maintenance": "CLEAN"
+    },
+    "MOLD_F2": {
+      "item": "F_CAST",
+      "cavities": 1,
+      "limit_cycles": 48,
+      "initial_cycles": 0,
+      "maintenance_minutes": 30,
+      "after_maintenance": "CLEAN"
+    },
+    "MOLD_R1": {
+      "item": "R_CAST",
+      "cavities": 1,
+      "limit_cycles": 40,
+      "initial_cycles": 8,
+      "maintenance_minutes": 30,
+      "after_maintenance": "CLEAN"
+    },
+    "MOLD_R2": {
+      "item": "R_CAST",
+      "cavities": 1,
+      "limit_cycles": 40,
+      "initial_cycles": 32,
+      "maintenance_minutes": 30,
+      "after_maintenance": "CLEAN"
+    }
+  },
+  "orders": [
+    {
+      "id": "O001",
+      "product": "F_SILVER",
+      "quantity": 56,
+      "due": 2160,
+      "priority": 4,
+      "release": 2160,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L001": 20,
+        "L002": 20,
+        "L003": 16
+      }
+    },
+    {
+      "id": "O002",
+      "product": "F_BLACK",
+      "quantity": 28,
+      "due": 2400,
+      "priority": 2,
+      "release": 2400,
+      "initial_allocated": 8,
+      "lot_allocations": {
+        "L020": 20
+      }
+    },
+    {
+      "id": "O003",
+      "product": "R_SILVER",
+      "quantity": 40,
+      "due": 2400,
+      "priority": 2,
+      "release": 2400,
+      "initial_allocated": 12,
+      "lot_allocations": {
+        "L028": 20,
+        "L029": 8
+      }
+    },
+    {
+      "id": "O004",
+      "product": "R_BLACK",
+      "quantity": 28,
+      "due": 2400,
+      "priority": 1,
+      "release": 2400,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L041": 20,
+        "L042": 8
+      }
+    },
+    {
+      "id": "O005",
+      "product": "F_SILVER",
+      "quantity": 48,
+      "due": 5280,
+      "priority": 3,
+      "release": 5280,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L003": 4,
+        "L004": 20,
+        "L005": 20,
+        "L006": 4
+      }
+    },
+    {
+      "id": "O006",
+      "product": "F_BLACK",
+      "quantity": 24,
+      "due": 5280,
+      "priority": 2,
+      "release": 5280,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L021": 20,
+        "L022": 4
+      }
+    },
+    {
+      "id": "O007",
+      "product": "R_SILVER",
+      "quantity": 44,
+      "due": 5280,
+      "priority": 2,
+      "release": 5280,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L029": 12,
+        "L030": 20,
+        "L031": 12
+      }
+    },
+    {
+      "id": "O008",
+      "product": "R_BLACK",
+      "quantity": 24,
+      "due": 5280,
+      "priority": 1,
+      "release": 5280,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L042": 12,
+        "L043": 12
+      }
+    },
+    {
+      "id": "O009",
+      "product": "F_SILVER",
+      "quantity": 76,
+      "due": 8160,
+      "priority": 3,
+      "release": 8160,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L006": 16,
+        "L007": 20,
+        "L008": 20,
+        "L009": 20
+      }
+    },
+    {
+      "id": "O010",
+      "product": "F_BLACK",
+      "quantity": 36,
+      "due": 8160,
+      "priority": 2,
+      "release": 8160,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L022": 16,
+        "L023": 20
+      }
+    },
+    {
+      "id": "O011",
+      "product": "R_SILVER",
+      "quantity": 52,
+      "due": 8160,
+      "priority": 2,
+      "release": 8160,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L031": 8,
+        "L032": 20,
+        "L033": 20,
+        "L034": 4
+      }
+    },
+    {
+      "id": "O012",
+      "product": "R_BLACK",
+      "quantity": 32,
+      "due": 8160,
+      "priority": 1,
+      "release": 8160,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L043": 8,
+        "L044": 20,
+        "L045": 4
+      }
+    },
+    {
+      "id": "O013",
+      "product": "F_SILVER",
+      "quantity": 56,
+      "due": 12480,
+      "priority": 3,
+      "release": 12480,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L010": 20,
+        "L011": 20,
+        "L012": 16
+      }
+    },
+    {
+      "id": "O014",
+      "product": "F_BLACK",
+      "quantity": 24,
+      "due": 12480,
+      "priority": 2,
+      "release": 12480,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L024": 20,
+        "L025": 4
+      }
+    },
+    {
+      "id": "O015",
+      "product": "R_SILVER",
+      "quantity": 40,
+      "due": 12240,
+      "priority": 4,
+      "release": 12240,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L034": 16,
+        "L035": 20,
+        "L036": 4
+      }
+    },
+    {
+      "id": "O016",
+      "product": "R_BLACK",
+      "quantity": 28,
+      "due": 12480,
+      "priority": 1,
+      "release": 12480,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L045": 16,
+        "L046": 12
+      }
+    },
+    {
+      "id": "O017",
+      "product": "F_SILVER",
+      "quantity": 56,
+      "due": 15360,
+      "priority": 3,
+      "release": 15360,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L012": 4,
+        "L013": 20,
+        "L014": 20,
+        "L015": 12
+      }
+    },
+    {
+      "id": "O018",
+      "product": "F_BLACK",
+      "quantity": 28,
+      "due": 15360,
+      "priority": 2,
+      "release": 15360,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L025": 16,
+        "L026": 12
+      }
+    },
+    {
+      "id": "O019",
+      "product": "R_SILVER",
+      "quantity": 40,
+      "due": 15360,
+      "priority": 2,
+      "release": 15360,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L036": 16,
+        "L037": 20,
+        "L038": 4
+      }
+    },
+    {
+      "id": "O020",
+      "product": "R_BLACK",
+      "quantity": 32,
+      "due": 15360,
+      "priority": 1,
+      "release": 15360,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L046": 8,
+        "L047": 20,
+        "L048": 4
+      }
+    },
+    {
+      "id": "O021",
+      "product": "F_SILVER",
+      "quantity": 80,
+      "due": 18240,
+      "priority": 3,
+      "release": 18240,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L015": 8,
+        "L016": 20,
+        "L017": 20,
+        "L018": 20,
+        "L019": 12
+      }
+    },
+    {
+      "id": "O022",
+      "product": "F_BLACK",
+      "quantity": 28,
+      "due": 18240,
+      "priority": 2,
+      "release": 18240,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L026": 8,
+        "L027": 20
+      }
+    },
+    {
+      "id": "O023",
+      "product": "R_SILVER",
+      "quantity": 44,
+      "due": 18240,
+      "priority": 2,
+      "release": 18240,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L038": 16,
+        "L039": 20,
+        "L040": 8
+      }
+    },
+    {
+      "id": "O024",
+      "product": "R_BLACK",
+      "quantity": 36,
+      "due": 18240,
+      "priority": 1,
+      "release": 18240,
+      "initial_allocated": 0,
+      "lot_allocations": {
+        "L048": 16,
+        "L049": 20
+      }
+    }
+  ],
+  "long_term_orders": [
+    {
+      "id": "LT001",
+      "product": "F_SILVER",
+      "quantity": 160,
+      "due": 23040
+    },
+    {
+      "id": "LT002",
+      "product": "F_BLACK",
+      "quantity": 60,
+      "due": 25920
+    },
+    {
+      "id": "LT003",
+      "product": "R_SILVER",
+      "quantity": 100,
+      "due": 25920
+    },
+    {
+      "id": "LT004",
+      "product": "R_BLACK",
+      "quantity": 40,
+      "due": 28800
+    }
+  ],
+  "weights": {
+    "weighted_tardiness": 15,
+    "safety_shortfall": 20,
+    "makespan": 1,
+    "nonproductive_minutes": 3,
+    "setup_minutes": 1,
+    "maintenance_minutes": 1,
+    "reserve_units": 2,
+    "surplus_holding": 1,
+    "btp_end_units": 1
+  },
+  "objective_tiers": {
+    "tier1": [
+      "weighted_tardiness",
+      "safety_shortfall"
+    ],
+    "scale": 1000000
+  },
+  "reserve_options": {
+    "RL001": {
+      "pull_ahead_for": "F_SILVER"
+    },
+    "RL002": {
+      "pull_ahead_for": "F_SILVER"
+    },
+    "RL003": {
+      "pull_ahead_for": "F_BLACK"
+    },
+    "RB001": {
+      "pull_ahead_for": "R_SILVER"
+    },
+    "RB002": {
+      "pull_ahead_for": "R_BLACK"
+    }
+  },
+  "runs": [
+    {
+      "id": "F_CAST-01",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-02",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-03",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-04",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-05",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-06",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-07",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-08",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-09",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-10",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-11",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-12",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-13",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-14",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-15",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-16",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-17",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-18",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-19",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-20",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-21",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-22",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-23",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-24",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-25",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-26",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-27",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-28",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-29",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-30",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "F_CAST-31",
+      "stage": "cast",
+      "item": "F_CAST"
+    },
+    {
+      "id": "R_CAST-01",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-02",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-03",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-04",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-05",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-06",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-07",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-08",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-09",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-10",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-11",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-12",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-13",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-14",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-15",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-16",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-17",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-18",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-19",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-20",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-21",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-22",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-23",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-24",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-25",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-26",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-27",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "R_CAST-28",
+      "stage": "cast",
+      "item": "R_CAST"
+    },
+    {
+      "id": "F_HEAT-01",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-02",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-03",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-04",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-05",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-06",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-07",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-08",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-09",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-10",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-11",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-12",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-13",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-14",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-15",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-16",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-17",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-18",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-19",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-20",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "F_HEAT-21",
+      "stage": "heat",
+      "item": "F_HEAT"
+    },
+    {
+      "id": "R_HEAT-01",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-02",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-03",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-04",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-05",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-06",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-07",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-08",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-09",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-10",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-11",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-12",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-13",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-14",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-15",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-16",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-17",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-18",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "R_HEAT-19",
+      "stage": "heat",
+      "item": "R_HEAT"
+    },
+    {
+      "id": "F_MACH-01",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-02",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-03",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-04",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-05",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-06",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-07",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-08",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-09",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-10",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-11",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-12",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-13",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-14",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-15",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-16",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-17",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-18",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-19",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-20",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-21",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-22",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-23",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-24",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-25",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-26",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "F_MACH-27",
+      "stage": "machining",
+      "item": "F_MACH"
+    },
+    {
+      "id": "R_MACH-01",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-02",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-03",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-04",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-05",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-06",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-07",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-08",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-09",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-10",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-11",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-12",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-13",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-14",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-15",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-16",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-17",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-18",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-19",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-20",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-21",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-22",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-23",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "R_MACH-24",
+      "stage": "machining",
+      "item": "R_MACH"
+    },
+    {
+      "id": "F_BLACK_PAINT-01",
+      "stage": "paint",
+      "item": "F_BLACK_PAINT"
+    },
+    {
+      "id": "F_BLACK_PAINT-02",
+      "stage": "paint",
+      "item": "F_BLACK_PAINT"
+    },
+    {
+      "id": "F_BLACK_PAINT-03",
+      "stage": "paint",
+      "item": "F_BLACK_PAINT"
+    },
+    {
+      "id": "F_BLACK_PAINT-04",
+      "stage": "paint",
+      "item": "F_BLACK_PAINT"
+    },
+    {
+      "id": "F_BLACK_PAINT-05",
+      "stage": "paint",
+      "item": "F_BLACK_PAINT"
+    },
+    {
+      "id": "F_BLACK_PAINT-06",
+      "stage": "paint",
+      "item": "F_BLACK_PAINT"
+    },
+    {
+      "id": "F_BLACK_PAINT-07",
+      "stage": "paint",
+      "item": "F_BLACK_PAINT"
+    },
+    {
+      "id": "F_SILVER_PAINT-01",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT"
+    },
+    {
+      "id": "F_SILVER_PAINT-02",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT"
+    },
+    {
+      "id": "F_SILVER_PAINT-03",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT"
+    },
+    {
+      "id": "F_SILVER_PAINT-04",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT"
+    },
+    {
+      "id": "F_SILVER_PAINT-05",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT"
+    },
+    {
+      "id": "F_SILVER_PAINT-06",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT"
+    },
+    {
+      "id": "F_SILVER_PAINT-07",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT"
+    },
+    {
+      "id": "F_SILVER_PAINT-08",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT"
+    },
+    {
+      "id": "F_SILVER_PAINT-09",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT"
+    },
+    {
+      "id": "F_SILVER_PAINT-10",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT"
+    },
+    {
+      "id": "F_SILVER_PAINT-11",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT"
+    },
+    {
+      "id": "F_SILVER_PAINT-12",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT"
+    },
+    {
+      "id": "F_SILVER_PAINT-13",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT"
+    },
+    {
+      "id": "F_SILVER_PAINT-14",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT"
+    },
+    {
+      "id": "F_SILVER_PAINT-15",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT"
+    },
+    {
+      "id": "R_BLACK_PAINT-01",
+      "stage": "paint",
+      "item": "R_BLACK_PAINT"
+    },
+    {
+      "id": "R_BLACK_PAINT-02",
+      "stage": "paint",
+      "item": "R_BLACK_PAINT"
+    },
+    {
+      "id": "R_BLACK_PAINT-03",
+      "stage": "paint",
+      "item": "R_BLACK_PAINT"
+    },
+    {
+      "id": "R_BLACK_PAINT-04",
+      "stage": "paint",
+      "item": "R_BLACK_PAINT"
+    },
+    {
+      "id": "R_BLACK_PAINT-05",
+      "stage": "paint",
+      "item": "R_BLACK_PAINT"
+    },
+    {
+      "id": "R_BLACK_PAINT-06",
+      "stage": "paint",
+      "item": "R_BLACK_PAINT"
+    },
+    {
+      "id": "R_BLACK_PAINT-07",
+      "stage": "paint",
+      "item": "R_BLACK_PAINT"
+    },
+    {
+      "id": "R_BLACK_PAINT-08",
+      "stage": "paint",
+      "item": "R_BLACK_PAINT"
+    },
+    {
+      "id": "R_SILVER_PAINT-01",
+      "stage": "paint",
+      "item": "R_SILVER_PAINT"
+    },
+    {
+      "id": "R_SILVER_PAINT-02",
+      "stage": "paint",
+      "item": "R_SILVER_PAINT"
+    },
+    {
+      "id": "R_SILVER_PAINT-03",
+      "stage": "paint",
+      "item": "R_SILVER_PAINT"
+    },
+    {
+      "id": "R_SILVER_PAINT-04",
+      "stage": "paint",
+      "item": "R_SILVER_PAINT"
+    },
+    {
+      "id": "R_SILVER_PAINT-05",
+      "stage": "paint",
+      "item": "R_SILVER_PAINT"
+    },
+    {
+      "id": "R_SILVER_PAINT-06",
+      "stage": "paint",
+      "item": "R_SILVER_PAINT"
+    },
+    {
+      "id": "R_SILVER_PAINT-07",
+      "stage": "paint",
+      "item": "R_SILVER_PAINT"
+    },
+    {
+      "id": "R_SILVER_PAINT-08",
+      "stage": "paint",
+      "item": "R_SILVER_PAINT"
+    },
+    {
+      "id": "R_SILVER_PAINT-09",
+      "stage": "paint",
+      "item": "R_SILVER_PAINT"
+    },
+    {
+      "id": "R_SILVER_PAINT-10",
+      "stage": "paint",
+      "item": "R_SILVER_PAINT"
+    },
+    {
+      "id": "R_SILVER_PAINT-11",
+      "stage": "paint",
+      "item": "R_SILVER_PAINT"
+    },
+    {
+      "id": "L001",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L002",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L003",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L004",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L005",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L006",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L007",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L008",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L009",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L010",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L011",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L012",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L013",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L014",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L015",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L016",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L017",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L018",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L019",
+      "stage": "qc",
+      "item": "F_SILVER"
+    },
+    {
+      "id": "L020",
+      "stage": "qc",
+      "item": "F_BLACK"
+    },
+    {
+      "id": "L021",
+      "stage": "qc",
+      "item": "F_BLACK"
+    },
+    {
+      "id": "L022",
+      "stage": "qc",
+      "item": "F_BLACK"
+    },
+    {
+      "id": "L023",
+      "stage": "qc",
+      "item": "F_BLACK"
+    },
+    {
+      "id": "L024",
+      "stage": "qc",
+      "item": "F_BLACK"
+    },
+    {
+      "id": "L025",
+      "stage": "qc",
+      "item": "F_BLACK"
+    },
+    {
+      "id": "L026",
+      "stage": "qc",
+      "item": "F_BLACK"
+    },
+    {
+      "id": "L027",
+      "stage": "qc",
+      "item": "F_BLACK"
+    },
+    {
+      "id": "L028",
+      "stage": "qc",
+      "item": "R_SILVER"
+    },
+    {
+      "id": "L029",
+      "stage": "qc",
+      "item": "R_SILVER"
+    },
+    {
+      "id": "L030",
+      "stage": "qc",
+      "item": "R_SILVER"
+    },
+    {
+      "id": "L031",
+      "stage": "qc",
+      "item": "R_SILVER"
+    },
+    {
+      "id": "L032",
+      "stage": "qc",
+      "item": "R_SILVER"
+    },
+    {
+      "id": "L033",
+      "stage": "qc",
+      "item": "R_SILVER"
+    },
+    {
+      "id": "L034",
+      "stage": "qc",
+      "item": "R_SILVER"
+    },
+    {
+      "id": "L035",
+      "stage": "qc",
+      "item": "R_SILVER"
+    },
+    {
+      "id": "L036",
+      "stage": "qc",
+      "item": "R_SILVER"
+    },
+    {
+      "id": "L037",
+      "stage": "qc",
+      "item": "R_SILVER"
+    },
+    {
+      "id": "L038",
+      "stage": "qc",
+      "item": "R_SILVER"
+    },
+    {
+      "id": "L039",
+      "stage": "qc",
+      "item": "R_SILVER"
+    },
+    {
+      "id": "L040",
+      "stage": "qc",
+      "item": "R_SILVER"
+    },
+    {
+      "id": "L041",
+      "stage": "qc",
+      "item": "R_BLACK"
+    },
+    {
+      "id": "L042",
+      "stage": "qc",
+      "item": "R_BLACK"
+    },
+    {
+      "id": "L043",
+      "stage": "qc",
+      "item": "R_BLACK"
+    },
+    {
+      "id": "L044",
+      "stage": "qc",
+      "item": "R_BLACK"
+    },
+    {
+      "id": "L045",
+      "stage": "qc",
+      "item": "R_BLACK"
+    },
+    {
+      "id": "L046",
+      "stage": "qc",
+      "item": "R_BLACK"
+    },
+    {
+      "id": "L047",
+      "stage": "qc",
+      "item": "R_BLACK"
+    },
+    {
+      "id": "L048",
+      "stage": "qc",
+      "item": "R_BLACK"
+    },
+    {
+      "id": "L049",
+      "stage": "qc",
+      "item": "R_BLACK"
+    },
+    {
+      "id": "F_CAST-RL001-1",
+      "stage": "cast",
+      "item": "F_CAST",
+      "reserve_option": "RL001"
+    },
+    {
+      "id": "F_CAST-RL001-2",
+      "stage": "cast",
+      "item": "F_CAST",
+      "reserve_option": "RL001"
+    },
+    {
+      "id": "F_CAST-RL001-3",
+      "stage": "cast",
+      "item": "F_CAST",
+      "reserve_option": "RL001"
+    },
+    {
+      "id": "F_HEAT-RL001-1",
+      "stage": "heat",
+      "item": "F_HEAT",
+      "reserve_option": "RL001"
+    },
+    {
+      "id": "F_HEAT-RL001-2",
+      "stage": "heat",
+      "item": "F_HEAT",
+      "reserve_option": "RL001"
+    },
+    {
+      "id": "F_MACH-RL001-1",
+      "stage": "machining",
+      "item": "F_MACH",
+      "reserve_option": "RL001"
+    },
+    {
+      "id": "F_MACH-RL001-2",
+      "stage": "machining",
+      "item": "F_MACH",
+      "reserve_option": "RL001"
+    },
+    {
+      "id": "F_SILVER_PAINT-RL001-1",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT",
+      "reserve_option": "RL001"
+    },
+    {
+      "id": "RL001",
+      "stage": "qc",
+      "item": "F_SILVER",
+      "reserve_option": "RL001"
+    },
+    {
+      "id": "F_CAST-RL002-1",
+      "stage": "cast",
+      "item": "F_CAST",
+      "reserve_option": "RL002"
+    },
+    {
+      "id": "F_CAST-RL002-2",
+      "stage": "cast",
+      "item": "F_CAST",
+      "reserve_option": "RL002"
+    },
+    {
+      "id": "F_CAST-RL002-3",
+      "stage": "cast",
+      "item": "F_CAST",
+      "reserve_option": "RL002"
+    },
+    {
+      "id": "F_HEAT-RL002-1",
+      "stage": "heat",
+      "item": "F_HEAT",
+      "reserve_option": "RL002"
+    },
+    {
+      "id": "F_HEAT-RL002-2",
+      "stage": "heat",
+      "item": "F_HEAT",
+      "reserve_option": "RL002"
+    },
+    {
+      "id": "F_MACH-RL002-1",
+      "stage": "machining",
+      "item": "F_MACH",
+      "reserve_option": "RL002"
+    },
+    {
+      "id": "F_MACH-RL002-2",
+      "stage": "machining",
+      "item": "F_MACH",
+      "reserve_option": "RL002"
+    },
+    {
+      "id": "F_SILVER_PAINT-RL002-1",
+      "stage": "paint",
+      "item": "F_SILVER_PAINT",
+      "reserve_option": "RL002"
+    },
+    {
+      "id": "RL002",
+      "stage": "qc",
+      "item": "F_SILVER",
+      "reserve_option": "RL002"
+    },
+    {
+      "id": "F_CAST-RL003-1",
+      "stage": "cast",
+      "item": "F_CAST",
+      "reserve_option": "RL003"
+    },
+    {
+      "id": "F_CAST-RL003-2",
+      "stage": "cast",
+      "item": "F_CAST",
+      "reserve_option": "RL003"
+    },
+    {
+      "id": "F_CAST-RL003-3",
+      "stage": "cast",
+      "item": "F_CAST",
+      "reserve_option": "RL003"
+    },
+    {
+      "id": "F_HEAT-RL003-1",
+      "stage": "heat",
+      "item": "F_HEAT",
+      "reserve_option": "RL003"
+    },
+    {
+      "id": "F_HEAT-RL003-2",
+      "stage": "heat",
+      "item": "F_HEAT",
+      "reserve_option": "RL003"
+    },
+    {
+      "id": "F_MACH-RL003-1",
+      "stage": "machining",
+      "item": "F_MACH",
+      "reserve_option": "RL003"
+    },
+    {
+      "id": "F_MACH-RL003-2",
+      "stage": "machining",
+      "item": "F_MACH",
+      "reserve_option": "RL003"
+    },
+    {
+      "id": "F_BLACK_PAINT-RL003-1",
+      "stage": "paint",
+      "item": "F_BLACK_PAINT",
+      "reserve_option": "RL003"
+    },
+    {
+      "id": "RL003",
+      "stage": "qc",
+      "item": "F_BLACK",
+      "reserve_option": "RL003"
+    },
+    {
+      "id": "R_CAST-RB001",
+      "stage": "cast",
+      "item": "R_CAST",
+      "reserve_option": "RB001"
+    },
+    {
+      "id": "R_CAST-RB002",
+      "stage": "cast",
+      "item": "R_CAST",
+      "reserve_option": "RB002"
+    }
+  ]
+}

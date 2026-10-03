@@ -1,0 +1,15 @@
+{
+  "run_id": "20261003T125023020843Z",
+  "input_sha256": "2df0591662b22157f904dc480f1bce0adcf6f1e5a442b10f5fae7e63a212452b",
+  "kind": "long",
+  "seconds": 7200,
+  "patience": 600,
+  "seeds": [
+    11,
+    29,
+    47
+  ],
+  "cp_hours": 8,
+  "cp_workers": 8,
+  "execution": "sequential; heuristics 1 worker, stop on no improvement; CP-SAT hinted with the best schedule found"
+}

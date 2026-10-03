@@ -1,7 +1,16 @@
 from __future__ import annotations
 
 from collections import Counter, defaultdict
-from .instance import BTP_STAGES, duration, eligible, setup, STAGES
+from .instance import BTP_STAGES, duration, eligible, pull_ahead_cap, setup, stage_item, STAGES
+
+
+def _items(data):
+    """A08: combined id -> dict lookup covering mandatory/optional lots AND
+    single-stage optional_btp_runs, so schedule rows for either kind can be
+    resolved the same way (`r["lot"]` doubles as a generic item id)."""
+    out = {l["id"]: l for l in data["lots"]}
+    out.update({r["id"]: r for r in data.get("optional_btp_runs", [])})
+    return out
 
 
 def _btp_violations(data, schedule):
@@ -14,13 +23,13 @@ def _btp_violations(data, schedule):
     block-start W_o (setup start if any, else processing start). Same-instant
     events are merged (completion counted before consumption nets out).
     """
-    lots = {l["id"]: l for l in data["lots"]}
+    items = _items(data)
     routing = data["btp_routing"]
     transfer_minutes = data.get("transfer_minutes", 0)
     events = []
     for r in schedule:
-        product = lots[r["lot"]]["product"]
-        quantity = lots[r["lot"]]["quantity"]
+        product = items[r["lot"]]["product"]
+        quantity = items[r["lot"]]["quantity"]
         if r["stage"] in BTP_STAGES:
             code = routing[product][r["stage"]]
             events.append((r["end"] + transfer_minutes, 0, code, quantity))
@@ -52,7 +61,11 @@ def inventory_and_deliveries(data, schedule):
                            "tardiness": max(0, completed-order["due"]), "priority": order["priority"]})
     events = []
     for lot in data["lots"]:
-        events.append((qc[lot["id"]], 0, lot["product"], lot["quantity"], lot["id"]))
+        # A08: an optional lot the schedule never chose to run has no QC row --
+        # it contributes nothing to finished-goods inventory, same as if it did
+        # not exist for this particular schedule.
+        if lot["id"] in qc:
+            events.append((qc[lot["id"]], 0, lot["product"], lot["quantity"], lot["id"]))
     for d in deliveries:
         events.append((d["time"], 1, d["product"], -d["quantity"], d["order"]))
     inventory = dict(data["initial_inventory"])
@@ -69,8 +82,19 @@ def inventory_and_deliveries(data, schedule):
                 values[e["product"]] += e["delta"]
         for p, value in values.items():
             daily.append({"time": checkpoint, "product": p, "inventory": value,
-                          "shortfall": max(0, data["safety_stock"][p]-value)})
+                          "shortfall": max(0, data["safety_stock"][p]-value),
+                          "surplus": max(0, value-data["safety_stock"][p])})
     return deliveries, ledger, daily
+
+
+def _chosen_reserve_items(data, schedule):
+    """A08: which optional lot/run ids this SCHEDULE actually chose, derived
+    purely from which rows are present -- never trusted from solver metadata,
+    matching the file's "reconstruct feasibility from timestamps" discipline."""
+    present = {(r["lot"], r["stage"]) for r in schedule}
+    lots = [l for l in data["lots"] if l.get("optional") and all((l["id"], s) in present for s in STAGES)]
+    runs = [r for r in data.get("optional_btp_runs", []) if (r["id"], r["stage"]) in present]
+    return lots, runs
 
 
 def evaluate(data, schedule):
@@ -88,11 +112,22 @@ def evaluate(data, schedule):
             shifts.append({"machine": mid, "shift": shift["id"], "available": available,
                            "processing": processing, "setup": setup_time, "maintenance": maintenance,
                            "idle": available-processing-setup_time-maintenance,
-                           "utilization": processing/available if available else None})
+                           "utilization": processing/available if available else None,
+                           "closable": bool(shift.get("closable"))})
     available = sum(s["available"] for s in shifts)
     processing = sum(s["processing"] for s in shifts)
+    reserve_lots, reserve_runs = _chosen_reserve_items(data, schedule)
+    qc_lot_ids = {r["lot"] for r in schedule if r["stage"] == "qc"}
+    mandatory_ids = {l["id"] for l in data["lots"] if not l.get("optional")}
+    mandatory_makespan = max(r["end"] for r in schedule if r["stage"] == "qc" and r["lot"] in mandatory_ids)
     metrics = {
-        "makespan": max(r["end"] for r in schedule),
+        # Mục 4.3.1: mandatory_makespan = latest QC completion of a mandatory lot;
+        # it is the objective term. `makespan` is kept as its alias for existing
+        # consumers (weights key, backend schema, CSVs). schedule_end also counts
+        # reserve (pull-ahead) work so a stretched schedule is never hidden.
+        "makespan": mandatory_makespan,
+        "mandatory_makespan": mandatory_makespan,
+        "schedule_end": max(r["end"] for r in schedule),
         "weighted_tardiness": sum(d["priority"]*d["tardiness"] for d in deliveries),
         "total_tardiness": sum(d["tardiness"] for d in deliveries),
         "late_orders": sum(d["tardiness"] > 0 for d in deliveries),
@@ -104,10 +139,21 @@ def evaluate(data, schedule):
         "safety_shortfall": sum(d["shortfall"] for d in daily),
         "activated_shifts": len(shifts), "productive_utilization": processing/available if available else None,
         "processing_minutes": processing, "available_minutes": available,
-        "produced_quantity": sum(l["quantity"] for l in data["lots"]),
+        # A08: a reserve lot the schedule never chose contributes nothing --
+        # only count lots that actually reached QC (mandatory ones always do).
+        "produced_quantity": sum(l["quantity"] for l in data["lots"] if l["id"] in qc_lot_ids),
         "shipped_quantity": sum(d["quantity"] for d in deliveries),
         "end_inventory": {p: data["initial_inventory"][p] + sum(e["delta"] for e in ledger if e["product"] == p)
-                          for p in data["products"]}}
+                          for p in data["products"]},
+        # 4.3.2/4.3.3 economic_capacity_cost terms (D02: báo tách bắt buộc vs dự
+        # trữ). Zero for any dataset without a reserve policy or closable
+        # shifts, so pre-A08 objectives are unaffected.
+        "reserve_production": len(reserve_lots)+len(reserve_runs),
+        "reserve_quantity": sum(i["quantity"] for i in reserve_lots + reserve_runs),
+        "surplus_holding": sum(d["surplus"] for d in daily),
+        "shift_opening": sum(1 for s in shifts if s["closable"]),
+        "reserve_lots_chosen": [l["id"] for l in reserve_lots],
+        "reserve_btp_runs_chosen": [r["id"] for r in reserve_runs]}
     metrics["objective"] = sum(data["weights"][k]*metrics[k] for k in data["weights"])
     return metrics, {"deliveries": deliveries, "inventory_events": ledger, "daily_inventory": daily, "shifts": shifts}
 
@@ -115,11 +161,25 @@ def evaluate(data, schedule):
 def validate(data, schedule):
     """Reconstruct feasibility from timestamps/input; never trust a solver's flags."""
     errors = []
-    lots = {l["id"]: l for l in data["lots"]}
-    expected = {(lid, st) for lid in lots for st in STAGES}
+    lots = _items(data)
+    run_ids = {r["id"] for r in data.get("optional_btp_runs", [])}
+    mandatory_ids = {l["id"] for l in data["lots"] if not l.get("optional")}
+    optional_lot_ids = {l["id"] for l in data["lots"] if l.get("optional")}
     counts = Counter((r["lot"], r["stage"]) for r in schedule)
-    if set(counts) != expected or any(v != 1 for v in counts.values()):
+    present_ids = {r["lot"] for r in schedule}
+    # Mandatory lots: exactly one row per stage, always. Optional lots (A08):
+    # all-4-or-nothing -- a lot that shows up for some but not every stage is a
+    # contradiction (chosen in some stages, not chosen in others). Optional BTP
+    # runs: at most one row for their single declared stage.
+    expected_mandatory = {(lid, st) for lid in mandatory_ids for st in STAGES}
+    bad = set(counts) - expected_mandatory - {(lid, st) for lid in optional_lot_ids for st in STAGES} \
+        - {(r["id"], r["stage"]) for r in data.get("optional_btp_runs", [])}
+    if bad or any(v != 1 for v in counts.values()) or not expected_mandatory <= set(counts):
         return {"valid": False, "errors": ["Missing, duplicate or unexpected operations."]}
+    for lid in optional_lot_ids:
+        stages_present = {st for st in STAGES if (lid, st) in counts}
+        if stages_present and stages_present != set(STAGES):
+            errors.append(f"{lid}: optional lot scheduled for some stages but not all")
     for r in schedule:
         lot = lots[r["lot"]]
         mid = r["machine"]
@@ -134,7 +194,9 @@ def validate(data, schedule):
         setup_start = r["start"]-r["setup_minutes"]
         # Same-lot cross-stage precedence is no longer required (A10): stages only
         # connect through BTP stock, checked separately in _btp_violations below.
-        if k == 0 and r["block_start"] < lot["release"]:
+        # A run's declared stage is its own first/only stage regardless of where
+        # that stage sits in STAGES, so it always gets the release check too.
+        if (k == 0 or r["lot"] in run_ids) and r["block_start"] < lot["release"]:
             errors.append(prefix + ": release violation")
         if setup_start-r["block_start"] != r["maintenance_minutes"]:
             errors.append(prefix + ": inconsistent prep timestamps")
@@ -167,11 +229,12 @@ def validate(data, schedule):
                 errors.append(f"{mid}/{r['lot']}: wrong maintenance")
             if r.get("mold") != (mold["id"] if mold else None):
                 errors.append(f"{mid}: wrong mold")
-            if r["setup_minutes"] != setup(data, mid, previous, lot["product"]):
+            item = stage_item(data, lot, machine["stage"])
+            if r["setup_minutes"] != setup(data, mid, previous, item):
                 errors.append(f"{mid}/{r['lot']}: wrong setup")
             if r["cycles_after"] != used:
                 errors.append(f"{mid}: wrong cycle counter")
-            previous, last_end = lot["product"], r["end"]
+            previous, last_end = item, r["end"]
     allocated = defaultdict(int)
     allocated_initial = defaultdict(int)
     for order in data["orders"]:
@@ -185,11 +248,25 @@ def validate(data, schedule):
     for p, qty in allocated_initial.items():
         if qty > data["initial_inventory"][p]:
             errors.append("Initial stock allocated twice")
-    for lid, lot in lots.items():
+    # A02/R04's max_surplus bounds finished-LOT surplus (technical + reserve);
+    # optional_btp_runs are a separate concept (semi-finished capacity-fill,
+    # bounded by max_surplus_btp/R12 via _btp_violations instead) and must not
+    # be folded into this count.
+    finished_lots = {l["id"]: l for l in data["lots"]}
+    for lid, lot in finished_lots.items():
         if lot["quantity"] < data["minimum_lot"] or allocated[lid] > lot["quantity"]:
             errors.append("Lot size/allocation violation")
-    if sum(l["quantity"]-allocated[lid] for lid,l in lots.items()) > data["max_surplus"]:
+    # Only reserve lots this SCHEDULE actually ran count (unchosen candidates cost nothing).
+    reserve_lots, reserve_runs = _chosen_reserve_items(data, schedule)
+    mandatory_surplus = sum(l["quantity"]-allocated[lid] for lid,l in finished_lots.items() if not l.get("optional"))
+    if mandatory_surplus + sum(l["quantity"] for l in reserve_lots) > data["max_surplus"]:
         errors.append("Excess production limit exceeded")
+    cap = pull_ahead_cap(data)
+    if cap is not None:
+        for p, limit in cap.items():
+            ahead = sum(i["quantity"] for i in reserve_lots + reserve_runs if i["product"] == p)
+            if ahead > limit:
+                errors.append(f"{p}: reserve production {ahead} exceeds long-term demand cap {limit}")
     deliveries, ledger, _ = inventory_and_deliveries(data, schedule)
     if any(e["inventory"] < 0 for e in ledger):
         errors.append("Negative physical inventory")

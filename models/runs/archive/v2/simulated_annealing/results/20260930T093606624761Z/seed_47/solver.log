@@ -1,0 +1,213 @@
+{
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.002942599996458739,
+      "objective": 200017904,
+      "evaluations": 1
+    },
+    {
+      "seconds": 0.014850399995339103,
+      "objective": 200017756,
+      "evaluations": 5
+    },
+    {
+      "seconds": 0.023402799997711554,
+      "objective": 120022265,
+      "evaluations": 7
+    },
+    {
+      "seconds": 0.03694649999670219,
+      "objective": 120021063,
+      "evaluations": 10
+    },
+    {
+      "seconds": 0.047011800001200754,
+      "objective": 80020901,
+      "evaluations": 12
+    },
+    {
+      "seconds": 0.0568379999967874,
+      "objective": 80019725,
+      "evaluations": 14
+    },
+    {
+      "seconds": 0.32687060000171186,
+      "objective": 80018872,
+      "evaluations": 61
+    },
+    {
+      "seconds": 0.41092969999590423,
+      "objective": 80018820,
+      "evaluations": 75
+    },
+    {
+      "seconds": 0.49604099999851314,
+      "objective": 40023644,
+      "evaluations": 89
+    },
+    {
+      "seconds": 2.0335933999958797,
+      "objective": 40023561,
+      "evaluations": 329
+    },
+    {
+      "seconds": 2.1396745999954874,
+      "objective": 40023501,
+      "evaluations": 352
+    },
+    {
+      "seconds": 2.1487959000005503,
+      "objective": 40023417,
+      "evaluations": 354
+    },
+    {
+      "seconds": 2.241802500000631,
+      "objective": 40022101,
+      "evaluations": 375
+    },
+    {
+      "seconds": 2.317471399997885,
+      "objective": 40022084,
+      "evaluations": 392
+    },
+    {
+      "seconds": 2.368411199997354,
+      "objective": 40020734,
+      "evaluations": 403
+    },
+    {
+      "seconds": 2.420459100001608,
+      "objective": 40020586,
+      "evaluations": 415
+    },
+    {
+      "seconds": 2.441649899999902,
+      "objective": 40020502,
+      "evaluations": 419
+    },
+    {
+      "seconds": 2.4516653999962728,
+      "objective": 40020472,
+      "evaluations": 421
+    },
+    {
+      "seconds": 2.5427425999951083,
+      "objective": 40020465,
+      "evaluations": 439
+    },
+    {
+      "seconds": 2.6249266999948304,
+      "objective": 40020430,
+      "evaluations": 455
+    },
+    {
+      "seconds": 2.6403108000013162,
+      "objective": 40020352,
+      "evaluations": 458
+    },
+    {
+      "seconds": 3.6420751999976346,
+      "objective": 40018316,
+      "evaluations": 658
+    },
+    {
+      "seconds": 3.6491432999973767,
+      "objective": 40018268,
+      "evaluations": 659
+    },
+    {
+      "seconds": 3.7721974999949452,
+      "objective": 40018052,
+      "evaluations": 676
+    },
+    {
+      "seconds": 4.4338008999984595,
+      "objective": 40018049,
+      "evaluations": 792
+    },
+    {
+      "seconds": 4.449066000001039,
+      "objective": 40017971,
+      "evaluations": 795
+    },
+    {
+      "seconds": 4.459536399997887,
+      "objective": 40017949,
+      "evaluations": 797
+    },
+    {
+      "seconds": 8.676688299994566,
+      "objective": 40017913,
+      "evaluations": 1609
+    },
+    {
+      "seconds": 9.276535799996054,
+      "objective": 40017862,
+      "evaluations": 1732
+    },
+    {
+      "seconds": 9.566091100001358,
+      "objective": 40017786,
+      "evaluations": 1793
+    },
+    {
+      "seconds": 9.9092834999974,
+      "objective": 40017750,
+      "evaluations": 1862
+    },
+    {
+      "seconds": 10.278272999996261,
+      "objective": 40017710,
+      "evaluations": 1935
+    },
+    {
+      "seconds": 11.4197439999989,
+      "objective": 40017656,
+      "evaluations": 2163
+    },
+    {
+      "seconds": 13.032897199998843,
+      "objective": 40017616,
+      "evaluations": 2478
+    },
+    {
+      "seconds": 14.074801499999012,
+      "objective": 40017478,
+      "evaluations": 2684
+    },
+    {
+      "seconds": 14.348647099999653,
+      "objective": 40017436,
+      "evaluations": 2739
+    },
+    {
+      "seconds": 16.396841499998118,
+      "objective": 40017218,
+      "evaluations": 3138
+    },
+    {
+      "seconds": 16.65601059999608,
+      "objective": 40017200,
+      "evaluations": 3187
+    },
+    {
+      "seconds": 25.754141500001424,
+      "objective": 40017145,
+      "source": "compact"
+    }
+  ],
+  "evaluations": 4908,
+  "bound": null,
+  "genes": {
+    "delay_max": 960,
+    "options": [
+      "RB001",
+      "RL001",
+      "RL002"
+    ]
+  },
+  "iterations": 4907,
+  "accepted_moves": 2093,
+  "initial_temperature_fraction": 0.04
+}

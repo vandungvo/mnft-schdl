@@ -1,0 +1,260 @@
+{
+  "method": "genetic_algorithm",
+  "seed": 47,
+  "run_id": "20261003T103727176988Z",
+  "input_sha256": "4db39f8b7eb07c10fa857bb34c2ab0a2ac4a75e4b3c5af4fec607bf45aa84112",
+  "code_sha256": "68a4758109628edf6f70005d4f8171327f7f1ee302c86885ebaa8d31095fd0eb",
+  "budget_seconds": 120.0,
+  "algorithm_seconds": 110.81994899999972,
+  "environment": {
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "ortools": "9.15.6755",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 23 Model 104 Stepping 1, AuthenticAMD",
+    "workers": 1
+  },
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.19033260000014707,
+      "objective": 439305100565,
+      "evaluations": 1
+    },
+    {
+      "seconds": 0.5710242999998627,
+      "objective": 317040098853,
+      "evaluations": 3
+    },
+    {
+      "seconds": 3.9725870000002033,
+      "objective": 316110098835,
+      "evaluations": 19
+    },
+    {
+      "seconds": 7.47548420000021,
+      "objective": 311490100681,
+      "evaluations": 36
+    },
+    {
+      "seconds": 9.270437000000129,
+      "objective": 301980097907,
+      "evaluations": 45
+    },
+    {
+      "seconds": 10.054574799999955,
+      "objective": 282540098979,
+      "evaluations": 49
+    },
+    {
+      "seconds": 12.928347099999883,
+      "objective": 258390105535,
+      "evaluations": 63
+    },
+    {
+      "seconds": 15.129746300000079,
+      "objective": 250770097793,
+      "evaluations": 74
+    },
+    {
+      "seconds": 15.94142359999978,
+      "objective": 248955102673,
+      "evaluations": 78
+    },
+    {
+      "seconds": 17.438563499999873,
+      "objective": 201330103356,
+      "evaluations": 85
+    },
+    {
+      "seconds": 17.83879509999997,
+      "objective": 190020102132,
+      "evaluations": 87
+    },
+    {
+      "seconds": 25.346317999999883,
+      "objective": 190020100756,
+      "evaluations": 121
+    },
+    {
+      "seconds": 25.74328239999977,
+      "objective": 190020100669,
+      "evaluations": 123
+    },
+    {
+      "seconds": 25.957849800000076,
+      "objective": 188820103708,
+      "evaluations": 124
+    },
+    {
+      "seconds": 27.0271716999996,
+      "objective": 147195102597,
+      "evaluations": 129
+    },
+    {
+      "seconds": 29.79922970000007,
+      "objective": 127575105114,
+      "evaluations": 142
+    },
+    {
+      "seconds": 31.075101999999788,
+      "objective": 127575105111,
+      "evaluations": 148
+    },
+    {
+      "seconds": 33.51661799999965,
+      "objective": 126915108598,
+      "evaluations": 159
+    },
+    {
+      "seconds": 36.76232559999971,
+      "objective": 109935103503,
+      "evaluations": 174
+    },
+    {
+      "seconds": 39.23821560000033,
+      "objective": 105135103672,
+      "evaluations": 186
+    },
+    {
+      "seconds": 41.68922889999976,
+      "objective": 97575103684,
+      "evaluations": 198
+    },
+    {
+      "seconds": 45.02912219999962,
+      "objective": 97575102342,
+      "evaluations": 214
+    },
+    {
+      "seconds": 45.41132649999963,
+      "objective": 97575100705,
+      "evaluations": 216
+    },
+    {
+      "seconds": 46.84515470000042,
+      "objective": 96795099567,
+      "evaluations": 223
+    },
+    {
+      "seconds": 55.47170629999982,
+      "objective": 82575101169,
+      "evaluations": 256
+    },
+    {
+      "seconds": 61.033216200000425,
+      "objective": 82575101094,
+      "evaluations": 284
+    },
+    {
+      "seconds": 64.76583349999964,
+      "objective": 77895102490,
+      "evaluations": 302
+    },
+    {
+      "seconds": 71.17331819999981,
+      "objective": 77895102454,
+      "evaluations": 332
+    },
+    {
+      "seconds": 78.99921059999997,
+      "objective": 77895100938,
+      "evaluations": 369
+    },
+    {
+      "seconds": 89.12575360000028,
+      "objective": 77895100911,
+      "evaluations": 418
+    },
+    {
+      "seconds": 89.91708279999966,
+      "objective": 77895100061,
+      "evaluations": 422
+    },
+    {
+      "seconds": 95.61591299999964,
+      "objective": 77895099775,
+      "evaluations": 452
+    },
+    {
+      "seconds": 110.81986770000003,
+      "objective": 77895095725,
+      "source": "compact"
+    }
+  ],
+  "evaluations": 486,
+  "bound": null,
+  "genes": {
+    "delay_max": 960,
+    "options": [
+      "RB001",
+      "RB002",
+      "RL001",
+      "RL002",
+      "RL003"
+    ]
+  },
+  "generations": 40,
+  "population_size": 14,
+  "elite": 2,
+  "selection": "tournament_3",
+  "crossover": "uniform_random_keys",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "operations_checked": 240,
+    "scope": "schema 5: fixed runs per stage, shared mold pool, one window per block"
+  },
+  "metrics": {
+    "makespan": 11218,
+    "mandatory_makespan": 11218,
+    "schedule_end": 11218,
+    "weighted_tardiness": 5193,
+    "total_tardiness": 2702,
+    "late_orders": 2,
+    "max_tardiness": 2491,
+    "setup_minutes": 1560,
+    "maintenance_minutes": 690,
+    "maintenance_count": 23,
+    "idle_minutes": 24887,
+    "safety_shortfall": 0,
+    "activated_shifts": 92,
+    "productive_utilization": 0.36963995354239254,
+    "processing_minutes": 15913,
+    "available_minutes": 43050,
+    "produced_quantity": 980,
+    "shipped_quantity": 980,
+    "end_inventory": {
+      "F_SILVER": 48,
+      "F_BLACK": 12,
+      "R_SILVER": 30,
+      "R_BLACK": 20
+    },
+    "btp_end": {
+      "F_CAST": 8,
+      "R_CAST": 0,
+      "F_HEAT": 12,
+      "R_HEAT": 0,
+      "F_MACH": 2,
+      "R_MACH": 13,
+      "F_SILVER_PAINT": 1,
+      "F_BLACK_PAINT": 19,
+      "R_SILVER_PAINT": 20,
+      "R_BLACK_PAINT": 23
+    },
+    "reserve_production": 1,
+    "reserve_quantity": 20,
+    "surplus_holding": 708,
+    "shift_opening": 0,
+    "reserve_options_chosen": [
+      "RL001"
+    ],
+    "nonproductive_minutes": 27137,
+    "reserve_units": 20,
+    "btp_end_units": 98,
+    "objective_tier1": 77895,
+    "objective_tier2": 95725,
+    "objective": 77895095725
+  },
+  "gap": null,
+  "total_seconds": 111.18721199999982
+}

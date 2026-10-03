@@ -53,8 +53,9 @@ Lượt của cùng một lô **không có quan hệ thứ tự trực tiếp** 
 
 | Ký hiệu | Ý nghĩa |
 |---|---|
-| p_om | Thời lượng gia công lượt o trên máy m = ⌈fixed[k,prod,m] + q_o·unit_time[k,prod,m]⌉ (mục 3.4 của yêu cầu); là hằng số sau khi chọn máy |
-| setup[m,a,c] | Setup có hướng trên máy m từ trạng thái a sang sản phẩm c; a có thể là sản phẩm hoặc CLEAN |
+| item_o | Mã công đoạn k của lượt o làm ra: mã BTP theo ánh xạ A09 ở đúc/CNC/sơn, thành phẩm prod(b) ở QC (mục 3.4 của yêu cầu) |
+| p_om | Thời lượng gia công lượt o trên máy m = ⌈fixed[k,item_o,m] + q_o·unit_time[k,item_o,m]⌉ (mục 3.4 của yêu cầu); là hằng số sau khi chọn máy |
+| setup[m,a,c] | Setup có hướng trên máy m từ trạng thái a sang mã công đoạn c; a là mã công đoạn của lượt trước hoặc trạng thái như CLEAN |
 | σ0_m | Trạng thái máy m đầu kỳ |
 | A_ms | Thời gian khả dụng của ca s trên máy m sau khi trừ nghỉ và downtime đã biết |
 | BL_m | Tập khoảng chặn cố định của máy m (nghỉ, downtime đã biết) |
@@ -174,7 +175,7 @@ Với mỗi máy m, các cung a_{nn'm} lập thành **một chu trình duy nhấ
 
 ```
 Circuit_m( a_{nn'm} ; nút n bỏ qua khi:  n = lượt o có x_om = 0,  hoặc  n = MT_gr có ρ_grm = 0 )
-state(n) = prod(o) nếu n là lượt o;  state(n) = CLEAN nếu n là suất bảo trì
+state(n) = item_o nếu n là lượt o;  state(n) = CLEAN nếu n là suất bảo trì
 σ_{nm} = Σ_{n'} a_{n'nm} · setup[m, state(n'), state(n)]       (n' = 0 nghĩa là trạng thái đầu kỳ σ0_m)
 S_n − σ_{nm} = start(U_n) = W_n     (setup sát ngay trước gia công)
 W_n ≥ rel_b

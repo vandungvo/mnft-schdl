@@ -1,0 +1,5 @@
+﻿order,product,time,quantity,due,tardiness,priority
+O001,F_SILVER,2871,44,2400,471,4
+O002,F_BLACK,2698,20,3600,0,2
+O003,R_SILVER,2737,20,3840,0,1
+O004,R_BLACK,2659,24,4200,0,2

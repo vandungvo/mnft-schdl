@@ -105,6 +105,18 @@ def cross_product_shared_code():
     d["btp_codes"] = d["btp_codes"] + [shared]
     d["btp_routing"]["F_SILVER"]["cast"] = shared
     d["btp_routing"]["F_BLACK"]["cast"] = shared
+    # schema_version 4: the casting machine is keyed by what it casts, so the two
+    # colour-specific cast items collapse into the one shared blank (no changeover
+    # between them -- they are physically the same part).
+    old = {"F_SILVER_CAST", "F_BLACK_CAST"}
+    cast = d["machines"]["CAST_F"]
+    rate = cast["minutes_per_unit"]["F_SILVER_CAST"]
+    cast["minutes_per_unit"] = {shared: rate}
+    rows = {(shared if prev in old else prev): row for prev, row in cast["setup"].items()}
+    cast["setup"] = {prev: {shared: 0 if prev == shared else row["F_SILVER_CAST"]} for prev, row in rows.items()}
+    if cast["initial_product"] in old:
+        cast["initial_product"] = shared
+    d["btp_codes"] = [c for c in d["btp_codes"] if c not in old]
     return d
 
 
@@ -265,3 +277,40 @@ class Contract(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class StageItemKeying(unittest.TestCase):
+    """schema_version 4: machine speed/setup/eligibility are keyed by what the
+    stage produces (BTP code at cast/cnc/paint, finished product at qc)."""
+
+    def test_product_keyed_btp_machine_is_rejected(self):
+        from models.common.instance import check_input
+        d = build()
+        cast = d["machines"]["CAST_F"]
+        cast["minutes_per_unit"]["F_SILVER"] = cast["minutes_per_unit"].pop("F_SILVER_CAST")
+        with self.assertRaisesRegex(AssertionError, "not cast-stage items"):
+            check_input(d)
+
+    def test_routing_that_merges_downstream_is_rejected(self):
+        from models.common.instance import check_input
+        d = build()
+        # Different cast blanks feeding ONE cnc code: a cnc run could not tell
+        # which cast pool it draws from.
+        d["btp_routing"]["F_BLACK"]["cnc"] = "F_SILVER_CNC"
+        with self.assertRaisesRegex(AssertionError, "ambiguous input for cnc"):
+            check_input(d)
+
+    def test_shared_blank_has_no_colour_changeover_before_paint(self):
+        import json
+        from pathlib import Path
+        path = Path(__file__).resolve().parents[2] / "dataset" / "wheel-factory-small" / "model_input.json"
+        d = json.loads(path.read_text(encoding="utf-8"))
+        # This dataset is schema_version 5 (runs of fixed size per stage, route
+        # under `products`), which the schema-4 engine cannot load; read the
+        # route and setup matrix directly instead of via instance.py helpers.
+        silver, black = d["products"]["F_SILVER"]["route"], d["products"]["F_BLACK"]["route"]
+        for stage, machine in (("cast", "CAST_1"), ("machining", "CNC_1")):
+            self.assertEqual(silver[stage], black[stage])
+            item = silver[stage]
+            self.assertEqual(d["machines"][machine]["setup"][item][item], 0)
+        self.assertGreater(d["machines"]["PAINT_1"]["setup"][silver["paint"]][black["paint"]], 0)

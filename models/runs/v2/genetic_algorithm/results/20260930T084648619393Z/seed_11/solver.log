@@ -1,0 +1,132 @@
+{
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.002834499995515216,
+      "objective": 17574,
+      "evaluations": 1
+    },
+    {
+      "seconds": 0.005621600001177285,
+      "objective": 14724,
+      "evaluations": 2
+    },
+    {
+      "seconds": 0.008415500000410248,
+      "objective": 14654,
+      "evaluations": 3
+    },
+    {
+      "seconds": 0.016715300000214484,
+      "objective": 14612,
+      "evaluations": 6
+    },
+    {
+      "seconds": 0.049789799995778594,
+      "objective": 14582,
+      "evaluations": 18
+    },
+    {
+      "seconds": 0.09138879999954952,
+      "objective": 14564,
+      "evaluations": 33
+    },
+    {
+      "seconds": 0.16854659999808064,
+      "objective": 14516,
+      "evaluations": 61
+    },
+    {
+      "seconds": 0.22737549999874318,
+      "objective": 14510,
+      "evaluations": 82
+    },
+    {
+      "seconds": 0.3257644999976037,
+      "objective": 14462,
+      "evaluations": 117
+    },
+    {
+      "seconds": 0.3927403999987291,
+      "objective": 14450,
+      "evaluations": 141
+    },
+    {
+      "seconds": 0.46277009999903385,
+      "objective": 14446,
+      "evaluations": 166
+    },
+    {
+      "seconds": 0.5076349999944796,
+      "objective": 14420,
+      "evaluations": 182
+    },
+    {
+      "seconds": 0.5780032999973628,
+      "objective": 14414,
+      "evaluations": 207
+    },
+    {
+      "seconds": 0.7638065999999526,
+      "objective": 14390,
+      "evaluations": 268
+    },
+    {
+      "seconds": 1.4555059999984223,
+      "objective": 14368,
+      "evaluations": 505
+    },
+    {
+      "seconds": 1.6957966999980272,
+      "objective": 14340,
+      "evaluations": 591
+    },
+    {
+      "seconds": 17.9214187999969,
+      "objective": 13186,
+      "evaluations": 6263
+    },
+    {
+      "seconds": 18.007017600000836,
+      "objective": 13140,
+      "evaluations": 6294
+    },
+    {
+      "seconds": 18.09178989999782,
+      "objective": 13128,
+      "evaluations": 6325
+    },
+    {
+      "seconds": 18.102604100000462,
+      "objective": 13116,
+      "evaluations": 6329
+    },
+    {
+      "seconds": 18.223813199998403,
+      "objective": 13096,
+      "evaluations": 6374
+    },
+    {
+      "seconds": 18.374069299999974,
+      "objective": 13036,
+      "evaluations": 6430
+    },
+    {
+      "seconds": 20.554693599995517,
+      "objective": 13012,
+      "evaluations": 7221
+    },
+    {
+      "seconds": 27.04637129999901,
+      "objective": 11549,
+      "evaluations": 9609
+    }
+  ],
+  "evaluations": 10676,
+  "bound": null,
+  "generations": 889,
+  "population_size": 14,
+  "elite": 2,
+  "selection": "tournament_3",
+  "crossover": "uniform_random_keys"
+}

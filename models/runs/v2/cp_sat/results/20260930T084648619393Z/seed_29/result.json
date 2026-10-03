@@ -1,0 +1,218 @@
+{
+  "method": "cp_sat",
+  "seed": 29,
+  "run_id": "20260930T084648619393Z",
+  "input_sha256": "3dbbcade341488a765d53181de5321dce61f1aed1f8fab00791b9bfd9e76b884",
+  "code_sha256": "f1d5424837322154121b85823fce394970fb1fbe6c565e2ea69b25201db97240",
+  "budget_seconds": 30.0,
+  "algorithm_seconds": 30.01202419999754,
+  "environment": {
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "ortools": "9.15.6755",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 23 Model 104 Stepping 1, AuthenticAMD",
+    "workers": 1
+  },
+  "status": "FEASIBLE",
+  "build_seconds": 0.06509669999650214,
+  "solve_seconds": 29.9420694,
+  "history": [
+    {
+      "seconds": 2.650830799997493,
+      "objective": 49577.0
+    },
+    {
+      "seconds": 2.8032452999977977,
+      "objective": 49517.0
+    },
+    {
+      "seconds": 2.957141099999717,
+      "objective": 49457.0
+    },
+    {
+      "seconds": 3.359783100000641,
+      "objective": 49397.0
+    },
+    {
+      "seconds": 3.5897205000001122,
+      "objective": 49337.0
+    },
+    {
+      "seconds": 3.7512559999959194,
+      "objective": 49277.0
+    },
+    {
+      "seconds": 3.9486044000004767,
+      "objective": 49217.0
+    },
+    {
+      "seconds": 4.367261399995186,
+      "objective": 49157.0
+    },
+    {
+      "seconds": 4.577490299998317,
+      "objective": 48272.0
+    },
+    {
+      "seconds": 4.83055030000105,
+      "objective": 48002.0
+    },
+    {
+      "seconds": 5.2151364000019385,
+      "objective": 47998.0
+    },
+    {
+      "seconds": 5.380824200001371,
+      "objective": 47602.0
+    },
+    {
+      "seconds": 5.534410000000207,
+      "objective": 47601.0
+    },
+    {
+      "seconds": 5.686155899995356,
+      "objective": 47562.0
+    },
+    {
+      "seconds": 6.123954499998945,
+      "objective": 47523.0
+    },
+    {
+      "seconds": 6.272701399997459,
+      "objective": 47522.0
+    },
+    {
+      "seconds": 6.443261699998402,
+      "objective": 47484.0
+    },
+    {
+      "seconds": 6.890181899994786,
+      "objective": 46794.0
+    },
+    {
+      "seconds": 7.099408299996867,
+      "objective": 46563.0
+    },
+    {
+      "seconds": 7.287471299998288,
+      "objective": 46525.0
+    },
+    {
+      "seconds": 7.499653699996998,
+      "objective": 46524.0
+    },
+    {
+      "seconds": 7.970944900000177,
+      "objective": 46163.0
+    },
+    {
+      "seconds": 8.195433199995023,
+      "objective": 46123.0
+    },
+    {
+      "seconds": 8.417826899996726,
+      "objective": 46084.0
+    },
+    {
+      "seconds": 8.88649269999587,
+      "objective": 46083.0
+    },
+    {
+      "seconds": 9.100882699996873,
+      "objective": 46036.0
+    },
+    {
+      "seconds": 10.969718899999862,
+      "objective": 45052.0
+    },
+    {
+      "seconds": 11.20803789999627,
+      "objective": 45028.0
+    },
+    {
+      "seconds": 19.288558000000194,
+      "objective": 44723.0
+    },
+    {
+      "seconds": 20.02191849999508,
+      "objective": 44705.0
+    },
+    {
+      "seconds": 20.260139300000446,
+      "objective": 44585.0
+    },
+    {
+      "seconds": 20.817714699995122,
+      "objective": 44583.0
+    },
+    {
+      "seconds": 29.380096499997308,
+      "objective": 44498.0
+    }
+  ],
+  "bound": 1249.0,
+  "bound_scope": "full_static_model",
+  "response_stats": "CpSolverResponse summary:\nstatus: FEASIBLE\nobjective: 44498\nbest_bound: 1249\nintegers: 1513\nbooleans: 4670\nconflicts: 3251\nbranches: 544249\npropagations: 11837172\ninteger_propagations: 8650676\nrestarts: 27\nlp_iterations: 99288\nwalltime: 29.9421\nusertime: 29.9421\ndeterministic_time: 11.8792\ngap_integral: 0\nsolution_fingerprint: 0xae9b6cf9869451a7\n",
+  "solver_objective": 44498.0,
+  "reserve_options_chosen": [
+    "RB001",
+    "RL001",
+    "RL002"
+  ],
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "operations_checked": 42,
+    "scope": "schema 5: fixed runs per stage, shared mold pool, one window per block"
+  },
+  "metrics": {
+    "makespan": 2871,
+    "mandatory_makespan": 2871,
+    "schedule_end": 3438,
+    "weighted_tardiness": 1884,
+    "total_tardiness": 471,
+    "late_orders": 1,
+    "max_tardiness": 471,
+    "setup_minutes": 644,
+    "maintenance_minutes": 120,
+    "maintenance_count": 4,
+    "idle_minutes": 3763,
+    "safety_shortfall": 4,
+    "activated_shifts": 16,
+    "productive_utilization": 0.39153225806451614,
+    "processing_minutes": 2913,
+    "available_minutes": 7440,
+    "produced_quantity": 140,
+    "shipped_quantity": 108,
+    "end_inventory": {
+      "F_SILVER": 26,
+      "F_BLACK": 26,
+      "R_SILVER": 6,
+      "R_BLACK": 4
+    },
+    "btp_end": {
+      "F_CAST": 16,
+      "R_CAST": 20,
+      "F_HEAT": 24,
+      "R_HEAT": 0,
+      "F_MACH": 1,
+      "R_MACH": 14,
+      "F_SILVER_PAINT": 19,
+      "F_BLACK_PAINT": 13,
+      "R_SILVER_PAINT": 8,
+      "R_BLACK_PAINT": 7
+    },
+    "reserve_production": 3,
+    "reserve_quantity": 56,
+    "surplus_holding": 60,
+    "shift_opening": 0,
+    "reserve_options_chosen": [
+      "RB001",
+      "RL001",
+      "RL002"
+    ],
+    "objective": 44498
+  },
+  "gap": 0.971931322756079,
+  "total_seconds": 30.043671899999026
+}

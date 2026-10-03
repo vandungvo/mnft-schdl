@@ -1,0 +1,268 @@
+{
+  "method": "genetic_algorithm",
+  "seed": 29,
+  "run_id": "20261003T112807725978Z",
+  "input_sha256": "6f7debc1146b9b126f658aedce7a70fb23d0007ad33eebbd808d15a1c2fdfd08",
+  "code_sha256": "68a4758109628edf6f70005d4f8171327f7f1ee302c86885ebaa8d31095fd0eb",
+  "budget_seconds": 120.0,
+  "algorithm_seconds": 112.33330560000013,
+  "environment": {
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "ortools": "9.15.6755",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 23 Model 104 Stepping 1, AuthenticAMD",
+    "workers": 1
+  },
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.17863709999983257,
+      "objective": 455475108523,
+      "evaluations": 1
+    },
+    {
+      "seconds": 0.39991829999962647,
+      "objective": 324330117112,
+      "evaluations": 2
+    },
+    {
+      "seconds": 4.580982899999981,
+      "objective": 314745112296,
+      "evaluations": 23
+    },
+    {
+      "seconds": 8.033756099999664,
+      "objective": 277605119316,
+      "evaluations": 40
+    },
+    {
+      "seconds": 12.761935499999709,
+      "objective": 228930116217,
+      "evaluations": 63
+    },
+    {
+      "seconds": 14.203333899999961,
+      "objective": 206010117248,
+      "evaluations": 70
+    },
+    {
+      "seconds": 15.832196899999872,
+      "objective": 171090113553,
+      "evaluations": 78
+    },
+    {
+      "seconds": 24.565964800000074,
+      "objective": 159780119196,
+      "evaluations": 119
+    },
+    {
+      "seconds": 28.669358099999954,
+      "objective": 159780113541,
+      "evaluations": 139
+    },
+    {
+      "seconds": 28.895730399999593,
+      "objective": 154875119171,
+      "evaluations": 140
+    },
+    {
+      "seconds": 30.71844079999937,
+      "objective": 154875116724,
+      "evaluations": 149
+    },
+    {
+      "seconds": 35.76755049999974,
+      "objective": 154875109683,
+      "evaluations": 174
+    },
+    {
+      "seconds": 42.74373190000006,
+      "objective": 133875115173,
+      "evaluations": 207
+    },
+    {
+      "seconds": 48.875911999999516,
+      "objective": 133875115149,
+      "evaluations": 239
+    },
+    {
+      "seconds": 50.54555600000003,
+      "objective": 133875115077,
+      "evaluations": 248
+    },
+    {
+      "seconds": 52.68552909999926,
+      "objective": 133875115065,
+      "evaluations": 259
+    },
+    {
+      "seconds": 53.248849300000074,
+      "objective": 133875115021,
+      "evaluations": 262
+    },
+    {
+      "seconds": 55.329339199999595,
+      "objective": 127455115057,
+      "evaluations": 273
+    },
+    {
+      "seconds": 58.6519202999998,
+      "objective": 127455115021,
+      "evaluations": 290
+    },
+    {
+      "seconds": 59.2251583999996,
+      "objective": 127455113955,
+      "evaluations": 293
+    },
+    {
+      "seconds": 60.393191000000115,
+      "objective": 126405115057,
+      "evaluations": 299
+    },
+    {
+      "seconds": 62.091948299999785,
+      "objective": 108225112685,
+      "evaluations": 308
+    },
+    {
+      "seconds": 65.75754210000014,
+      "objective": 105525112645,
+      "evaluations": 327
+    },
+    {
+      "seconds": 65.95343739999953,
+      "objective": 104925118073,
+      "evaluations": 328
+    },
+    {
+      "seconds": 66.72971419999976,
+      "objective": 99675113899,
+      "evaluations": 332
+    },
+    {
+      "seconds": 69.76686259999951,
+      "objective": 99675112657,
+      "evaluations": 348
+    },
+    {
+      "seconds": 70.55392709999978,
+      "objective": 98625118341,
+      "evaluations": 352
+    },
+    {
+      "seconds": 73.61691969999993,
+      "objective": 98625117015,
+      "evaluations": 368
+    },
+    {
+      "seconds": 75.16035089999968,
+      "objective": 97845114234,
+      "evaluations": 376
+    },
+    {
+      "seconds": 81.91969569999947,
+      "objective": 84945119440,
+      "evaluations": 410
+    },
+    {
+      "seconds": 89.53776859999925,
+      "objective": 76785116560,
+      "evaluations": 445
+    },
+    {
+      "seconds": 92.52111909999985,
+      "objective": 76125117942,
+      "evaluations": 458
+    },
+    {
+      "seconds": 98.86091020000003,
+      "objective": 75585121836,
+      "evaluations": 486
+    },
+    {
+      "seconds": 112.33322689999932,
+      "objective": 75585110836,
+      "source": "compact"
+    }
+  ],
+  "evaluations": 501,
+  "bound": null,
+  "genes": {
+    "delay_max": 960,
+    "options": [
+      "RB001",
+      "RB002",
+      "RL001",
+      "RL002",
+      "RL003"
+    ]
+  },
+  "generations": 41,
+  "population_size": 14,
+  "elite": 2,
+  "selection": "tournament_3",
+  "crossover": "uniform_random_keys",
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "operations_checked": 259,
+    "scope": "schema 5: fixed runs per stage, shared mold pool, one window per block"
+  },
+  "metrics": {
+    "makespan": 13758,
+    "mandatory_makespan": 13758,
+    "schedule_end": 13758,
+    "weighted_tardiness": 5039,
+    "total_tardiness": 3039,
+    "late_orders": 2,
+    "max_tardiness": 2000,
+    "setup_minutes": 1880,
+    "maintenance_minutes": 750,
+    "maintenance_count": 25,
+    "idle_minutes": 28316,
+    "safety_shortfall": 0,
+    "activated_shifts": 103,
+    "productive_utilization": 0.3580999792574155,
+    "processing_minutes": 17264,
+    "available_minutes": 48210,
+    "produced_quantity": 1000,
+    "shipped_quantity": 980,
+    "end_inventory": {
+      "F_SILVER": 48,
+      "F_BLACK": 32,
+      "R_SILVER": 30,
+      "R_BLACK": 20
+    },
+    "btp_end": {
+      "F_CAST": 8,
+      "R_CAST": 32,
+      "F_HEAT": 28,
+      "R_HEAT": 0,
+      "F_MACH": 32,
+      "R_MACH": 13,
+      "F_SILVER_PAINT": 26,
+      "F_BLACK_PAINT": 24,
+      "R_SILVER_PAINT": 20,
+      "R_BLACK_PAINT": 23
+    },
+    "reserve_production": 4,
+    "reserve_quantity": 72,
+    "surplus_holding": 1260,
+    "shift_opening": 0,
+    "reserve_options_chosen": [
+      "RB001",
+      "RB002",
+      "RL002",
+      "RL003"
+    ],
+    "nonproductive_minutes": 30946,
+    "reserve_units": 72,
+    "btp_end_units": 206,
+    "objective_tier1": 75585,
+    "objective_tier2": 110836,
+    "objective": 75585110836
+  },
+  "gap": null,
+  "total_seconds": 112.38293280000016
+}
