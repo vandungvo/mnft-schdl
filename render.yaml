@@ -1,0 +1,57 @@
+# Render Blueprint — deploys backend (FastAPI + CP-SAT) and frontend (Next.js) from this repo.
+# Dashboard → New → Blueprint → pick this repo. Both services build from the repo root context.
+#
+# If Render appends a suffix to a service URL (name already taken), update
+# MNFT_CORS_ORIGINS and NEXT_PUBLIC_API_URL below to the real URLs and redeploy.
+
+services:
+  - type: web
+    name: mnft-backend
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: MNFT_ENVIRONMENT
+        value: production
+      # Free plan has no persistent disk: the DB is recreated on every deploy/restart
+      # and re-seeded from wheel_factory.json.
+      - key: MNFT_DATABASE_URL
+        value: sqlite:////srv/data/mnft.db
+      - key: MNFT_DATABASE_AUTO_CREATE
+        value: "false"
+      - key: MNFT_BOOTSTRAP_STANDARD_DATA
+        value: "true"
+      - key: MNFT_STANDARD_DATA_PATH
+        value: /srv/models/input/wheel_factory.json
+      - key: MNFT_CORS_ORIGINS
+        value: '["https://mnft-frontend.onrender.com"]'
+      - key: MNFT_SOLVER_MAX_CONCURRENT_JOBS
+        value: "1"
+      # Free instances have ~0.1 CPU; keep solver runs short.
+      - key: MNFT_SOLVER_DEFAULT_BUDGET_SECONDS
+        value: "30"
+      - key: MNFT_SOLVER_MAX_BUDGET_SECONDS
+        value: "120"
+      - key: MNFT_OPERATOR_API_KEY
+        generateValue: true
+
+  - type: web
+    name: mnft-frontend
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: .
+    envVars:
+      # NEXT_PUBLIC_* are inlined at build time (passed as Docker build args).
+      - key: NEXT_PUBLIC_API_URL
+        value: https://mnft-backend.onrender.com/api/v1
+      # Demo only: this token ends up in the public JS bundle.
+      - key: NEXT_PUBLIC_API_TOKEN
+        fromService:
+          type: web
+          name: mnft-backend
+          envVarKey: MNFT_OPERATOR_API_KEY
