@@ -18,7 +18,7 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
-    application_name: str = "Reasonable Scheduling Agent API"
+    application_name: str = "PlanWise API"
     environment: Literal["development", "test", "production"] = "development"
     api_prefix: str = "/api/v1"
     database_url: str = "sqlite:///./data/mnft.db"

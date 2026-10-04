@@ -1,43 +1,44 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { AlertCircle, FileJson, Play } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, type FormEvent } from "react";
 
-import {
-  ApiError,
-  apiErrorMessage,
-  createScheduleRun,
-  getHealth,
-  listMasterDatasets,
-  listProductionPlans,
-} from "@/lib/api";
+import { DescList, Field, FormStep, PageHeader } from "@/components/blocks";
+import { useI18n } from "@/components/i18n-provider";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ApiError, apiErrorMessage, createScheduleRun, getHealth, listMasterDatasets, listProductionPlans } from "@/lib/api";
+import { algorithmInfo } from "@/lib/algorithms";
+import { formatDateTime, formatInputName } from "@/lib/format";
 import type { Algorithm } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
-const algorithmOptions: Array<{ value: Algorithm; label: string; description: string }> = [
-  { value: "cp_sat_hint", label: "CP-SAT + EDD hint", description: "Khuyến nghị · cân bằng tốc độ và chất lượng" },
-  { value: "cp_lns", label: "CP-LNS", description: "Tìm kiếm lân cận cho lịch lớn" },
-  { value: "cp_sat", label: "CP-SAT", description: "Tối ưu ràng buộc chính xác" },
-  { value: "simulated_annealing", label: "Simulated annealing", description: "Metaheuristic khám phá rộng" },
-  { value: "genetic_algorithm", label: "Genetic algorithm", description: "Tìm kiếm theo quần thể" },
-  { value: "edd", label: "EDD baseline", description: "Ưu tiên hạn giao sớm" },
-  { value: "spt", label: "SPT baseline", description: "Ưu tiên công việc ngắn" },
-  { value: "fifo", label: "FIFO baseline", description: "Theo thứ tự phát hành" },
-];
+const RECOMMENDED: Algorithm[] = ["cp_sat_hint", "cp_lns", "cp_sat", "cp_rolling", "simulated_annealing", "genetic_algorithm", "edd", "spt", "fifo"];
+const algorithmOptions = RECOMMENDED.map((value) => algorithmInfo(value));
+const SOURCES = [
+  { value: "dataset", title: ["Master data", "Master data"], text: ["Dữ liệu nhà máy đã chuẩn hóa", "Normalised factory data"] },
+  { value: "plan", title: ["Kế hoạch tổng hợp", "Aggregate plan"], text: ["Snapshot đã cân đối công suất", "Capacity-balanced snapshot"] },
+  { value: "file", title: ["File JSON", "JSON file"], text: ["Dùng một lần, không lưu master data", "One-off, not saved as master data"] },
+] as const;
 
-type Source = "dataset" | "plan" | "file";
+type Source = (typeof SOURCES)[number]["value"];
 
 function NewRunForm() {
+  const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   const health = useQuery({ queryKey: ["health"], queryFn: getHealth });
   const datasets = useQuery({ queryKey: ["master-datasets"], queryFn: () => listMasterDatasets() });
   const plans = useQuery({ queryKey: ["production-plans"], queryFn: () => listProductionPlans() });
-  const initialDatasetId = searchParams.get("datasetId") ?? "";
   const initialPlanId = searchParams.get("planId") ?? "";
   const [source, setSource] = useState<Source>(initialPlanId ? "plan" : "dataset");
-  const [selectedDatasetId, setSelectedDatasetId] = useState(initialDatasetId);
+  const [selectedDatasetId, setSelectedDatasetId] = useState(searchParams.get("datasetId") ?? "");
   const [selectedPlanId, setSelectedPlanId] = useState(initialPlanId);
   const [input, setInput] = useState<unknown>();
   const [fileName, setFileName] = useState("");
@@ -50,60 +51,36 @@ function NewRunForm() {
   const effectivePlanId = selectedPlanId || plans.data?.items[0]?.id || "";
   const selectedDataset = datasets.data?.items.find((item) => item.id === effectiveDatasetId);
   const selectedPlan = plans.data?.items.find((item) => item.id === effectivePlanId);
-  const defaultBudget = health.data?.solver_default_budget_seconds ?? 30;
   const maxBudget = health.data?.solver_max_budget_seconds ?? 900;
-  const effectiveBudget = budget ?? defaultBudget;
-  const availableAlgorithms = algorithmOptions.filter(
-    (option) => !health.data || health.data.supported_algorithms.includes(option.value),
-  );
+  const effectiveBudget = budget ?? health.data?.solver_default_budget_seconds ?? 30;
+  const availableAlgorithms = algorithmOptions.filter((option) => !health.data || health.data.supported_algorithms.includes(option.value));
   const selectedAlgorithm = algorithmOptions.find((option) => option.value === algorithm);
 
-  const sourceReady = source === "dataset"
-    ? Boolean(effectiveDatasetId && selectedDataset?.is_ready)
-    : source === "plan"
-      ? Boolean(effectivePlanId)
-      : Boolean(input);
+  const sourceReady = source === "dataset" ? Boolean(effectiveDatasetId && selectedDataset?.is_ready) : source === "plan" ? Boolean(effectivePlanId) : Boolean(input);
   const configurationError = effectiveBudget <= 0 || effectiveBudget > maxBudget
-    ? `Ngân sách phải từ 1 đến ${maxBudget} giây.`
-    : !Number.isInteger(seed) || seed < 0 || seed > 2_147_483_647
-      ? "Random seed phải là số nguyên từ 0 đến 2.147.483.647."
-      : "";
+    ? t(`Ngân sách phải từ 1 đến ${maxBudget} giây.`, `Budget must be between 1 and ${maxBudget} seconds.`)
+    : !Number.isInteger(seed) || seed < 0 || seed > 2_147_483_647 ? t("Random seed phải là số nguyên từ 0 đến 2.147.483.647.", "Random seed must be an integer from 0 to 2,147,483,647.") : "";
 
   const mutation = useMutation({
-    mutationFn: () => createScheduleRun(
-      {
-        ...(source === "dataset"
-          ? { dataset_id: effectiveDatasetId }
-          : source === "plan"
-            ? { plan_id: effectivePlanId }
-            : { input }),
-        algorithm,
-        seed,
-        time_budget_seconds: effectiveBudget,
-      },
-      crypto.randomUUID(),
-    ),
+    mutationFn: () => createScheduleRun({
+      ...(source === "dataset" ? { dataset_id: effectiveDatasetId } : source === "plan" ? { plan_id: effectivePlanId } : { input }),
+      algorithm, seed, time_budget_seconds: effectiveBudget,
+    }, crypto.randomUUID()),
     onSuccess: (run) => router.push(`/runs/${run.id}`),
   });
 
   async function handleFile(file?: File) {
-    setFileError("");
-    setInput(undefined);
-    setFileName("");
+    setFileError(""); setInput(undefined); setFileName("");
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setFileError("File JSON không được vượt quá 5 MB.");
-      return;
-    }
+    if (file.size > 5 * 1024 * 1024) { setFileError(t("File JSON không được vượt quá 5 MB.", "The JSON file must not exceed 5 MB.")); return; }
     try {
       const parsed = JSON.parse(await file.text()) as Record<string, unknown>;
-      if (!parsed || parsed.schema_version !== 1 || !Array.isArray(parsed.lots) || !parsed.machines || !Array.isArray(parsed.orders)) {
-        throw new Error("File không có cấu trúc scheduling input schema v1 hợp lệ.");
+      if (!parsed || typeof parsed.schema_version !== "number" || !Array.isArray(parsed.lots) || !parsed.machines || !Array.isArray(parsed.orders)) {
+        throw new Error(t("File không có cấu trúc scheduling input hợp lệ (cần schema_version, machines, orders, lots).", "The file is not a valid scheduling input (needs schema_version, machines, orders, lots)."));
       }
-      setInput(parsed);
-      setFileName(file.name);
+      setInput(parsed); setFileName(file.name);
     } catch (error) {
-      setFileError(error instanceof Error ? error.message : "Không thể đọc file JSON.");
+      setFileError(error instanceof Error ? error.message : t("Không thể đọc file JSON.", "Could not read the JSON file."));
     }
   }
 
@@ -115,66 +92,85 @@ function NewRunForm() {
   const apiError = mutation.error instanceof ApiError ? mutation.error : null;
 
   return (
-    <section className="form-page">
-      <header className="page-header">
-        <div><span className="eyebrow">NEW SCHEDULE RUN</span><h1>Tạo lịch sản xuất</h1><p>Chọn nguồn dữ liệu và cấu hình solver. Backend sẽ kiểm tra lại toàn bộ trước khi xếp lịch.</p></div>
-      </header>
-
-      <form className="form-layout" onSubmit={submit} noValidate>
-        <div className="form-main">
-          <article className="panel form-section">
-            <div className="form-section-heading"><span className="step-number">1</span><div><h2>Chọn nguồn dữ liệu</h2><p>Mỗi lần chạy lưu một snapshot độc lập để có thể tái lập.</p></div></div>
-            <fieldset className="source-card-grid">
-              <legend className="visually-hidden">Nguồn dữ liệu</legend>
-              <label className={source === "dataset" ? "source-card source-card-active" : "source-card"}><input type="radio" name="source" checked={source === "dataset"} onChange={() => setSource("dataset")} /><span><strong>Master data</strong><small>Dữ liệu nhà máy đã chuẩn hóa</small></span></label>
-              <label className={source === "plan" ? "source-card source-card-active" : "source-card"}><input type="radio" name="source" checked={source === "plan"} onChange={() => setSource("plan")} /><span><strong>Kế hoạch tổng hợp</strong><small>Snapshot đã cân đối công suất</small></span></label>
-              <label className={source === "file" ? "source-card source-card-active" : "source-card"}><input type="radio" name="source" checked={source === "file"} onChange={() => setSource("file")} /><span><strong>File JSON</strong><small>Dùng một lần, không lưu master data</small></span></label>
+    <div className="max-w-6xl">
+      <PageHeader title={t("Tạo một lần chạy", "Create a run")}
+        description={<>{t("Chạy một thuật toán trên một nguồn dữ liệu. Muốn sinh nhiều phương án để so sánh và chốt, dùng", "Run one algorithm on one data source. To generate several options to compare and commit, use the")} <Link href="/decide" className="font-semibold text-primary hover:underline">{t("Bàn điều độ", "Scheduling desk")}</Link>.</>} />
+      <form className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_320px]" onSubmit={submit} noValidate>
+        <div className="grid gap-4">
+          <FormStep step="1" title={t("Chọn nguồn dữ liệu", "Choose a data source")} description={t("Mỗi lần chạy lưu một snapshot độc lập để có thể tái lập.", "Each run stores its own snapshot so it can be reproduced.")}>
+            <fieldset className="mb-5 grid gap-2.5 sm:grid-cols-3">
+              <legend className="sr-only">{t("Nguồn dữ liệu", "Data source")}</legend>
+              {SOURCES.map((item) => (
+                <label key={item.value} className={cn("flex cursor-pointer items-start gap-2.5 rounded-lg border bg-surface-2 p-3.5 transition-colors hover:border-primary", source === item.value && "border-primary bg-accent shadow-[inset_0_0_0_1px_var(--primary)]")}>
+                  <input type="radio" name="source" className="mt-1 accent-primary" checked={source === item.value} onChange={() => setSource(item.value)} />
+                  <span><strong className="block text-sm font-semibold">{t(item.title)}</strong><small className="text-xs text-muted-foreground">{t(item.text)}</small></span>
+                </label>
+              ))}
             </fieldset>
-
             {source === "dataset" ? (
-              datasets.isLoading ? <div className="field-skeleton">Đang tải master data…</div> : datasets.data?.items.length ? (
-                <label className="form-field"><span>Bộ dữ liệu nhà máy</span><select value={effectiveDatasetId} onChange={(event) => setSelectedDatasetId(event.target.value)}>{datasets.data.items.map((dataset) => <option key={dataset.id} value={dataset.id}>{dataset.name} · rev {dataset.revision} · {dataset.counts.orders} đơn</option>)}</select><small>Run lưu đúng revision đang được chọn.</small></label>
-              ) : <div className="alert alert-warning">Chưa có master data. <Link href="/master-data" className="text-link">Mở quản lý dữ liệu</Link></div>
+              datasets.isLoading ? <Skeleton className="h-9" /> : datasets.data?.items.length ? (
+                <Field label={t("Bộ dữ liệu nhà máy", "Factory dataset")} hint={t("Lần chạy lưu đúng revision đang được chọn.", "The run stores the currently selected revision.")}>
+                  <Select value={effectiveDatasetId} onValueChange={setSelectedDatasetId}>
+                    <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                    <SelectContent>{datasets.data.items.map((dataset) => <SelectItem key={dataset.id} value={dataset.id}>{formatInputName(dataset.name)} · rev {dataset.revision} · {dataset.counts.orders} {t("đơn", "orders")}</SelectItem>)}</SelectContent>
+                  </Select>
+                </Field>
+              ) : <Alert className="border-warning/40 bg-warning-soft"><AlertDescription>{t("Chưa có master data.", "No master data yet.")} <Link href="/master-data" className="font-semibold text-primary hover:underline">{t("Mở quản lý dữ liệu", "Open data management")}</Link></AlertDescription></Alert>
             ) : source === "plan" ? (
-              plans.isLoading ? <div className="field-skeleton">Đang tải kế hoạch…</div> : plans.data?.items.length ? (
-                <label className="form-field"><span>Kế hoạch tổng hợp</span><select value={effectivePlanId} onChange={(event) => setSelectedPlanId(event.target.value)}>{plans.data.items.map((plan) => <option key={plan.id} value={plan.id}>Rev {plan.dataset_revision} · {plan.bucket_minutes === 1440 ? "theo ngày" : "theo tuần"} · {new Date(plan.created_at).toLocaleString("vi-VN")}</option>)}</select><small>Run dùng snapshot đã khóa trong kế hoạch.</small></label>
-              ) : <div className="alert alert-warning">Chưa có kế hoạch. <Link href="/planning" className="text-link">Tạo kế hoạch tổng hợp</Link></div>
+              plans.isLoading ? <Skeleton className="h-9" /> : plans.data?.items.length ? (
+                <Field label={t("Kế hoạch tổng hợp", "Aggregate plan")} hint={t("Lần chạy dùng snapshot đã khóa trong kế hoạch.", "The run uses the snapshot locked in the plan.")}>
+                  <Select value={effectivePlanId} onValueChange={setSelectedPlanId}>
+                    <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                    <SelectContent>{plans.data.items.map((plan) => <SelectItem key={plan.id} value={plan.id}>Rev {plan.dataset_revision} · {plan.bucket_minutes === 1440 ? t("theo ngày", "daily") : t("theo tuần", "weekly")} · {formatDateTime(plan.created_at)}</SelectItem>)}</SelectContent>
+                  </Select>
+                </Field>
+              ) : <Alert className="border-warning/40 bg-warning-soft"><AlertDescription>{t("Chưa có kế hoạch.", "No plans yet.")} <Link href="/planning" className="font-semibold text-primary hover:underline">{t("Tạo kế hoạch tổng hợp", "Create an aggregate plan")}</Link></AlertDescription></Alert>
             ) : (
-              <label className={fileError ? "upload-box upload-box-error" : "upload-box"}><span>Scheduling input</span><strong>{fileName || "Chọn hoặc kéo file JSON vào đây"}</strong><small>Schema v1 · tối đa 5 MB · backend vẫn kiểm tra đầy đủ.</small><input type="file" accept="application/json,.json" onChange={(event) => void handleFile(event.target.files?.[0])} /></label>
+              <label className={cn("relative flex cursor-pointer flex-col items-center gap-1.5 rounded-lg border-[1.5px] border-dashed bg-surface-2 p-7 text-center transition-colors hover:border-primary focus-within:ring-2 focus-within:ring-ring", fileError && "border-destructive bg-danger-soft")}>
+                <FileJson className="size-7 text-muted-foreground" />
+                <strong>{fileName || t("Chọn hoặc kéo file JSON vào đây", "Choose or drop a JSON file here")}</strong>
+                <small className="text-xs text-muted-foreground">{t("Scheduling input JSON · tối đa 5 MB · backend vẫn kiểm tra đầy đủ.", "Scheduling input JSON · up to 5 MB · the backend still validates everything.")}</small>
+                <input type="file" accept="application/json,.json" className="absolute inset-0 cursor-pointer opacity-0" onChange={(event) => void handleFile(event.target.files?.[0])} />
+              </label>
             )}
-            {fileError && <div className="field-error" role="alert">{fileError}</div>}
-          </article>
+            {fileError && <p role="alert" className="mt-3 rounded-md bg-danger-soft px-3 py-2 text-sm text-destructive">{fileError}</p>}
+          </FormStep>
 
-          <article className="panel form-section">
-            <div className="form-section-heading"><span className="step-number">2</span><div><h2>Cấu hình phương pháp giải</h2><p>Giới hạn thời gian do backend công bố: tối đa {maxBudget} giây.</p></div></div>
-            <div className="solver-fields">
-              <label className="form-field solver-algorithm"><span>Thuật toán</span><select value={algorithm} onChange={(event) => setAlgorithm(event.target.value as Algorithm)}>{availableAlgorithms.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select><small>{selectedAlgorithm?.description}</small></label>
-              <label className="form-field"><span>Ngân sách thời gian</span><div className="input-suffix"><input type="number" min={1} max={maxBudget} step={1} value={effectiveBudget} onChange={(event) => setBudget(event.target.value === "" ? 0 : Number(event.target.value))} /><span>giây</span></div></label>
-              <label className="form-field"><span>Random seed</span><input type="number" min={0} max={2_147_483_647} step={1} value={seed} onChange={(event) => setSeed(Number(event.target.value))} /><small>Cùng input và seed giúp tái lập kết quả.</small></label>
+          <FormStep step="2" title={t("Cấu hình phương pháp giải", "Configure the solver")} description={t(`Giới hạn thời gian do backend công bố: tối đa ${maxBudget} giây.`, `Time limit published by the backend: up to ${maxBudget} seconds.`)}>
+            <div className="grid gap-4 md:grid-cols-[1.5fr_0.75fr_0.75fr]">
+              <Field label={t("Thuật toán", "Algorithm")} hint={selectedAlgorithm?.description}>
+                <Select value={algorithm} onValueChange={(value) => setAlgorithm(value as Algorithm)}>
+                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                  <SelectContent>{availableAlgorithms.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent>
+                </Select>
+              </Field>
+              <Field label={t("Ngân sách (giây)", "Budget (seconds)")}><Input type="number" min={1} max={maxBudget} step={1} value={effectiveBudget} onChange={(event) => setBudget(event.target.value === "" ? 0 : Number(event.target.value))} /></Field>
+              <Field label="Random seed" hint={t("Cùng input và seed giúp tái lập.", "Same input and seed make the run reproducible.")}><Input type="number" min={0} max={2_147_483_647} step={1} value={seed} onChange={(event) => setSeed(Number(event.target.value))} /></Field>
             </div>
-            {configurationError && <div className="field-error" role="alert">{configurationError}</div>}
-          </article>
+            {configurationError && <p role="alert" className="mt-3 rounded-md bg-danger-soft px-3 py-2 text-sm text-destructive">{configurationError}</p>}
+          </FormStep>
         </div>
 
-        <aside className="panel form-summary">
-          <span className="eyebrow">RUN SUMMARY</span><h2>Sẵn sàng khởi chạy</h2>
-          <dl>
-            <div><dt>Nguồn</dt><dd>{source === "dataset" ? "Master data" : source === "plan" ? "Kế hoạch tổng hợp" : "File JSON"}</dd></div>
-            <div><dt>Dữ liệu</dt><dd>{source === "dataset" ? selectedDataset?.name ?? "Chưa chọn" : source === "plan" ? selectedPlan ? `Revision ${selectedPlan.dataset_revision}` : "Chưa chọn" : fileName || "Chưa chọn file"}</dd></div>
-            <div><dt>Thuật toán</dt><dd>{selectedAlgorithm?.label}</dd></div>
-            <div><dt>Ngân sách</dt><dd>{effectiveBudget} giây</dd></div>
-          </dl>
-          {source === "dataset" && selectedDataset && <div className="summary-note"><strong>{selectedDataset.counts.machines} máy · {selectedDataset.counts.lots} lô</strong><span>Revision {selectedDataset.revision} · {Math.round(selectedDataset.horizon / 1440)} ngày</span></div>}
-          {apiError && <div className="alert alert-error" role="alert"><strong>{apiError.code}</strong><br />{apiErrorMessage(apiError, "Không thể tạo lịch.")}{apiError.requestId && <small>Request ID: {apiError.requestId}</small>}</div>}
-          <button type="submit" className="button button-primary button-wide" disabled={mutation.isPending || !sourceReady || Boolean(configurationError)}>{mutation.isPending ? "Đang khởi tạo…" : "Bắt đầu lập lịch"}</button>
-          <button type="button" className="button button-quiet button-wide" onClick={() => router.back()}>Quay lại</button>
-          <small className="submit-help">Lịch chỉ được lưu sau khi vượt qua bộ kiểm tra độc lập.</small>
+        <aside className="rounded-lg border bg-card p-5 shadow-card lg:sticky lg:top-20">
+          <span className="mb-1 block text-xs font-semibold text-muted-foreground">{t("Tóm tắt", "Summary")}</span>
+          <h2 className="mb-3 text-lg font-semibold">{t("Sẵn sàng khởi chạy", "Ready to launch")}</h2>
+          <DescList items={[
+            [t("Nguồn", "Source"), source === "dataset" ? "Master data" : source === "plan" ? t("Kế hoạch tổng hợp", "Aggregate plan") : t("File JSON", "JSON file")],
+            [t("Dữ liệu", "Data"), source === "dataset" ? (selectedDataset ? formatInputName(selectedDataset.name) : t("Chưa chọn", "Not selected")) : source === "plan" ? (selectedPlan ? `Revision ${selectedPlan.dataset_revision}` : t("Chưa chọn", "Not selected")) : fileName || t("Chưa chọn file", "No file selected")],
+            [t("Thuật toán", "Algorithm"), selectedAlgorithm?.label],
+            [t("Ngân sách", "Budget"), t(`${effectiveBudget} giây`, `${effectiveBudget} seconds`)],
+          ]} />
+          {source === "dataset" && selectedDataset && <div className="mt-3 rounded-lg bg-accent px-3 py-2.5 text-xs text-accent-foreground"><strong className="block">{selectedDataset.counts.machines} {t("máy", "machines")} · {selectedDataset.counts.lots} {t("lô", "lots")}</strong>Revision {selectedDataset.revision} · {Math.round(selectedDataset.horizon / 1440)} {t("ngày", "days")}</div>}
+          {apiError && <Alert variant="destructive" className="mt-3"><AlertCircle /><AlertTitle>{apiError.code}</AlertTitle><AlertDescription>{apiErrorMessage(apiError, t("Không thể tạo lịch.", "Could not create the schedule."))}{apiError.requestId && <small className="block">Request ID: {apiError.requestId}</small>}</AlertDescription></Alert>}
+          <Button type="submit" className="mt-4 w-full" disabled={mutation.isPending || !sourceReady || Boolean(configurationError)}><Play />{mutation.isPending ? t("Đang khởi tạo…", "Starting…") : t("Bắt đầu lập lịch", "Start scheduling")}</Button>
+          <Button type="button" variant="ghost" className="mt-1 w-full" onClick={() => router.back()}>{t("Quay lại", "Back")}</Button>
+          <p className="mt-2 text-center text-xs text-muted-foreground">{t("Lịch chỉ được lưu sau khi vượt qua bộ kiểm tra độc lập.", "A schedule is only saved after it passes the independent validator.")}</p>
         </aside>
       </form>
-    </section>
+    </div>
   );
 }
 
 export default function NewRunPage() {
-  return <Suspense fallback={<div className="panel empty">Đang tải cấu hình…</div>}><NewRunForm /></Suspense>;
+  return <Suspense fallback={<Skeleton className="h-64" />}><NewRunForm /></Suspense>;
 }

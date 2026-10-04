@@ -1,3 +1,4 @@
+import { tr } from "./locale";
 import type {
   ApiErrorBody,
   AuditEventList,
@@ -99,6 +100,17 @@ export function listScheduleRuns(filters?: {
   if (filters?.algorithm && filters.algorithm !== "ALL") params.set("algorithm", filters.algorithm);
   if (filters?.search?.trim()) params.set("search", filters.search.trim());
   return apiRequest(`/schedule-runs?${params.toString()}`);
+}
+
+/** Pages through the run list (the API caps a page at 100) up to `max` runs, newest first. */
+export async function listAllScheduleRuns(max = 500): Promise<ScheduleRunSummary[]> {
+  const items: ScheduleRunSummary[] = [];
+  for (let offset = 0; offset < max; offset += 100) {
+    const page = await listScheduleRuns({ limit: 100, offset });
+    items.push(...page.items);
+    if (items.length >= page.total || page.items.length < 100) break;
+  }
+  return items;
 }
 
 export function getScheduleRun(id: string): Promise<ScheduleRunDetail> {
@@ -286,6 +298,6 @@ export async function deleteMasterDataset(id: string): Promise<void> {
     headers: API_TOKEN ? { Authorization: `Bearer ${API_TOKEN}` } : undefined,
   });
   if (!response.ok) {
-    throw new ApiError("Không thể xóa bộ dữ liệu", "DELETE_FAILED", response.status);
+    throw new ApiError(tr("Không thể xóa bộ dữ liệu", "Could not delete the dataset"), "DELETE_FAILED", response.status);
   }
 }

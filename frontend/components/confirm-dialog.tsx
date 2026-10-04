@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useId, useRef } from "react";
-import { createPortal } from "react-dom";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useI18n } from "@/components/i18n-provider";
+import { buttonVariants } from "@/components/ui/button";
 
 interface Props {
   open: boolean;
@@ -13,34 +16,22 @@ interface Props {
   onConfirm: () => void;
 }
 
-export function ConfirmDialog({ open, title, description, confirmLabel = "Xác nhận", pending, onCancel, onConfirm }: Props) {
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const cancelRef = useRef<HTMLButtonElement>(null);
-  const titleId = useId();
-  const descriptionId = useId();
-  useEffect(() => {
-    if (!open) return;
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    cancelRef.current?.focus();
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !pending) onCancel();
-      if (event.key !== "Tab" || !dialogRef.current) return;
-      const focusable = [...dialogRef.current.querySelectorAll<HTMLElement>("button:not(:disabled), [href], input:not(:disabled), select:not(:disabled)")];
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => {
-      window.removeEventListener("keydown", handleKey);
-      document.body.style.overflow = previousOverflow;
-      previousFocus?.focus();
-    };
-  }, [open, pending, onCancel]);
-  if (!open) return null;
-  return createPortal(<div className="dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !pending) onCancel(); }}><div ref={dialogRef} className="dialog" role="alertdialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId}><span className="dialog-icon" aria-hidden="true">!</span><h2 id={titleId}>{title}</h2><p id={descriptionId}>{description}</p><div className="dialog-actions"><button ref={cancelRef} className="button" disabled={pending} onClick={onCancel}>Hủy</button><button className="button button-danger" disabled={pending} onClick={onConfirm}>{pending ? "Đang xử lý…" : confirmLabel}</button></div></div></div>, document.body);
+export function ConfirmDialog({ open, title, description, confirmLabel, pending, onCancel, onConfirm }: Props) {
+  const { t } = useI18n();
+  return (
+    <AlertDialog open={open} onOpenChange={(next) => { if (!next && !pending) onCancel(); }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={pending}>{t("Hủy", "Cancel")}</AlertDialogCancel>
+          <AlertDialogAction className={buttonVariants({ variant: "destructive" })} disabled={pending} onClick={(event) => { event.preventDefault(); onConfirm(); }}>
+            {pending ? t("Đang xử lý…", "Working…") : confirmLabel ?? t("Xác nhận", "Confirm")}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }

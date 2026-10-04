@@ -1,14 +1,19 @@
+"use client";
+
+import { useI18n } from "@/components/i18n-provider";
+import { Badge } from "@/components/ui/badge";
 import type { RunStatus } from "@/lib/types";
 
-const labels: Record<RunStatus, string> = {
-  QUEUED: "Đang chờ",
-  RUNNING: "Đang giải",
-  SUCCEEDED: "Hoàn tất",
-  FAILED: "Thất bại",
-  CANCELLED: "Đã hủy",
+const config: Record<RunStatus, { label: [string, string]; variant: "success" | "warning" | "danger" | "info" }> = {
+  QUEUED: { label: ["Đang chờ", "Queued"], variant: "info" },
+  RUNNING: { label: ["Đang giải", "Solving"], variant: "warning" },
+  SUCCEEDED: { label: ["Hoàn tất", "Succeeded"], variant: "success" },
+  FAILED: { label: ["Thất bại", "Failed"], variant: "danger" },
+  CANCELLED: { label: ["Đã hủy", "Cancelled"], variant: "danger" },
 };
 
 export function RunStatusBadge({ status }: { status: RunStatus }) {
-  return <span className={`status status-${status.toLowerCase()}`}>{labels[status]}</span>;
+  const { t } = useI18n();
+  const item = config[status];
+  return <Badge variant={item.variant}>{status === "RUNNING" && <span className="size-1.5 animate-pulse rounded-full bg-current" />}{t(...item.label)}</Badge>;
 }
-

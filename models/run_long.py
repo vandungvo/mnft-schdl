@@ -4,11 +4,13 @@
                               [--cp-hours 8] [--cp-workers 8] [--seeds 11 29 47]
 
 1. FIFO/EDD/SPT once (one pass, nothing to run longer).
-2. SA, GA, CP-LNS per seed, 1 worker, sequential: stop after `--patience` seconds
+2. SA, GA, CP-LNS, CP rolling per seed, 1 worker, sequential: stop after `--patience` seconds
    without a better schedule (MNFT_PATIENCE), `--cap` seconds as a safety cap.
 3. CP-SAT with `--cp-workers` workers, hinted with the best schedule from step 1-2,
    until it proves OPTIMAL or `--cp-hours` pass. Its history keeps the lower bound,
    so the gap to optimal is known at every point.
+4. Optional (`--cold-hours` > 0): CP-SAT with no hint at all (method `cp_sat_cold_long`),
+   same workers, until OPTIMAL or `--cold-hours` pass.
 
 Heuristic runs are saved by the usual run_one (runs/v2/<method>/results/<run_id>/);
 the CP-SAT run as method `cp_sat_long`. The comparison folder has the same layout as
@@ -30,9 +32,8 @@ from models.common.experiment import _engine, run_one, runs_root, write_csv
 from models.common.instance import digest, load, save_json
 
 
-def cp_long(data, run_id, start_rows, start_method, hours, workers, seed=11):
+def cp_long(data, run_id, start_rows, start_method, hours, workers, seed=11, method="cp_sat_long"):
     from models.common.stage_runs.cp_engine import solve
-    method = "cp_sat_long"
     out = runs_root(data) / method / "results" / run_id / f"seed_{seed}"
     out.mkdir(parents=True, exist_ok=False)
     started = time.perf_counter()
@@ -74,6 +75,8 @@ def main():
     p.add_argument("--cap", type=float, default=7200)
     p.add_argument("--cp-hours", type=float, default=8)
     p.add_argument("--cp-workers", type=int, default=8)
+    p.add_argument("--cold-hours", type=float, default=0,
+                   help="also run CP-SAT without any hint (method cp_sat_cold_long) after the hinted run; 0 = skip")
     p.add_argument("--seeds", type=int, nargs="+", default=[11, 29, 47])
     args = p.parse_args()
     data = load(args.input)
@@ -90,7 +93,7 @@ def main():
     os.environ["MNFT_PATIENCE"] = str(args.patience)
     os.environ["MNFT_CP_WORKERS"] = "1"
     results = []
-    for method in ("fifo", "edd", "spt", "simulated_annealing", "genetic_algorithm", "cp_lns"):
+    for method in ("fifo", "edd", "spt", "simulated_annealing", "genetic_algorithm", "cp_lns", "cp_rolling"):
         for seed in (args.seeds[:1] if method in ("fifo", "edd", "spt") else args.seeds):
             result, path = run_one(method, args.input, args.cap, seed, run_id)
             result["artifacts"] = path
@@ -101,12 +104,17 @@ def main():
     start_method = f"{best['method']} seed {best['seed']}"
     cp, _ = cp_long(data, run_id, start, start_method, args.cp_hours, args.cp_workers)
     results.append(cp)
+    save_json(folder / "results.json", [{k: v for k, v in r.items() if k != "artifacts"} for r in results])
+    if args.cold_hours > 0:
+        cold, _ = cp_long(data, run_id, None, None, args.cold_hours, args.cp_workers, method="cp_sat_cold_long")
+        results.append(cold)
     clean = [{k: v for k, v in r.items() if k != "artifacts"} for r in results]
     save_json(folder / "results.json", clean)
     lines = ["# Đợt chạy dài: chạy tới khi xong, không theo ngân sách cố định", "",
              f"Run `{run_id}`; SHA256 input `{digest(data)}`.",
              f"SA/GA/CP-LNS: 1 worker, dừng sau {args.patience:g} s không cải thiện, mốc an toàn {args.cap:g} s. "
-             f"CP-SAT: {args.cp_workers} worker, gợi ý từ lịch tốt nhất ({start_method}), dừng khi OPTIMAL hoặc sau {args.cp_hours:g} giờ.",
+             f"CP-SAT: {args.cp_workers} worker, gợi ý từ lịch tốt nhất ({start_method}), dừng khi OPTIMAL hoặc sau {args.cp_hours:g} giờ."
+             + (f" CP-SAT không gợi ý (cp_sat_cold_long): {args.cp_workers} worker, dừng khi OPTIMAL hoặc sau {args.cold_hours:g} giờ." if args.cold_hours > 0 else ""),
              "", "| Phương pháp / seed | Trạng thái | Lý do dừng | Objective | Cận dưới | Thời gian (s) |", "|---|---|---|---:|---:|---:|"]
     for r in clean:
         lines.append(f"| {r['method']} / {r['seed']} | {r['status']} | {r.get('stop_reason', '—')} | "

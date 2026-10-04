@@ -1,4 +1,6 @@
-# Reasonable Scheduling Agent
+# PlanWise
+
+PlanWise — Reasonable Scheduling Agent cho đồ án CO5103. Giao diện hỗ trợ tiếng Việt và tiếng Anh (nút VI/EN ở góc trên).
 
 Ứng dụng lập lịch sản xuất cho dây chuyền linh kiện, gồm FastAPI, Next.js và engine OR-Tools. Mỗi lần chạy lưu snapshot đầu vào, hash, cấu hình solver, lịch theo công đoạn, KPI và kết quả kiểm tra độc lập.
 

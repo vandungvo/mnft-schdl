@@ -1,116 +1,179 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AlertCircle, CalendarClock, Compass, Database, Download, Loader2, MoreHorizontal, Trash2, Upload } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { Suspense, useCallback, useMemo, useRef, useState } from "react";
 
+import { EmptyState, PageHeader } from "@/components/blocks";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { BtpInventoryEditor, MachineEditor, OrderEditor, ProductCatalogEditor } from "@/components/master-data-editors";
+import { useI18n } from "@/components/i18n-provider";
+import { BtpSection } from "@/components/master-data/btp";
+import { HistorySection } from "@/components/master-data/history";
+import { MachinesSection } from "@/components/master-data/machines";
+import { OrdersSection } from "@/components/master-data/orders";
+import { DemandPanel, HorizonPanel, KeyFigures, ProcessFlow, ReadinessPanel, RevisionPanel, tabLabel } from "@/components/master-data/overview";
+import { ProductsSection } from "@/components/master-data/products";
+import { SettingsSection } from "@/components/master-data/settings";
+import { DatasetProvider, useMdLocation } from "@/components/master-data/shared";
 import { useToast } from "@/components/toast-provider";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ErrorState, SkeletonTable } from "@/components/ui-states";
-import { apiErrorMessage, deleteMasterDataset, getMasterDataset, listAuditEvents, replaceMasterDataset } from "@/lib/api";
-import { formatDateTime, formatInputName } from "@/lib/format";
+import { ApiError, apiErrorMessage, deleteMasterDataset, getMasterDataset, listAllScheduleRuns, replaceMasterDataset } from "@/lib/api";
+import { readScheduleInputFile } from "@/lib/files";
+import { formatDateTime, formatDay, formatInputName } from "@/lib/format";
+import { adviseChecks, MD_TABS, readinessIssues, type MdTab } from "@/lib/master-data";
+import type { MasterDatasetDetail, SchedulingInputDocument } from "@/lib/types";
 
-type Tab = "product-catalog" | "btp-inventory" | "machines" | "orders" | "history" | "technical";
-const auditLabels: Record<string, string> = {
-  "master_data.imported": "Import bộ dữ liệu",
-  "master_data.replaced": "Thay thế toàn bộ dữ liệu",
-  "product.created": "Thêm sản phẩm",
-  "product.updated": "Cập nhật danh mục sản phẩm",
-  "product.deleted": "Xóa sản phẩm",
-  "btp_code.created": "Thêm mã bán thành phẩm",
-  "btp_code.renamed": "Đổi tên mã bán thành phẩm",
-  "btp_code.deleted": "Xóa mã bán thành phẩm",
-  "btp_routing.updated": "Đổi ánh xạ bán thành phẩm",
-  "btp_inventory.updated": "Cập nhật tồn bán thành phẩm",
-  "btp_inventory.deleted": "Xóa tồn bán thành phẩm",
-  "machine.updated": "Cập nhật máy",
-  "machine.deleted": "Xóa máy",
-  "order.updated": "Cập nhật đơn hàng",
-  "order.deleted": "Xóa đơn hàng",
-};
-
-export default function MasterDatasetDetailPage() {
+function Detail() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useI18n();
   const router = useRouter();
   const queryClient = useQueryClient();
   const showToast = useToast();
+  const { tab, item, due, navigate } = useMdLocation();
   const replaceInputRef = useRef<HTMLInputElement>(null);
   const [replaceFileError, setReplaceFileError] = useState("");
-  const [tab, setTab] = useState<Tab>("product-catalog");
-  const [filter, setFilter] = useState("");
+  const [pendingReplace, setPendingReplace] = useState<{ file: string; input: unknown } | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
+
   const query = useQuery({ queryKey: ["master-dataset", id], queryFn: () => getMasterDataset(id) });
-  const audit = useQuery({ queryKey: ["audit-events", "master_dataset", id], queryFn: () => listAuditEvents({ resourceType: "master_dataset", resourceId: id }), enabled: tab === "history" });
-  const remove = useMutation({ mutationFn: () => deleteMasterDataset(id), onSuccess: async () => { showToast("Đã xóa bộ dữ liệu."); await queryClient.invalidateQueries({ queryKey: ["master-datasets"] }); router.push("/master-data"); } });
-  const replace = useMutation({ mutationFn: (input: unknown) => replaceMasterDataset(id, input, query.data!.revision), onSuccess: async (updated) => { queryClient.setQueryData(["master-dataset", id], updated); showToast(`Đã tạo revision ${updated.revision}.`); await queryClient.invalidateQueries({ queryKey: ["master-datasets"] }); await queryClient.invalidateQueries({ queryKey: ["audit-events", "master_dataset", id] }); } });
+  // Same cache key as the scheduling desk, so switching between the two does not refetch.
+  const runs = useQuery({ queryKey: ["dataset-runs", id], queryFn: async () => (await listAllScheduleRuns()).filter((run) => run.dataset_id === id) });
+  const applyUpdate = useCallback((updated: MasterDatasetDetail) => {
+    queryClient.setQueryData(["master-dataset", id], updated);
+    void queryClient.invalidateQueries({ queryKey: ["master-datasets"] });
+    void queryClient.invalidateQueries({ queryKey: ["audit-events", "master_dataset", id] });
+  }, [id, queryClient]);
+  const remove = useMutation({ mutationFn: () => deleteMasterDataset(id), onSuccess: async () => { showToast(t("Đã xóa bộ dữ liệu.", "Dataset deleted.")); await queryClient.invalidateQueries({ queryKey: ["master-datasets"] }); router.push("/master-data"); } });
+  const replace = useMutation({
+    mutationFn: (input: unknown) => replaceMasterDataset(id, input, query.data!.revision),
+    onSuccess: (updated) => { setPendingReplace(null); applyUpdate(updated); showToast(t(`Đã thay dữ liệu — revision ${updated.revision}.`, `Data replaced — revision ${updated.revision}.`)); },
+    onError: () => setPendingReplace(null),
+  });
+
+  const dataset = query.data;
+  const issues = useMemo(() => (dataset ? [...readinessIssues(dataset.readiness_errors, dataset.input), ...adviseChecks(dataset.input)] : []), [dataset]);
 
   if (query.isLoading) return <SkeletonTable rows={7} />;
-  if (query.isError || !query.data) return <ErrorState message="Không thể tải bộ dữ liệu này." onRetry={() => void query.refetch()} />;
-  const dataset = query.data;
+  if (query.isError || !dataset) {
+    const missing = query.error instanceof ApiError && query.error.status === 404;
+    return missing
+      ? <EmptyState icon={<Database />} title={t("Không tìm thấy bộ dữ liệu", "Dataset not found")} description={t("Bộ dữ liệu có thể đã bị xóa. Các lần chạy cũ vẫn giữ snapshot riêng.", "It may have been deleted. Earlier runs keep their own snapshots.")} action={<Button asChild><Link href="/master-data">{t("Về danh sách dữ liệu", "Back to factory data")}</Link></Button>} />
+      : <ErrorState message={t("Không thể tải bộ dữ liệu này.", "Could not load this dataset.")} onRetry={() => void query.refetch()} />;
+  }
   const input = dataset.input;
-  const applyUpdate = (updated: typeof dataset) => { queryClient.setQueryData(["master-dataset", id], updated); void queryClient.invalidateQueries({ queryKey: ["master-datasets"] }); void queryClient.invalidateQueries({ queryKey: ["audit-events", "master_dataset", id] }); };
+  const go = (next: MdTab, record?: string) => navigate({ tab: next, item: record ?? null });
 
   function exportJson() {
     const blob = new Blob([JSON.stringify(input, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `${dataset.name.replace(/[^a-zA-Z0-9_-]+/g, "-")}.json`;
+    anchor.download = `${dataset!.name.replace(/[^a-zA-Z0-9_-]+/g, "-")}-r${dataset!.revision}.json`;
     anchor.click();
     URL.revokeObjectURL(url);
-    showToast("Đã tải snapshot JSON.", "info");
+    showToast(t("Đã tải snapshot JSON.", "Snapshot JSON downloaded."), "info");
   }
 
-  async function replaceFromFile(file?: File) {
+  async function pickReplaceFile(file?: File) {
     if (!file) return;
     setReplaceFileError("");
-    try {
-      if (file.size > 5 * 1024 * 1024) throw new Error("File JSON không được vượt quá 5 MB.");
-      const parsed = JSON.parse(await file.text()) as Record<string, unknown>;
-      if (parsed.schema_version !== 1) throw new Error("Chỉ hỗ trợ scheduling input schema v1.");
-      replace.mutate(parsed);
-    } catch (error) { setReplaceFileError(error instanceof Error ? error.message : "Không thể đọc file JSON."); }
+    replace.reset();
+    try { setPendingReplace({ file: file.name, input: await readScheduleInputFile(file) }); }
+    catch (error) { setReplaceFileError(error instanceof Error ? error.message : t("Không thể đọc file JSON.", "Could not read the JSON file.")); }
     finally { if (replaceInputRef.current) replaceInputRef.current.value = ""; }
   }
 
-  const tabs: Array<{ id: Tab; label: string; count?: number }> = [
-    { id: "product-catalog", label: "Danh mục sản phẩm", count: dataset.counts.products },
-    { id: "btp-inventory", label: "Tồn kho bán thành phẩm", count: dataset.counts.products },
-    { id: "machines", label: "Máy & năng lực", count: dataset.counts.machines },
-    { id: "orders", label: "Đơn hàng", count: dataset.counts.orders },
-    { id: "history", label: "Lịch sử thay đổi" },
-    { id: "technical", label: "Thông tin kỹ thuật" },
-  ];
-  function handleTabKey(event: React.KeyboardEvent<HTMLButtonElement>, current: Tab) {
-    const index = tabs.findIndex((item) => item.id === current);
-    const nextIndex = event.key === "ArrowRight" ? (index + 1) % tabs.length
-      : event.key === "ArrowLeft" ? (index - 1 + tabs.length) % tabs.length
-        : event.key === "Home" ? 0
-          : event.key === "End" ? tabs.length - 1
-            : -1;
-    if (nextIndex < 0) return;
-    event.preventDefault();
-    const next = tabs[nextIndex].id;
-    setTab(next);
-    setFilter("");
-    window.requestAnimationFrame(() => document.getElementById(`dataset-tab-${next}`)?.focus());
-  }
+  const next = pendingReplace?.input as Partial<SchedulingInputDocument> | undefined;
+  const diffLine = (label: string, before: number, after: number | undefined) => `${label} ${before} → ${after ?? "?"}`;
+  const replaceSummary = next ? [
+    diffLine(t("sản phẩm", "products"), input.products.length, next.products?.length),
+    diffLine(t("máy", "machines"), Object.keys(input.machines).length, next.machines ? Object.keys(next.machines).length : undefined),
+    diffLine(t("đơn", "orders"), input.orders.length, next.orders?.length),
+    diffLine(t("lô", "lots"), input.lots.length, next.lots?.length),
+  ].join(" · ") : "";
 
-  return <section>
-    <header className="page-header"><div><Link href="/master-data" className="back-link">← Dữ liệu nhà máy</Link><span className="eyebrow">MASTER DATA · REVISION {dataset.revision}</span><h1>{formatInputName(dataset.name)}</h1><p>{dataset.counts.products} sản phẩm · {dataset.counts.machines} máy · {dataset.counts.orders} đơn · {dataset.counts.lots} lô</p></div><div className="header-actions"><button className="button" onClick={exportJson}>Tải JSON</button><label className={`button ${replace.isPending ? "button-disabled" : ""}`}>{replace.isPending ? "Đang cập nhật…" : "Cập nhật từ JSON"}<input ref={replaceInputRef} className="visually-hidden" type="file" accept="application/json,.json" disabled={replace.isPending} onChange={(event) => void replaceFromFile(event.target.files?.[0])} /></label><Link href={`/runs/new?datasetId=${dataset.id}`} className="button button-primary">Lập lịch từ dữ liệu này</Link></div></header>
-    {(replaceFileError || replace.isError) && <div className="alert alert-error" role="alert">{replaceFileError || apiErrorMessage(replace.error, "Không thể cập nhật. Dữ liệu cũ chưa bị thay đổi.")}</div>}
-    <div className="dataset-status-strip"><span className="readiness-ready">✓ Sẵn sàng lập lịch</span><span>Revision {dataset.revision}</span><span>Cập nhật {formatDateTime(dataset.updated_at)}</span></div>
-    <div className="tabs" role="tablist" aria-label="Nhóm dữ liệu">{tabs.map((item) => <button id={`dataset-tab-${item.id}`} role="tab" aria-selected={tab === item.id} aria-controls={`dataset-panel-${item.id}`} tabIndex={tab === item.id ? 0 : -1} className={tab === item.id ? "tab tab-active" : "tab"} key={item.id} onKeyDown={(event) => handleTabKey(event, item.id)} onClick={() => { setTab(item.id); setFilter(""); }}>{item.label}{item.count !== undefined && <span>{item.count}</span>}</button>)}</div>
-    {tab !== "technical" && tab !== "history" && <div className="panel editor-toolbar"><label className="search-field"><span className="visually-hidden">Tìm trong bảng</span><input type="search" value={filter} onChange={(event) => setFilter(event.target.value)} placeholder={tab === "product-catalog" || tab === "btp-inventory" ? "Tìm mã sản phẩm…" : tab === "machines" ? "Tìm máy hoặc công đoạn…" : "Tìm đơn hoặc sản phẩm…"} /></label><span>Mọi thay đổi hợp lệ sẽ tạo revision mới.</span></div>}
-    {tab === "product-catalog" && <article id="dataset-panel-product-catalog" role="tabpanel" aria-labelledby="dataset-tab-product-catalog" tabIndex={0} className="panel data-section"><div className="panel-heading"><div><span className="eyebrow">DANH MỤC</span><h2>Danh mục sản phẩm</h2></div></div><ProductCatalogEditor dataset={dataset} onUpdated={applyUpdate} filter={filter} /></article>}
-    {tab === "btp-inventory" && <article id="dataset-panel-btp-inventory" role="tabpanel" aria-labelledby="dataset-tab-btp-inventory" tabIndex={0} className="panel data-section"><div className="panel-heading"><div><span className="eyebrow">CHÍNH SÁCH TỒN KHO</span><h2>Tồn kho bán thành phẩm theo công đoạn</h2><p>Để trống ô sức chứa nghĩa là không giới hạn.</p></div></div><BtpInventoryEditor dataset={dataset} onUpdated={applyUpdate} filter={filter} /></article>}
-    {tab === "machines" && <article id="dataset-panel-machines" role="tabpanel" aria-labelledby="dataset-tab-machines" tabIndex={0} className="panel data-section"><div className="panel-heading"><div><span className="eyebrow">NGUỒN LỰC</span><h2>Máy và khả năng xử lý</h2></div></div><MachineEditor dataset={dataset} onUpdated={applyUpdate} filter={filter} /></article>}
-    {tab === "orders" && <article id="dataset-panel-orders" role="tabpanel" aria-labelledby="dataset-tab-orders" tabIndex={0} className="panel data-section"><div className="panel-heading"><div><span className="eyebrow">NHU CẦU</span><h2>Đơn hàng</h2></div><span className="muted-label">{input.orders.filter((order) => order.urgent).length} đơn khẩn cấp</span></div><OrderEditor dataset={dataset} onUpdated={applyUpdate} filter={filter} /></article>}
-    {tab === "history" && <article id="dataset-panel-history" role="tabpanel" aria-labelledby="dataset-tab-history" tabIndex={0} className="panel audit-panel"><div className="panel-heading"><div><span className="eyebrow">AUDIT LOG</span><h2>Lịch sử thay đổi</h2></div></div>{audit.isLoading && <SkeletonTable rows={4} />}{audit.isError && <ErrorState compact message="Không thể tải lịch sử thay đổi." onRetry={() => void audit.refetch()} />}{audit.data?.items.length === 0 && <div className="empty compact-empty">Chưa có sự kiện thay đổi được ghi nhận.</div>}<ol className="audit-list">{audit.data?.items.map((event) => <li key={event.id}><span className="audit-dot" /><div><strong>{auditLabels[event.action] ?? event.action}</strong><p>{event.actor} · {formatDateTime(event.created_at)}</p>{Object.keys(event.details).length > 0 && <code>{JSON.stringify(event.details)}</code>}</div></li>)}</ol></article>}
-    {tab === "technical" && <article id="dataset-panel-technical" role="tabpanel" aria-labelledby="dataset-tab-technical" tabIndex={0} className="panel technical-panel"><div className="panel-heading"><div><span className="eyebrow">TÁI LẬP</span><h2>Thông tin kỹ thuật</h2></div></div><dl><div><dt>Hash nguồn</dt><dd><code>{dataset.source_hash}</code></dd></div><div><dt>Schema</dt><dd>Version {dataset.schema_version}</dd></div><div><dt>Thời điểm gốc</dt><dd>{formatDateTime(dataset.origin)}</dd></div><div><dt>Horizon</dt><dd>{Math.round(dataset.horizon / 1440)} ngày ({dataset.horizon.toLocaleString("vi-VN")} phút)</dd></div><div><dt>Minimum lot</dt><dd>{input.minimum_lot}</dd></div><div><dt>Độ trễ chuyển BTP giữa công đoạn</dt><dd>{input.transfer_minutes} phút</dd></div></dl><details className="assumptions-panel"><summary>Giả định dữ liệu ({input.assumptions.length})</summary><ul>{input.assumptions.map((item) => <li key={item}>{item}</li>)}</ul></details></article>}
-    <article className="panel danger-zone"><div><h2>Xóa master data</h2><p>Run và snapshot cũ vẫn được giữ. Thao tác này không thể hoàn tác.</p></div><button className="button button-danger" disabled={remove.isPending} onClick={() => setDeleteOpen(true)}>Xóa bộ dữ liệu</button></article>
-    <ConfirmDialog open={deleteOpen} title="Xóa bộ master data?" description="Dữ liệu vận hành hiện tại sẽ bị xóa. Các run và snapshot đã tạo vẫn được giữ lại." confirmLabel="Xóa dữ liệu" pending={remove.isPending} onCancel={() => setDeleteOpen(false)} onConfirm={() => remove.mutate()} />
-  </section>;
+  const errorsByTab = (target: MdTab) => issues.filter((issue) => issue.tab === target && issue.severity === "error").length;
+  const counts: Partial<Record<MdTab, number>> = { products: input.products.length, btp: input.btp_codes.length, machines: Object.keys(input.machines).length, orders: input.orders.length };
+  const closeItem = () => navigate({ item: null }, "replace");
+  const openItem = (target: MdTab) => (record: string) => navigate({ tab: target, item: record });
+
+  return (
+    <DatasetProvider value={{ dataset, onUpdated: applyUpdate, reload: () => void query.refetch() }}>
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4">
+        <PageHeader back={{ href: "/master-data", label: t("Dữ liệu nhà máy", "Factory data") }} crumb={formatInputName(dataset.name)} title={formatInputName(dataset.name)}
+          meta={<>
+            <Badge variant={dataset.is_ready ? "success" : "danger"}>{dataset.is_ready ? t("Sẵn sàng", "Ready") : t("Chưa sẵn sàng", "Not ready")}</Badge>
+            <Badge variant="outline" title={t("Revision hiện hành", "Current revision")}>rev {dataset.revision}</Badge>
+          </>}
+          description={`${formatDay(dataset.origin, 0)} → ${formatDay(dataset.origin, input.horizon - 1)} · ${t("cập nhật", "updated")} ${formatDateTime(dataset.updated_at)}`}
+          actions={<>
+            <input ref={replaceInputRef} className="sr-only" type="file" accept="application/json,.json" tabIndex={-1} aria-hidden disabled={replace.isPending} onChange={(event) => void pickReplaceFile(event.target.files?.[0])} />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild><Button variant="outline" aria-label={t("Thao tác khác", "More actions")}>{replace.isPending ? <Loader2 className="animate-spin" /> : <MoreHorizontal />}<span className="sm:inline">{t("Thêm", "More")}</span></Button></DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-60">
+                <DropdownMenuLabel>{t("Dữ liệu JSON", "JSON data")}</DropdownMenuLabel>
+                <DropdownMenuItem onSelect={exportJson}><Download />{t(`Tải JSON (revision ${dataset.revision})`, `Download JSON (revision ${dataset.revision})`)}</DropdownMenuItem>
+                <DropdownMenuItem disabled={replace.isPending} onSelect={() => replaceInputRef.current?.click()}><Upload />{t("Thay bằng file JSON…", "Replace from JSON file…")}</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="destructive" onSelect={() => setDeleteOpen(true)}><Trash2 />{t("Xóa bộ dữ liệu…", "Delete dataset…")}</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" asChild><Link href={`/runs/new?datasetId=${dataset.id}`}><CalendarClock />{t("Tạo lần chạy", "New run")}</Link></Button>
+            <Button asChild><Link href={`/decide/${dataset.id}`}><Compass />{t("Mở bàn điều độ", "Open scheduling desk")}</Link></Button>
+          </>} />
+        {(replaceFileError || replace.isError) && <Alert variant="destructive"><AlertCircle /><AlertDescription>{replaceFileError || apiErrorMessage(replace.error, t("Không thể cập nhật. Dữ liệu cũ chưa bị thay đổi.", "Could not update. The existing data was not changed."))}</AlertDescription></Alert>}
+
+        <Tabs value={tab} onValueChange={(value) => navigate({ tab: value as MdTab, item: null })} className="min-w-0 gap-4">
+          <div className="-mx-1 overflow-x-auto px-1 pb-1">
+            <TabsList className="h-auto">
+              {MD_TABS.map((value) => {
+                const errors = value === "overview" ? issues.filter((issue) => issue.severity === "error").length : errorsByTab(value);
+                return (
+                  <TabsTrigger key={value} value={value} className="px-3 py-1.5">
+                    {t(tabLabel(value))}
+                    {counts[value] !== undefined && <span className="ml-1.5 rounded-full bg-muted px-1.5 text-[11px] text-muted-foreground tabular-nums">{counts[value]}</span>}
+                    {errors > 0 && <span className="ml-1 inline-flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] font-semibold text-white" aria-label={t(`${errors} lỗi`, `${errors} errors`)}>{errors}</span>}
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </div>
+
+          <TabsContent value="overview" className="grid min-w-0 gap-4">
+            <ReadinessPanel issues={issues} go={go} />
+            <KeyFigures go={go} />
+            <ProcessFlow go={go} />
+            <HorizonPanel onDay={(day) => navigate({ tab: "orders", item: null, due: day })} />
+            <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+              <DemandPanel go={go} />
+              <RevisionPanel runs={runs.data} go={go} />
+            </div>
+          </TabsContent>
+          <TabsContent value="products" className="min-w-0"><ProductsSection item={tab === "products" ? item : null} onOpen={openItem("products")} onClose={closeItem} /></TabsContent>
+          <TabsContent value="btp" className="min-w-0"><BtpSection item={tab === "btp" ? item : null} onOpen={openItem("btp")} onClose={closeItem} /></TabsContent>
+          <TabsContent value="machines" className="min-w-0"><MachinesSection item={tab === "machines" ? item : null} onOpen={openItem("machines")} onClose={closeItem} /></TabsContent>
+          <TabsContent value="orders" className="min-w-0"><OrdersSection item={tab === "orders" ? item : null} due={due} onOpen={openItem("orders")} onClose={closeItem} onClearDue={() => navigate({ due: null }, "replace")} /></TabsContent>
+          <TabsContent value="settings" className="min-w-0"><SettingsSection onDelete={() => setDeleteOpen(true)} /></TabsContent>
+          <TabsContent value="history" className="min-w-0"><HistorySection runs={runs.data} go={go} /></TabsContent>
+        </Tabs>
+
+        <ConfirmDialog open={pendingReplace !== null} title={t("Thay toàn bộ dữ liệu bằng file này?", "Replace all data with this file?")}
+          description={t(`File “${pendingReplace?.file}”: ${replaceSummary}. Dữ liệu được kiểm tra trước khi ghi; nếu hợp lệ sẽ tạo revision ${dataset.revision + 1}. Lần chạy cũ giữ snapshot riêng.`, `File “${pendingReplace?.file}”: ${replaceSummary}. The data is validated before writing; if valid it becomes revision ${dataset.revision + 1}. Earlier runs keep their own snapshots.`)}
+          confirmLabel={t("Thay dữ liệu", "Replace data")} pending={replace.isPending} onCancel={() => setPendingReplace(null)} onConfirm={() => replace.mutate(pendingReplace!.input)} />
+        <ConfirmDialog open={deleteOpen} title={t("Xóa bộ dữ liệu này?", "Delete this dataset?")} description={t(`“${formatInputName(dataset.name)}” và mọi revision sẽ bị xóa. Lần chạy và snapshot đã tạo vẫn được giữ. Không thể hoàn tác.`, `“${formatInputName(dataset.name)}” and all its revisions will be deleted. Runs and snapshots already created are kept. This cannot be undone.`)} confirmLabel={t("Xóa bộ dữ liệu", "Delete dataset")} pending={remove.isPending} onCancel={() => setDeleteOpen(false)} onConfirm={() => remove.mutate()} />
+        {remove.isError && <Alert variant="destructive"><AlertCircle /><AlertDescription>{apiErrorMessage(remove.error, t("Không thể xóa bộ dữ liệu.", "Could not delete the dataset."))}</AlertDescription></Alert>}
+      </div>
+    </DatasetProvider>
+  );
+}
+
+export default function MasterDatasetDetailPage() {
+  return <Suspense fallback={<SkeletonTable rows={7} />}><Detail /></Suspense>;
 }

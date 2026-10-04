@@ -1,13 +1,25 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { AlertTriangle, CalendarClock, CheckCircle2, ChevronDown, Database } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
+import { Meter, PageHeader, Panel } from "@/components/blocks";
+import { useI18n } from "@/components/i18n-provider";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ErrorState, SkeletonCards, SkeletonTable } from "@/components/ui-states";
 import { getProductionPlan } from "@/lib/api";
-import { formatDateTime, formatDuration, formatInputName, minuteToDate, stageLabel } from "@/lib/format";
+import { formatDate, formatDateTime, formatDuration, formatInputName, formatNumber, minuteToDate, productLabel, stageLabel } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
+const N = "text-right tabular-nums";
+const fmt = (value: number) => formatNumber(value);
+
+/* Backend messages are English; Vietnamese renderings are shown when the UI is in Vietnamese. */
 const warningLabels: Record<string, string> = {
   "At least one stage exceeds its calendar capacity lower bound.": "Ít nhất một công đoạn vượt ngưỡng công suất lịch làm việc.",
   "At least one product ends below its configured safety-stock target.": "Ít nhất một sản phẩm có tồn kho cuối kỳ thấp hơn mức an toàn.",
@@ -22,48 +34,98 @@ const assumptionLabels: Record<string, string> = {
 };
 
 function dateLabel(origin: string, minutes: number) {
-  return new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium" }).format(minuteToDate(origin, minutes));
+  return formatDate(minuteToDate(origin, minutes));
 }
 
 export default function ProductionPlanDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { t, locale } = useI18n();
+  const backendText = (labels: Record<string, string>, text: string) => (locale === "vi" ? labels[text] ?? text : text);
   const query = useQuery({ queryKey: ["production-plan", id], queryFn: () => getProductionPlan(id) });
 
-  if (query.isLoading) return <><SkeletonCards count={4} /><div style={{ height: 20 }} /><SkeletonTable rows={6} /></>;
-  if (query.isError || !query.data) return <ErrorState title="Không thể tải kế hoạch" message="Kế hoạch không tồn tại hoặc dịch vụ tạm thời không phản hồi." onRetry={() => void query.refetch()} />;
+  if (query.isLoading) return <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5"><SkeletonCards count={4} /><SkeletonTable rows={6} /></div>;
+  if (query.isError || !query.data) return <ErrorState title={t("Không thể tải kế hoạch", "Could not load the plan")} message={t("Kế hoạch không tồn tại hoặc dịch vụ tạm thời không phản hồi.", "The plan does not exist or the service is temporarily unavailable.")} onRetry={() => void query.refetch()} />;
 
   const plan = query.data;
   const products = plan.result.products;
+  const ready = plan.status === "READY";
 
   return (
-    <section>
-      <header className="page-header">
-        <div><Link href="/planning" className="back-link">← Kế hoạch tổng hợp</Link><span className="eyebrow">KẾ HOẠCH · REV {plan.dataset_revision}</span><h1>{dateLabel(plan.time_origin, plan.period_start)} – {dateLabel(plan.time_origin, plan.period_end)}</h1><p>{formatInputName(plan.input_name)} · {plan.result.order_count} đơn hàng · {plan.result.lot_count} lô · theo {plan.bucket_minutes === 1440 ? "ngày" : "tuần"}</p></div>
-        <div className="header-actions">{plan.dataset_id && <Link href={`/master-data/${plan.dataset_id}`} className="button">Xem master data</Link>}<Link href={`/runs/new?planId=${plan.id}`} className="button button-primary">Lập lịch chi tiết</Link></div>
-      </header>
+    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-5">
+      <PageHeader back={{ href: "/planning", label: t("Kế hoạch tổng hợp", "Aggregate planning") }} crumb={`${dateLabel(plan.time_origin, plan.period_start)} – ${dateLabel(plan.time_origin, plan.period_end)}`} eyebrow={`${t("Kế hoạch", "Plan")} · rev ${plan.dataset_revision}`}
+        title={`${dateLabel(plan.time_origin, plan.period_start)} – ${dateLabel(plan.time_origin, plan.period_end)}`}
+        description={`${formatInputName(plan.input_name)} · ${plan.result.order_count} ${t("đơn hàng", "orders")} · ${plan.result.lot_count} ${t("lô", "lots")} · ${plan.bucket_minutes === 1440 ? t("theo ngày", "daily") : t("theo tuần", "weekly")}`}
+        actions={<>
+          {plan.dataset_id && <Button variant="outline" asChild><Link href={`/master-data/${plan.dataset_id}`}><Database />{t("Xem master data", "View master data")}</Link></Button>}
+          <Button asChild><Link href={`/runs/new?planId=${plan.id}`}><CalendarClock />{t("Lập lịch chi tiết", "Detailed scheduling")}</Link></Button>
+        </>} />
 
-      <div className={plan.status === "READY" ? "plan-banner plan-ready" : "plan-banner plan-warning"}><strong>{plan.status === "READY" ? "Khả thi ở mức công suất tổng hợp" : "Cần điều chỉnh trước khi phát hành"}</strong><span>Lịch chi tiết vẫn phải được kiểm tra trước khi đưa xuống xưởng.</span></div>
-      {plan.result.warnings.map((warning) => <div className="alert alert-warning" key={warning}>{warningLabels[warning] ?? warning}</div>)}
+      <Alert className={cn(ready ? "border-success/40 bg-success-soft" : "border-warning/40 bg-warning-soft")}>
+        {ready ? <CheckCircle2 className="text-success" /> : <AlertTriangle className="text-warning" />}
+        <AlertTitle>{ready ? t("Khả thi ở mức công suất tổng hợp", "Feasible at aggregate capacity") : t("Cần điều chỉnh trước khi phát hành", "Needs adjustment before release")}</AlertTitle>
+        <AlertDescription>{t("Lịch chi tiết vẫn phải được kiểm tra trước khi đưa xuống xưởng.", "The detailed schedule must still be validated before it goes to the shop floor.")}</AlertDescription>
+      </Alert>
+      {plan.result.warnings.map((warning) => <Alert key={warning} className="border-warning/40 bg-warning-soft"><AlertTriangle className="text-warning" /><AlertDescription>{backendText(warningLabels, warning)}</AlertDescription></Alert>)}
 
-      <section className="panel data-section">
-        <div className="panel-heading"><div><span className="eyebrow">KẾ HOẠCH VẬT TƯ</span><h2>Nhu cầu và tồn kho theo sản phẩm</h2></div></div>
-        <div className="table-wrap"><table><thead><tr><th>Sản phẩm</th><th>Nhu cầu</th><th>Tồn đầu</th><th>Cần sản xuất</th><th>Sản lượng lô</th><th>Tồn cuối dự kiến</th><th>Tồn an toàn</th></tr></thead><tbody>{products.map((product) => <tr key={product.product}><td><strong>{product.product}</strong></td><td>{product.demand_qty.toLocaleString("vi-VN")}</td><td>{product.initial_inventory.toLocaleString("vi-VN")}</td><td>{product.required_production_qty.toLocaleString("vi-VN")}</td><td>{product.planned_lot_qty.toLocaleString("vi-VN")}</td><td className={product.safety_shortfall ? "error-label" : ""}>{product.projected_ending_inventory.toLocaleString("vi-VN")}</td><td>{product.safety_stock.toLocaleString("vi-VN")}{product.safety_shortfall > 0 && <small>Thiếu {product.safety_shortfall.toLocaleString("vi-VN")}</small>}</td></tr>)}</tbody></table></div>
-      </section>
+      <Panel title={t("Nhu cầu và tồn kho theo sản phẩm", "Demand and inventory by product")}>
+        <Table>
+          <TableHeader><TableRow><TableHead>{t("Sản phẩm", "Product")}</TableHead><TableHead className={N}>{t("Nhu cầu", "Demand")}</TableHead><TableHead className={N}>{t("Tồn đầu", "Opening stock")}</TableHead><TableHead className={N}>{t("Cần sản xuất", "To produce")}</TableHead><TableHead className={N}>{t("Sản lượng lô", "Lot output")}</TableHead><TableHead className={N}>{t("Tồn cuối dự kiến", "Projected closing stock")}</TableHead><TableHead className={N}>{t("Tồn an toàn", "Safety stock")}</TableHead></TableRow></TableHeader>
+          <TableBody>{products.map((product) => (
+            <TableRow key={product.product}>
+              <TableCell className="font-semibold">{productLabel(product.product)}</TableCell>
+              <TableCell className={N}>{fmt(product.demand_qty)}</TableCell><TableCell className={N}>{fmt(product.initial_inventory)}</TableCell><TableCell className={N}>{fmt(product.required_production_qty)}</TableCell><TableCell className={N}>{fmt(product.planned_lot_qty)}</TableCell>
+              <TableCell className={cn(N, product.safety_shortfall > 0 && "font-semibold text-destructive")}>{fmt(product.projected_ending_inventory)}</TableCell>
+              <TableCell className={N}>{fmt(product.safety_stock)}{product.safety_shortfall > 0 && <span className="block text-xs text-destructive">{t("Thiếu", "Short")} {fmt(product.safety_shortfall)}</span>}</TableCell>
+            </TableRow>
+          ))}</TableBody>
+        </Table>
+      </Panel>
 
-      <section className="panel data-section"><div className="panel-heading"><div><span className="eyebrow">CÔNG SUẤT SƠ BỘ</span><h2>Tải công suất theo công đoạn</h2></div></div><div className="capacity-grid">{plan.result.stages.map((stage) => {
-        const percent = (stage.load_ratio ?? 0) * 100;
-        return <article className="capacity-card" key={stage.stage}><div><strong>{stageLabel(stage.stage)}</strong><span className={stage.overloaded ? "error-label" : ""}>{stage.load_ratio === null ? "Không có công suất" : `${percent.toFixed(1)}%`}</span></div><div className="capacity-track"><i className={stage.overloaded ? "capacity-over" : ""} style={{ width: `${Math.min(percent, 100)}%` }} /></div><small>{formatDuration(stage.required_minutes)} cần / {formatDuration(stage.available_minutes)} có sẵn · {stage.lot_count} lô</small></article>;
-      })}</div></section>
+      <Panel title={t("Tải công suất theo công đoạn", "Capacity load by stage")}>
+        <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
+          {plan.result.stages.map((stage) => {
+            const ratio = stage.load_ratio ?? 0;
+            return (
+              <article key={stage.stage} className="rounded-lg border p-4">
+                <div className="flex justify-between gap-2"><strong>{stageLabel(stage.stage)}</strong><span className={cn("font-semibold", stage.overloaded && "text-destructive")}>{stage.load_ratio === null ? t("Không có công suất", "No capacity") : formatNumber(ratio, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span></div>
+                <div className="my-3"><Meter value={ratio} tone={stage.overloaded ? "warn" : "default"} /></div>
+                <small className="text-xs text-muted-foreground">{formatDuration(stage.required_minutes)} {t("cần", "required")} / {formatDuration(stage.available_minutes)} {t("có sẵn", "available")} · {stage.lot_count} {t("lô", "lots")}</small>
+              </article>
+            );
+          })}
+        </div>
+      </Panel>
 
-      <section className="panel data-section">
-        <div className="panel-heading"><div><span className="eyebrow">THEO KỲ</span><h2>Nhu cầu / sản lượng theo thời gian</h2><p>Cam: nhu cầu · xanh: sản lượng kế hoạch.</p></div></div>
-        <div className="table-wrap"><table><thead><tr><th>Kỳ</th>{products.map((product) => <th key={product.product}><span className="bucket-heading">{product.product}<small>Nhu cầu / Sản xuất</small></span></th>)}</tr></thead><tbody>{plan.result.buckets.map((bucket) => <tr key={bucket.start}><td><strong>{dateLabel(plan.time_origin, bucket.start)} – {dateLabel(plan.time_origin, bucket.end)}</strong></td>{bucket.products.map((product) => {
-          const max = Math.max(product.demand_qty, product.production_qty, 1);
-          return <td className="bucket-cell" key={product.product}><div className="bucket-values"><span>{product.demand_qty}</span><strong>{product.production_qty}</strong></div><div className="bucket-bars"><span className="bucket-bar"><i style={{ width: `${product.demand_qty / max * 100}%` }} /></span><span className="bucket-bar bucket-bar-production"><i style={{ width: `${product.production_qty / max * 100}%` }} /></span></div></td>;
-        })}</tr>)}</tbody></table></div>
-      </section>
+      <Panel title={t("Nhu cầu / sản lượng theo thời gian", "Demand / output over time")} description={<><span className="font-medium text-warning">{t("Cam", "Orange")}</span>: {t("nhu cầu", "demand")} · <span className="font-medium text-primary">{t("xanh", "blue")}</span>: {t("sản lượng kế hoạch", "planned output")}.</>}>
+        <Table>
+          <TableHeader><TableRow><TableHead>{t("Kỳ", "Period")}</TableHead>{products.map((product) => <TableHead key={product.product}><span className="grid">{productLabel(product.product)}<small className="font-normal text-muted-foreground">{t("Nhu cầu / Sản xuất", "Demand / Output")}</small></span></TableHead>)}</TableRow></TableHeader>
+          <TableBody>{plan.result.buckets.map((bucket) => (
+            <TableRow key={bucket.start}>
+              <TableCell className="font-semibold">{dateLabel(plan.time_origin, bucket.start)} – {dateLabel(plan.time_origin, bucket.end)}</TableCell>
+              {bucket.products.map((product) => {
+                const max = Math.max(product.demand_qty, product.production_qty, 1);
+                return (
+                  <TableCell key={product.product} className="min-w-28">
+                    <div className="flex justify-between gap-2 tabular-nums"><span>{product.demand_qty}</span><strong>{product.production_qty}</strong></div>
+                    <div className="mt-1.5 grid gap-1">
+                      <span className="block h-1 overflow-hidden rounded-full bg-grid"><i className="block h-full bg-warning" style={{ width: `${(product.demand_qty / max) * 100}%` }} /></span>
+                      <span className="block h-1 overflow-hidden rounded-full bg-grid"><i className="block h-full bg-primary" style={{ width: `${(product.production_qty / max) * 100}%` }} /></span>
+                    </div>
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          ))}</TableBody>
+        </Table>
+      </Panel>
 
-      <details className="panel assumptions-panel"><summary>Giả định tính toán ({plan.result.assumptions.length})</summary><ul>{plan.result.assumptions.map((assumption) => <li key={assumption}>{assumptionLabels[assumption] ?? assumption}</li>)}</ul><small>Tạo lúc {formatDateTime(plan.created_at)} · snapshot bất biến.</small></details>
-    </section>
+      <Collapsible className="rounded-lg border bg-card p-4 shadow-card">
+        <CollapsibleTrigger className="group flex w-full items-center justify-between font-semibold">{t("Giả định tính toán", "Calculation assumptions")} ({plan.result.assumptions.length})<ChevronDown className="size-4 transition-transform group-data-[state=open]:rotate-180" /></CollapsibleTrigger>
+        <CollapsibleContent>
+          <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-muted-foreground">{plan.result.assumptions.map((assumption) => <li key={assumption}>{backendText(assumptionLabels, assumption)}</li>)}</ul>
+          <small className="mt-3 block text-xs text-muted-foreground">{t("Tạo lúc", "Created")} {formatDateTime(plan.created_at)} · {t("snapshot bất biến", "immutable snapshot")}.</small>
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
   );
 }

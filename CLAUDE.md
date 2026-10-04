@@ -34,26 +34,6 @@ Repo này vừa được bổ sung bộ **BA-Kit** (skills/rules/agents/template
 - **Status lifecycle**: `draft → in-review → revisions → approved → shipped` (frontmatter `status`). Xem `.claude/rules/status-lifecycle.md`.
 - **Naming**: slug kebab-case, ID có prefix feature (`FR-{feature}-NNN`...). Xem `.claude/rules/naming-conventions.md`.
 
-## Skill có sẵn (theo nhóm)
-
-**Mô hình hoá / spec** — `/srs`, `/usecase`, `/usecase-diagram`, `/erd`, `/dbdiagram`, `/sequence`, `/activity`, `/activity-swimlane`, `/state`, `/bpmn`, `/d2-erd`, `/d2-activity`, `/d2-architect`
-
-**Product planning** (tuỳ chọn, cấp toàn dự án) — `/market`, `/discover`, `/brainstorm`, `/urd`, `/brd`, `/prd`, `/prd-epic`, `/roadmap`
-
-**UI/Prototype** — `/user-flow`, `/wireframe-ascii`, `/wireframe-html`, `/figma`, `/prototype-html`, `/prototype-next`
-
-**Kiểm chứng nghiệp vụ** — `/gap`, `/ask`, `/doc-drift`, `/code-to-srs`, `/reverse-doc`, `/reverse-preview`
-
-**Tích hợp API** (chỉ cần nếu FastAPI backend gọi API ngoài) — `/api-assess`, `/api-doc`, `/api-design`, `/api-map`, `/api-checklist`, `/api-test`, `/api-readiness`
-
-**Test** — `/test-checklist`, `/test-cases`, `/playwright-gen`, `/ac`
-
-**Delivery/backlog** — `/usecase`, `/userstory`, `/jira`, `/confluence` (2 cái cuối cần MCP Atlassian, chưa cấu hình)
-
-**Xuất bản & theo dõi** — `/export`, `/preview`, `/userguide`, `/dashboard`, `/update-overview`, `/cr`, `/kg`, `/delegate`, `/meet`
-
-Chi tiết từng skill: đọc `SKILL.md` tương ứng trong `.claude/skills/<tên>/` — đó là nguồn sự thật, bảng trên chỉ để tra nhanh.
-
 ## Gợi ý áp dụng cho 4 việc cô Châu yêu cầu
 
 1. **Thêm nguồn benchmark/reference** — không có skill riêng, làm thủ công trong `references/` như đang làm; `/cr` nếu cần sửa lại `report/` đã nộp có kiểm tác động.
