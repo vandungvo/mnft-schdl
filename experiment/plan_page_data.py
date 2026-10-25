@@ -22,7 +22,7 @@ prepare = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(prepare)
 KEYS = {"fifo": "fifo", "edd": "edd", "spt": "spt", "simulated_annealing": "sa", "genetic_algorithm": "ga",
         "cp_sat": "cpsat", "cp_sat_hint": "cpsathint", "cp_lns": "cplns",
-        "cp_sat_long": "cpsatlong", "cp_rolling": "cprolling"}
+        "cp_sat_long": "cpsatlong", "cp_sat_cold_long": "cpsatcold", "cp_rolling": "cprolling"}
 KPI = ["makespan", "weighted_tardiness", "setup_minutes", "idle_minutes", "maintenance_minutes", "nonproductive_minutes",
        "safety_shortfall", "reserve_units", "surplus_holding", "btp_end_units", "objective", "objective_tier1", "objective_tier2"]
 

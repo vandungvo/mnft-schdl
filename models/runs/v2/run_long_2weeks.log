@@ -1,4 +1,19 @@
-RUN_ID=20261004T161142716329Z
-fifo seed=11 status=HEURISTIC_FEASIBLE valid=True objective=365305105032 time=0.08s
-edd seed=11 status=HEURISTIC_FEASIBLE valid=True objective=323465104894 time=0.07s
-spt seed=11 status=HEURISTIC_FEASIBLE valid=True objective=389245104822 time=0.06s
+RUN_ID=20261004T172544670619Z
+fifo seed=11 status=HEURISTIC_FEASIBLE valid=True objective=365305105032 time=0.06s
+edd seed=11 status=HEURISTIC_FEASIBLE valid=True objective=323465104894 time=0.06s
+spt seed=11 status=HEURISTIC_FEASIBLE valid=True objective=389245104822 time=0.07s
+simulated_annealing seed=11 status=HEURISTIC_FEASIBLE valid=True objective=160077565 time=4651.09s
+simulated_annealing seed=29 status=HEURISTIC_FEASIBLE valid=True objective=160073495 time=6418.75s
+simulated_annealing seed=47 status=HEURISTIC_FEASIBLE valid=True objective=160078331 time=4440.11s
+genetic_algorithm seed=11 status=HEURISTIC_FEASIBLE valid=True objective=2385097018 time=1956.06s
+genetic_algorithm seed=29 status=HEURISTIC_FEASIBLE valid=True objective=2365093652 time=4648.23s
+genetic_algorithm seed=47 status=HEURISTIC_FEASIBLE valid=True objective=160084140 time=2702.89s
+cp_lns seed=11 status=HEURISTIC_FEASIBLE valid=True objective=323465101816 time=887.90s
+cp_lns seed=29 status=HEURISTIC_FEASIBLE valid=True objective=323465103544 time=610.71s
+cp_lns seed=47 status=HEURISTIC_FEASIBLE valid=True objective=323465103544 time=607.34s
+cp_rolling seed=11 status=HEURISTIC_FEASIBLE valid=True objective=125810072384 time=6174.04s
+cp_rolling seed=29 status=HEURISTIC_FEASIBLE valid=True objective=93355055816 time=6174.48s
+cp_rolling seed=47 status=HEURISTIC_FEASIBLE valid=True objective=88960056528 time=6173.11s
+cp_sat_long status=FEASIBLE objective=160035016 bound=160017025.0 time=86413s
+cp_sat_cold_long status=UNKNOWN objective=None bound=None time=43214s
+REPORT=D:\mnft-schdl\models\runs\v2\comparison\20261004T172544670619Z\REPORT.md

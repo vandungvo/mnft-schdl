@@ -143,3 +143,40 @@ Không thay thế kiểm tra backend; chỉ trỏ tới chỗ cần xem: thiếu
 3. **Nhật ký không lưu giá trị trước/sau** và không có endpoint đọc snapshot revision cũ → chưa hiển thị diff từng trường.
 4. `GET /master-data/datasets` luôn trả `is_ready: true` (chỉ trang chi tiết kiểm thật) → badge trên danh sách có thể lạc quan.
 5. `readiness_errors` là câu tự do tiếng Anh, không có mã/đường dẫn trường → việc gán tab là dò chữ.
+
+## 8. Kịch bản = một trang, nhiều tab (redesign 25/10/2026, học Databricks)
+
+Mục tiêu: bỏ việc một bộ dữ liệu có **hai trang** (`/decide/[id]` để điều độ, `/master-data/[id]` để sửa dữ liệu) và bàn điều độ cuộn ~6 màn hình. Mượn các nguyên lý của Databricks (Catalog/Jobs object page), không sao chép giao diện.
+
+| Nguyên lý Databricks | Áp dụng |
+|---|---|
+| Một đối tượng – một trang, khía cạnh là tab | `/scenarios/[id]`: Tổng quan · Phương án · Lịch & so sánh · Chốt · Phân tích · Dữ liệu · Lịch sử. Thanh tab dính dưới top bar; đổi tab cuộn về đầu tab. |
+| Panel chi tiết bên phải | Bấm thẻ phương án / chấm trên đường đánh đổi / dòng xếp hạng → `OptionSheet` (xem nhanh, không đổi lịch đang xem). Từ panel: *Xem lịch*, *So với lịch đang xem*, *Chốt*. |
+| Ngữ cảnh luôn hiện (cluster đang gắn) | Pill snapshot cạnh tiêu đề: revision + số lịch; viền cam khi lịch chạy trên revision cũ. |
+| "+ New" ở đầu sidebar | Menu *Tạo mới*: kịch bản từ JSON, kế hoạch tổng hợp, lần chạy đơn, *Sinh phương án cho …* (mở `?tab=options&generate=1`). |
+| Mật độ cao | Chữ thân 13px (`--text-sm`), base 15px, tiêu đề trang 22px, `--radius` 8px; mô tả trang 1 dòng. |
+| Một màu nhấn | Logo một màu (`--sidebar-primary`), bỏ gradient xanh→cam. |
+
+**URL**: `?tab=` giữ nguyên giá trị cũ của dữ liệu nhà máy (`products|btp|machines|orders|settings|history`, kèm `item`, `due`) nên mọi deep-link vào dữ liệu vẫn chạy; thêm `options|schedule|decide|analysis`. Trạng thái điều độ giữ `run`, `cmp`, `policy`, `snap`. `next.config.ts` redirect `/decide[/:id]` và `/master-data[/:id]` sang `/scenarios…` (query được giữ).
+
+**Điều hướng**: Điều độ (Tổng quan, Kịch bản, Lần chạy) · Chuẩn bị (Kế hoạch tổng hợp). Tab *Dữ liệu* có menu trái (Sản phẩm & tồn kho, BTP, Máy & lịch ca, Đơn hàng & lô, Thiết lập) kèm số đếm và số lỗi.
+
+**Đã bỏ**: stepper + scroll-spy (`DeskProgress`, `useActiveSection`), `Section` thu gọn (khoá `schedule-os:section:*` không còn được đọc/ghi), `SituationPanel` (trùng với Tổng quan của dữ liệu nhà máy), thẻ "Quy trình điều độ" tĩnh ở trang Tổng quan. Không đổi API hiện có, logic chấm điểm `lib/decision.ts`; khoá `schedule-os:decisions:*` chỉ còn được đọc để chuyển lên server.
+
+**Giai đoạn 3 (đã làm)**: `components/data-table.tsx` — `DataTable` (cột sắp xếp được với `aria-sort`, cả dòng mở đối tượng, phân trang), `FilterChip` ("Trạng thái ▾" → "Trạng thái: Thất bại ✕", số đếm theo các bộ lọc còn lại), `TableToolbar`, `matches()` (tìm không dấu). Áp cho Kịch bản, Lần chạy (chip Trạng thái/Thuật toán/Kịch bản; vẫn nhận `?status=` và khoá `schedule-run-filters`), Kế hoạch (danh sách đưa lên trước biểu mẫu tạo). API không có sắp xếp nên lọc/sắp xếp/phân trang ở client: Lần chạy đọc tối đa 500 lần chạy gần nhất qua cache `["schedule-runs","all"]`. `components/scenario/run-matrix.tsx` — ma trận kiểu Databricks Jobs ở tab Phân tích: cột = đợt sinh (cùng snapshot, tạo cách nhau ≤2 phút), hàng = thuật toán, ô = trạng thái, ★ = được đề xuất, viền = đã chốt; bấm ô → xem nhanh (hoặc trang lần chạy nếu thuộc snapshot khác).
+
+**Giai đoạn 4 (đã làm)**: nhật ký quyết định lên backend — bảng `schedule_decisions` (migration `20261025_0010`), chỉ ghi thêm; `GET/POST /master-data/datasets/{id}/decisions`. Server tự lấy thuật toán, seed, snapshot (`input_hash`), revision từ lần chạy và kiểm: lần chạy thuộc đúng kịch bản (`DECISION_RUN_MISMATCH`), đã hoàn tất (`DECISION_RUN_NOT_SUCCEEDED`), lý do không rỗng; ghi `actor` và sự kiện audit `schedule.committed` (hiện ở tab Lịch sử). `lib/decision-log.ts` giữ nguyên giao diện hook nhưng đọc/ghi qua API; nhật ký cũ trong `schedule-os:decisions:*` được đẩy lên **một lần** (idempotent bằng `legacy_key`, giữ thời điểm gốc), bản trong trình duyệt không bị xóa, cờ `schedule-os:decisions-migrated:*` chặn gửi lại.
+
+### Audit khả dụng 25/10/2026 (axe-core 4.10, WCAG 2.2 AA + best-practice, sáng/tối)
+
+Đã sửa: tương phản nhãn nhóm sidebar (3.37 → ≥4.5), badge "Sẵn sàng" (`--success` #15803d → #137339), chữ tab chưa chọn (`text-foreground/60` → `text-muted-foreground`), số đếm menu Dữ liệu; SVG tương tác (đường đánh đổi, Gantt) `role="img"` → `role="group"`; bảng tràn ngang tự nhận focus bàn phím (`components/ui/table.tsx`); vùng cuộn bảng giao hàng có `role="region"`; vùng bấm ≥24px; heading ẩn cho từng tab; `aside` sidebar có nhãn; tiêu đề tab trình duyệt theo trang (`PageHeader`). Hành vi: tab Chốt giữ nguyên lý do đang gõ khi đổi tab (`forceMount`); bỏ `overflow` trên `<html>` để sidebar/top bar không "nhảy" khi mở Sheet/Dialog; thanh tab có dải mờ báo cuộn ngang dưới 1024px; thẻ phương án ghi "Xem nhanh". Kết quả: 0 vi phạm trên Tổng quan, Kịch bản (mọi tab), Lần chạy, Kế hoạch.
+
+## 9. Hai mô hình sản xuất: schema 4 và schema 5 (25/10/2026)
+
+Thử nghiệm mới nhất của đồ án (`models/runs/v2`, dữ liệu `dataset/wheel-factory-2weeks/model_input.json`) dùng **schema 5**: dây chuyền 5 công đoạn (đúc → nhiệt luyện → gia công → sơn → QC), **mẻ cố định theo công đoạn** (`runs`, `run_size`), khuôn dùng chung có giới hạn chu kỳ, lò nhiệt luyện chạy liên tục 24/7, mẫu ca theo ngày, đơn dài hạn + phương án dự trữ, mục tiêu phân tầng. Đây là mô hình khác (engine `models/common/stage_runs`), không phải phiên bản mới của schema 4.
+
+**Backend**: `SchedulingInputV5` (pydantic chặt + `stage_runs.instance.check`), `AnySchedulingInput` phân nhánh theo `schema_version` (mọi giá trị khác 5 vẫn vào schema 4, kể cả v3 tự nâng cấp). Kịch bản schema 5 lưu nguyên tài liệu đã kiểm ở `master_datasets.document` (migration `20261025_0011`); revision, lần chạy, quyết định, audit dùng chung. Adapter chọn bộ kiểm + KPI theo schema; dòng lịch schema 5 lưu `lot` = mã mẻ, `item` = mã hàng, `shift` = null cho máy liên tục. Chặn có mã lỗi: sửa từng bản ghi trên schema 5 (`SCHEMA5_EDIT_VIA_JSON` — sửa bằng thay file JSON), kế hoạch tổng hợp trên schema 5 (`PLANNING_NOT_AVAILABLE`), `cp_rolling` trên schema 4 (`ALGORITHM_NOT_AVAILABLE`).
+
+**Frontend**: `lib/plant.ts` là read model chung cho Gantt, giao hàng, tồn kho, ca bật (máy theo ca/liên tục, công đoạn cuối, sản phẩm của mỗi dòng lịch). Gantt tô sọc nhiều màu cho mẻ bán thành phẩm dùng chung nhiều sản phẩm, nền "liên tục" cho lò 24/7. `components/scenario/v5-views.tsx`: Tổng quan (gợi ý, số liệu, dòng chảy 5 công đoạn + tải thô, dải horizon, nhu cầu gồm dài hạn) và tab Dữ liệu chỉ đọc (Sản phẩm & tuyến, BTP, Máy-khuôn-mẫu ca, Đơn hàng + dài hạn, Mẻ chạy, Thiết lập & mục tiêu) dùng `DataTable`. Trình sửa bản ghi schema 4 giữ nguyên, nhận kiểu `MasterDatasetDetailV4`; Lịch sử/revision dùng `ScenarioMetaProvider` chung. `availableFor()` ẩn `cp_rolling` với schema 4.
+
+Đối chiếu: EDD/FIFO chạy qua backend cho đúng objective như log thử nghiệm 04/10 (323465104894 / 365305105032).

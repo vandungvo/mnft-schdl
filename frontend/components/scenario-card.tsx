@@ -9,7 +9,7 @@ import { formatDateTime, formatInputName } from "@/lib/format";
 import type { MasterDatasetSummary, ScheduleRunSummary } from "@/lib/types";
 import { useI18n } from "./i18n-provider";
 
-/** One scenario (factory dataset) as an entry point into the scheduling desk, with its live pipeline state. */
+/** One scenario (factory dataset) as an entry point into its scenario page, with its live pipeline state. */
 export function ScenarioCard({ dataset, runs }: { dataset: MasterDatasetSummary; runs: ScheduleRunSummary[] }) {
   const { t } = useI18n();
   const { entries } = useDecisionLog(dataset.id);
@@ -24,12 +24,12 @@ export function ScenarioCard({ dataset, runs }: { dataset: MasterDatasetSummary;
       : last ? t("Xem lại hoặc chốt lịch mới", "Review or commit a new schedule") : t("So sánh và chốt một phương án", "Compare and commit an option");
 
   return (
-    <Link href={`/decide/${dataset.id}`}
+    <Link href={`/scenarios/${dataset.id}`}
       className="group flex flex-col gap-3 rounded-lg border bg-card p-4 shadow-card transition-colors hover:border-primary/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="truncate text-[15px] font-semibold">{formatInputName(dataset.name)}</h3>
-          <p className="text-xs text-muted-foreground">rev {dataset.revision} · {Math.round(dataset.horizon / 1440)} {t("ngày", "days")} · {dataset.counts.orders} {t("đơn", "orders")} · {dataset.counts.lots} {t("lô", "lots")} · {dataset.counts.machines} {t("máy", "machines")}</p>
+          <p className="text-xs text-muted-foreground">rev {dataset.revision} · {Math.round(dataset.horizon / 1440)} {t("ngày", "days")} · {dataset.counts.orders} {t("đơn", "orders")} · {dataset.counts.runs != null ? `${dataset.counts.runs} ${t("mẻ", "runs")}` : `${dataset.counts.lots} ${t("lô", "lots")}`} · {dataset.counts.machines} {t("máy", "machines")}</p>
         </div>
         <Badge variant={dataset.is_ready ? "success" : "warning"}>{dataset.is_ready ? t("Sẵn sàng", "Ready") : t("Cần bổ sung", "Incomplete")}</Badge>
       </div>

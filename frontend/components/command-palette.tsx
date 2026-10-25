@@ -32,7 +32,7 @@ export function useCommandPalette() {
   return value;
 }
 
-/** Lower-case and strip Vietnamese diacritics so "ban dieu do" finds "Bàn điều độ". */
+/** Lower-case and strip Vietnamese diacritics so "ke hoach" finds "Kế hoạch". */
 const fold = (text: string) => text.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d").replace(/Đ/g, "d").toLowerCase();
 
 function isTyping(target: EventTarget | null) {
@@ -86,12 +86,12 @@ function Palette({ onClose }: { onClose: () => void }) {
     return [
       ...NAV_ITEMS.map((item) => ({ id: `nav:${item.href}`, group: pages, label: t(item.label), hint: t(item.hint), icon: item.icon, run: go(item.href) })),
       ...(datasets.data?.items ?? []).flatMap((dataset) => [
-        { id: `desk:${dataset.id}`, group: scenarios, label: formatInputName(dataset.name), hint: t(`Mở bàn điều độ · rev ${dataset.revision}`, `Open scheduling desk · rev ${dataset.revision}`), icon: Compass, keywords: dataset.name, run: go(`/decide/${dataset.id}`) },
-        { id: `data:${dataset.id}`, group: scenarios, label: `${formatInputName(dataset.name)} — ${t("dữ liệu", "data")}`, hint: t(`${dataset.counts.orders} đơn · ${dataset.counts.machines} máy`, `${dataset.counts.orders} orders · ${dataset.counts.machines} machines`), icon: Database, keywords: dataset.name, run: go(`/master-data/${dataset.id}`) },
+        { id: `desk:${dataset.id}`, group: scenarios, label: formatInputName(dataset.name), hint: t(`Phương án lịch · rev ${dataset.revision}`, `Schedule options · rev ${dataset.revision}`), icon: Compass, keywords: dataset.name, run: go(`/scenarios/${dataset.id}?tab=options`) },
+        { id: `data:${dataset.id}`, group: scenarios, label: `${formatInputName(dataset.name)} — ${t("dữ liệu", "data")}`, hint: t(`${dataset.counts.orders} đơn · ${dataset.counts.machines} máy`, `${dataset.counts.orders} orders · ${dataset.counts.machines} machines`), icon: Database, keywords: dataset.name, run: go(`/scenarios/${dataset.id}?tab=products`) },
       ]),
       ...(runs.data?.items ?? []).map((run) => ({ id: `run:${run.id}`, group: recent, label: `${algorithmInfo(run.algorithm).label} · ${formatInputName(run.input_name)}`, hint: `${run.id.slice(0, 8).toUpperCase()} · ${formatDateTime(run.created_at)}`, icon: CalendarClock, keywords: `${run.id} ${run.status}`, run: go(`/runs/${run.id}`) })),
       { id: "act:new-run", group: actions, label: t("Tạo một lần chạy", "Create a single run"), hint: t("Một thuật toán, một nguồn dữ liệu", "One algorithm, one data source"), icon: Plus, run: go("/runs/new") },
-      { id: "act:import", group: actions, label: t("Nhập bộ dữ liệu JSON", "Import a JSON dataset"), icon: Upload, keywords: "import json", run: go("/master-data") },
+      { id: "act:import", group: actions, label: t("Nhập bộ dữ liệu JSON", "Import a JSON dataset"), icon: Upload, keywords: "import json", run: go("/scenarios") },
       { id: "act:theme", group: actions, label: resolvedTheme === "dark" ? t("Chuyển sang giao diện sáng", "Switch to light theme") : t("Chuyển sang giao diện tối", "Switch to dark theme"), icon: Moon, keywords: "theme dark light giao dien", run: () => { setTheme(resolvedTheme === "dark" ? "light" : "dark"); onClose(); } },
       { id: "act:lang", group: actions, label: locale === "vi" ? "Switch to English" : "Chuyển sang tiếng Việt", icon: Languages, keywords: "language ngon ngu english tieng viet", run: () => { setLocale(locale === "vi" ? "en" : "vi"); onClose(); } },
     ];

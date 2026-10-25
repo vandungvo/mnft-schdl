@@ -12,13 +12,14 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { apiErrorMessage } from "@/lib/api";
 import { isMdTab, isRevisionConflict, type MdTab, type Severity } from "@/lib/master-data";
-import type { MasterDatasetDetail } from "@/lib/types";
+import type { MasterDatasetDetail, MasterDatasetDetailV4 } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 /* ---------- dataset context (one fetch, every section reads the same revision) ---------- */
 
 interface DatasetCtx {
-  dataset: MasterDatasetDetail;
+  /** Schema 4 only: these record editors are not rendered for schema-5 scenarios. */
+  dataset: MasterDatasetDetailV4;
   /** Apply the dataset returned by a successful mutation (new revision) everywhere. */
   onUpdated: (dataset: MasterDatasetDetail) => void;
   /** Refetch the latest revision (after a revision conflict). */
@@ -34,6 +35,22 @@ export function DatasetProvider({ value, children }: { value: DatasetCtx; childr
 export function useDataset(): DatasetCtx {
   const value = useContext(Ctx);
   if (!value) throw new Error("useDataset must be used inside DatasetProvider");
+  return value;
+}
+
+/* ---------- scenario identity, for panels shared by both production models (history, runs by revision) ---------- */
+
+interface ScenarioMeta { id: string; revision: number }
+
+const MetaCtx = createContext<ScenarioMeta | null>(null);
+
+export function ScenarioMetaProvider({ value, children }: { value: ScenarioMeta; children: ReactNode }) {
+  return <MetaCtx.Provider value={value}>{children}</MetaCtx.Provider>;
+}
+
+export function useScenarioMeta(): ScenarioMeta {
+  const value = useContext(MetaCtx);
+  if (!value) throw new Error("useScenarioMeta must be used inside ScenarioMetaProvider");
   return value;
 }
 

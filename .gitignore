@@ -41,3 +41,7 @@ Thumbs.db
 # AI4BA BA-Kit (third-party, licensed) — kept locally, not published
 .claude/
 _templates/
+
+# Large media / runtime logs
+*.mp4
+*.log

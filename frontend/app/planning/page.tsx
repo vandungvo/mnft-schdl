@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useDeferredValue, useEffect, useState, type FormEvent } from "react";
 
-import { DescList, EmptyState, Field, FilterBar, FormStep, PageHeader, Pagination, SectionHeading } from "@/components/blocks";
+import { DescList, EmptyState, Field, FormStep, PageHeader, SectionHeading } from "@/components/blocks";
+import { DataTable, FilterChip, matches, TableToolbar, type Column } from "@/components/data-table";
 import { useI18n } from "@/components/i18n-provider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -14,9 +15,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorState, SkeletonCards } from "@/components/ui-states";
+import { ErrorState, SkeletonCards, SkeletonTable } from "@/components/ui-states";
 import { apiErrorMessage, createProductionPlan, listMasterDatasets, listProductionPlans } from "@/lib/api";
 import { dateInputToMinute, formatDate, formatDateTime, formatDuration, formatInputName, minuteToDate, minuteToDateInput } from "@/lib/format";
+import type { ProductionPlanSummary } from "@/lib/types";
 
 function dateLabel(origin: string, day: number) {
   return formatDate(minuteToDate(origin, day * 1440));
@@ -35,10 +37,9 @@ function PlanningContent() {
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
   const [status, setStatus] = useState(params.get("status") ?? "all");
-  const [page, setPage] = useState(1);
-  const pageSize = 12;
-  const plans = useQuery({ queryKey: ["production-plans", { page, status, search: deferredSearch }], queryFn: () => listProductionPlans({ limit: pageSize, offset: (page - 1) * pageSize, status, search: deferredSearch }) });
-  const effectiveDatasetId = datasetId || datasets.data?.items[0]?.id || "";
+  const plans = useQuery({ queryKey: ["production-plans"], queryFn: () => listProductionPlans() });
+  // Aggregate planning covers schema-4 scenarios only (the backend rejects schema 5).
+  const effectiveDatasetId = datasetId || datasets.data?.items.find((item) => item.schema_version !== 5)?.id || "";
   const selectedDataset = datasets.data?.items.find((item) => item.id === effectiveDatasetId);
   const horizonDays = selectedDataset ? selectedDataset.horizon / 1440 : 0;
   const effectiveEndDay = endDay ?? horizonDays;
@@ -52,7 +53,19 @@ function PlanningContent() {
   }, [params]);
   useEffect(() => { window.localStorage.setItem("planning-filters", JSON.stringify({ search, status })); }, [search, status]);
 
-  const items = plans.data?.items ?? [];
+  const allPlans = plans.data?.items ?? [];
+  const items = allPlans.filter((plan) => (status === "all" || (status === "READY") === (plan.status === "READY")) && matches(deferredSearch, plan.input_name, formatInputName(plan.input_name), plan.id));
+  const planColumns: Column<ProductionPlanSummary>[] = [
+    { id: "name", header: t("Kế hoạch", "Plan"), sortValue: (plan) => formatInputName(plan.input_name), cell: (plan) => <>
+      <Link href={`/planning/${plan.id}`} className="font-medium hover:underline">{formatInputName(plan.input_name)}</Link>
+      <span className="block font-mono text-xs text-muted-foreground">{plan.id.slice(0, 8).toUpperCase()}</span>
+    </> },
+    { id: "status", header: t("Trạng thái", "Status"), sortValue: (plan) => (plan.status === "READY" ? 0 : 1), cell: (plan) => <Badge variant={plan.status === "READY" ? "success" : "warning"}>{plan.status === "READY" ? t("Sẵn sàng", "Ready") : t("Cần xem xét", "Needs review")}</Badge> },
+    { id: "period", header: t("Kỳ", "Period"), sortValue: (plan) => plan.period_start, cell: (plan) => <>{dateLabel(plan.time_origin, plan.period_start / 1440)} – {dateLabel(plan.time_origin, plan.period_end / 1440)}<span className="block text-xs text-muted-foreground">{formatDuration(plan.period_end - plan.period_start)}</span></> },
+    { id: "bucket", header: t("Chu kỳ", "Bucket"), sortValue: (plan) => plan.bucket_minutes, cell: (plan) => (plan.bucket_minutes === 1440 ? t("Theo ngày", "Daily") : t("Theo tuần", "Weekly")) },
+    { id: "revision", header: "Rev", align: "right", sortValue: (plan) => plan.dataset_revision, cell: (plan) => plan.dataset_revision },
+    { id: "created", header: t("Tạo lúc", "Created"), sortValue: (plan) => plan.created_at, cell: (plan) => <span className="text-muted-foreground">{formatDateTime(plan.created_at)}</span> },
+  ];
   const filtered = Boolean(search || status !== "all");
   const mutation = useMutation({ mutationFn: () => createProductionPlan({ dataset_id: effectiveDatasetId, period_start: startDay * 1440, period_end: effectiveEndDay * 1440, bucket_minutes: bucketMinutes }), onSuccess: async (plan) => { await queryClient.invalidateQueries({ queryKey: ["production-plans"] }); router.push(`/planning/${plan.id}`); } });
   function selectDataset(value: string) { setDatasetId(value); setStartDay(0); setEndDay(null); }
@@ -60,8 +73,20 @@ function PlanningContent() {
 
   return (
     <>
-      <PageHeader title={t("Kế hoạch tổng hợp", "Aggregate planning")} description={t("Cân đối nhu cầu với công suất theo kỳ (tháng/quý) trước khi lập lịch chi tiết. Chọn kỳ, độ phân giải và revision dữ liệu.", "Balance demand against capacity per period (month/quarter) before detailed scheduling. Choose the period, granularity and data revision.")} />
-      <SectionHeading title={t("Tạo kế hoạch mới", "Create a new plan")} className="mt-0" />
+      <PageHeader title={t("Kế hoạch tổng hợp", "Aggregate planning")} description={t("Cân đối nhu cầu với công suất theo kỳ trước khi lập lịch chi tiết.", "Balance demand against capacity per period before detailed scheduling.")} />
+      {plans.isLoading && <SkeletonTable rows={3} />}
+      {plans.isError && <ErrorState title={t("Không thể tải danh sách kế hoạch", "Could not load plans")} message={t("Dữ liệu hiện chưa sẵn sàng.", "The data is not available right now.")} onRetry={() => void plans.refetch()} />}
+      {allPlans.length > 0 && <>
+        <SectionHeading title={t("Các kế hoạch đã tạo", "Plans created")} className="mt-0" />
+        <TableToolbar search={search} onSearch={setSearch} placeholder={t("Tên dữ liệu hoặc mã kế hoạch", "Dataset name or plan ID")} count={items.length} onClear={filtered ? () => { setSearch(""); setStatus("all"); } : undefined}>
+          <FilterChip label={t("Trạng thái", "Status")} value={status === "all" ? null : status} onChange={(value) => setStatus(value ?? "all")}
+            options={[{ value: "READY", label: t("Sẵn sàng", "Ready"), count: allPlans.filter((plan) => plan.status === "READY").length }, { value: "NEEDS_ATTENTION", label: t("Cần xem xét", "Needs review"), count: allPlans.filter((plan) => plan.status !== "READY").length }]} />
+        </TableToolbar>
+        <DataTable rows={items} columns={planColumns} rowKey={(plan) => plan.id} rowHref={(plan) => `/planning/${plan.id}`} initialSort={{ id: "created", desc: true }} pageSize={10} label={t("Danh sách kế hoạch", "Plan list")}
+          empty={<EmptyState icon={<Search />} title={t("Không có kết quả phù hợp", "No matching results")} description={t("Thử thay đổi từ khóa hoặc trạng thái.", "Try another keyword or status.")} action={<Button variant="outline" onClick={() => { setSearch(""); setStatus("all"); }}>{t("Xóa lọc", "Clear filters")}</Button>} />} />
+      </>}
+
+      <SectionHeading title={t("Tạo kế hoạch mới", "Create a new plan")} className={allPlans.length > 0 ? undefined : "mt-0"} />
       <form className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_320px]" onSubmit={submit} noValidate>
         <div className="grid gap-4">
           <FormStep step="1" title={t("Nguồn kế hoạch", "Plan source")} description={t("Kế hoạch được khóa theo revision hiện tại của master data.", "The plan is locked to the current master data revision.")}>
@@ -69,10 +94,10 @@ function PlanningContent() {
               <Field label={t("Bộ dữ liệu", "Dataset")} hint={t(`${selectedDataset?.counts.products} sản phẩm · ${selectedDataset?.counts.machines} máy · ${selectedDataset?.counts.lots} lô`, `${selectedDataset?.counts.products} products · ${selectedDataset?.counts.machines} machines · ${selectedDataset?.counts.lots} lots`)}>
                 <Select value={effectiveDatasetId} onValueChange={selectDataset}>
                   <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-                  <SelectContent>{datasets.data.items.map((dataset) => <SelectItem key={dataset.id} value={dataset.id}>{formatInputName(dataset.name)} · rev {dataset.revision} · {dataset.counts.orders} {t("đơn", "orders")}</SelectItem>)}</SelectContent>
+                  <SelectContent>{datasets.data.items.map((dataset) => <SelectItem key={dataset.id} value={dataset.id} disabled={dataset.schema_version === 5}>{formatInputName(dataset.name)} · rev {dataset.revision} · {dataset.counts.orders} {t("đơn", "orders")}{dataset.schema_version === 5 ? t(" · mô hình 5 công đoạn: lập lịch trực tiếp", " · 5-stage model: schedule directly") : ""}</SelectItem>)}</SelectContent>
                 </Select>
               </Field>
-            ) : <Alert className="border-warning/40 bg-warning-soft"><AlertDescription>{t("Chưa có dữ liệu.", "No data yet.")} <Link href="/master-data" className="font-semibold text-primary hover:underline">{t("Mở quản lý master data", "Open master data management")}</Link></AlertDescription></Alert>}
+            ) : <Alert className="border-warning/40 bg-warning-soft"><AlertDescription>{t("Chưa có dữ liệu.", "No data yet.")} <Link href="/scenarios" className="font-semibold text-primary hover:underline">{t("Nhập một kịch bản", "Import a scenario")}</Link></AlertDescription></Alert>}
           </FormStep>
           <FormStep step="2" title={t("Kỳ và độ phân giải", "Period and granularity")} description={t("Giới hạn phạm vi để tập trung vào nhu cầu cần ra quyết định.", "Narrow the scope to the demand that needs a decision.")}>
             <div className="grid gap-4 md:grid-cols-3">
@@ -105,34 +130,6 @@ function PlanningContent() {
         </aside>
       </form>
 
-      <SectionHeading title={t("Các kế hoạch đã tạo", "Plans created")} aside={<span className="text-sm text-muted-foreground">{plans.data?.total ?? 0} {t("kế hoạch", "plans")}</span>} />
-      <FilterBar>
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input aria-label={t("Tìm kế hoạch", "Search plans")} className="pl-8" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder={t("Tên dữ liệu hoặc mã kế hoạch", "Dataset name or plan ID")} />
-        </div>
-        <Select value={status} onValueChange={(value) => { setStatus(value); setPage(1); }}>
-          <SelectTrigger className="w-full md:w-48" aria-label={t("Trạng thái", "Status")}><SelectValue /></SelectTrigger>
-          <SelectContent><SelectItem value="all">{t("Tất cả trạng thái", "All statuses")}</SelectItem><SelectItem value="READY">{t("Sẵn sàng", "Ready")}</SelectItem><SelectItem value="NEEDS_ATTENTION">{t("Cần xem xét", "Needs review")}</SelectItem></SelectContent>
-        </Select>
-        {filtered && <Button variant="ghost" onClick={() => { setSearch(""); setStatus("all"); setPage(1); }}>{t("Xóa lọc", "Clear filters")}</Button>}
-      </FilterBar>
-      {plans.isLoading && <SkeletonCards count={3} />}
-      {plans.isError && <ErrorState title={t("Không thể tải danh sách kế hoạch", "Could not load plans")} message={t("Dữ liệu hiện chưa sẵn sàng.", "The data is not available right now.")} onRetry={() => void plans.refetch()} />}
-      {plans.data && items.length === 0 && <EmptyState icon={<BarChart3 />} title={filtered ? t("Không có kết quả phù hợp", "No matching results") : t("Chưa có kế hoạch tổng hợp", "No aggregate plans yet")} description={filtered ? t("Thử thay đổi từ khóa hoặc trạng thái.", "Try another keyword or status.") : t("Hoàn tất biểu mẫu phía trên để tạo kế hoạch đầu tiên.", "Complete the form above to create the first plan.")} />}
-      {items.length > 0 && <>
-        <div className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr))]">
-          {items.map((plan) => (
-            <Link href={`/planning/${plan.id}`} key={plan.id} className="flex flex-col gap-2 rounded-lg border bg-card p-5 shadow-card transition-[border-color,transform] hover:-translate-y-0.5 hover:border-primary">
-              <div className="flex items-center justify-between gap-2"><span className="text-xs font-medium text-muted-foreground">Revision {plan.dataset_revision}</span><Badge variant={plan.status === "READY" ? "success" : "warning"}>{plan.status === "READY" ? t("Sẵn sàng", "Ready") : t("Cần xem xét", "Needs review")}</Badge></div>
-              <h3 className="text-lg leading-snug font-semibold">{formatInputName(plan.input_name)}</h3>
-              <p className="text-sm text-muted-foreground">{formatDuration(plan.period_end - plan.period_start)} · {plan.bucket_minutes === 1440 ? t("theo ngày", "daily") : t("theo tuần", "weekly")}</p>
-              <small className="text-xs text-muted-foreground">{dateLabel(plan.time_origin, plan.period_start / 1440)} – {dateLabel(plan.time_origin, plan.period_end / 1440)} · {t("tạo", "created")} {formatDateTime(plan.created_at)}</small>
-            </Link>
-          ))}
-        </div>
-        <Pagination page={page} pageCount={Math.max(1, Math.ceil((plans.data?.total ?? 0) / pageSize))} busy={plans.isFetching} onChange={setPage} label={t("Phân trang kế hoạch", "Plan pagination")} />
-      </>}
     </>
   );
 }

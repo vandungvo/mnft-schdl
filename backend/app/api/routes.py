@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from ..audit import AuditService
 from ..database import session_dependency
+from ..decisions import DecisionService
 from ..errors import ApplicationError
 from ..master_data import MasterDataService
 from ..models import MasterDataset, ProductionPlan, RunStatus, ScheduleRun, utc_now
@@ -35,6 +36,9 @@ from ..schemas import (
     ProductionPlanList,
     ProductionPlanSummary,
     ProductUpdate,
+    ScheduleDecisionCreate,
+    ScheduleDecisionList,
+    ScheduleDecisionResponse,
     ScheduleRunCreate,
     ScheduleRunDetail,
     ScheduleRunList,
@@ -497,6 +501,56 @@ def delete_master_dataset(dataset_id: str, session: DbSession) -> Response:
     MasterDataService(session).delete(dataset_id)
     AuditService(session).record("master_data.deleted", "master_dataset", dataset_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get(
+    "/master-data/datasets/{dataset_id}/decisions",
+    response_model=ScheduleDecisionList,
+    tags=["decisions"],
+)
+def list_schedule_decisions(
+    dataset_id: str,
+    session: DbSession,
+    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> ScheduleDecisionList:
+    items, total = DecisionService(session).list(dataset_id, limit=limit, offset=offset)
+    return ScheduleDecisionList(
+        items=[ScheduleDecisionResponse.model_validate(item) for item in items],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
+
+
+@router.post(
+    "/master-data/datasets/{dataset_id}/decisions",
+    response_model=ScheduleDecisionResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["decisions"],
+)
+def commit_schedule_decision(
+    dataset_id: str, payload: ScheduleDecisionCreate, response: Response, session: DbSession
+) -> ScheduleDecisionResponse:
+    decision, created = DecisionService(session).create(dataset_id, payload)
+    if not created:
+        # Re-sent legacy import: same record, nothing new happened.
+        response.status_code = status.HTTP_200_OK
+        return ScheduleDecisionResponse.model_validate(decision)
+    AuditService(session).record(
+        "schedule.committed",
+        "master_dataset",
+        dataset_id,
+        details={
+            "decision_id": decision.id,
+            "run_id": decision.run_id,
+            "alternative": decision.alternative,
+            "policy": decision.policy,
+            "revision": decision.dataset_revision,
+            "imported": decision.legacy_key is not None,
+        },
+    )
+    return ScheduleDecisionResponse.model_validate(decision)
 
 
 @router.post(

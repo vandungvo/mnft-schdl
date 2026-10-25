@@ -28,7 +28,7 @@ const metricLabels: Record<string, [string, string]> = {
   makespan: ["Hoàn tất lô bắt buộc", "Required-lot completion"],
   schedule_end: ["Kết thúc lịch (gồm làm trước)", "Schedule end (incl. build-ahead)"],
   weighted_tardiness: ["Độ trễ có trọng số", "Weighted tardiness"],
-  setup_minutes: ["Thời gian chuẩn bị", "Setup time"],
+  setup_minutes: ["Chuẩn bị máy", "Setup time"],
   idle_minutes: ["Thời gian nhàn rỗi", "Idle time"],
   safety_shortfall: ["Thiếu tồn kho an toàn", "Safety-stock shortfall"],
   productive_utilization: ["Hiệu suất sản xuất", "Productive utilisation"],
@@ -129,7 +129,7 @@ export default function RunDetailPage() {
         meta={<RunStatusBadge status={run.status} />}
         description={`${algorithmInfo(run.algorithm).label} · seed ${run.seed} · ${t(`ngân sách ${run.time_budget_seconds} giây`, `budget ${run.time_budget_seconds} s`)}`}
         actions={<>
-          {run.dataset_id && run.status === "SUCCEEDED" && <Button variant="outline" asChild><Link href={`/decide/${run.dataset_id}?run=${run.id}&snap=${run.input_hash.slice(0, 12)}`}><Compass />{t("Mở trong bàn điều độ", "Open in scheduling desk")}</Link></Button>}
+          {run.dataset_id && run.status === "SUCCEEDED" && <Button variant="outline" asChild><Link href={`/scenarios/${run.dataset_id}?tab=schedule&run=${run.id}&snap=${run.input_hash.slice(0, 12)}`}><Compass />{t("Mở trong kịch bản", "Open in scenario")}</Link></Button>}
           {["FAILED", "CANCELLED"].includes(run.status) && <Button disabled={retry.isPending} onClick={() => retry.mutate()}><RotateCw />{retry.isPending ? t("Đang tạo lại…", "Retrying…") : t("Chạy lại cùng dữ liệu", "Retry with the same data")}</Button>}
         </>} />
 
@@ -151,7 +151,7 @@ export default function RunDetailPage() {
 
       <Panel title={t("Khả năng tái lập", "Reproducibility")}>
         <DescList items={[
-          [t("Nguồn dữ liệu", "Data source"), run.plan_id ? <Link href={`/planning/${run.plan_id}`} className={link}>{t("Kế hoạch tổng hợp", "Aggregate plan")} · revision {run.dataset_revision}</Link> : run.dataset_id ? <Link href={`/master-data/${run.dataset_id}`} className={link}>Master data revision {run.dataset_revision}</Link> : run.dataset_revision ? t(`Snapshot revision ${run.dataset_revision} · nguồn gốc đã xóa`, `Snapshot revision ${run.dataset_revision} · source deleted`) : t("JSON dùng một lần", "One-off JSON")],
+          [t("Nguồn dữ liệu", "Data source"), run.plan_id ? <Link href={`/planning/${run.plan_id}`} className={link}>{t("Kế hoạch tổng hợp", "Aggregate plan")} · revision {run.dataset_revision}</Link> : run.dataset_id ? <Link href={`/scenarios/${run.dataset_id}?tab=products`} className={link}>{t("Dữ liệu kịch bản", "Scenario data")} · revision {run.dataset_revision}</Link> : run.dataset_revision ? t(`Snapshot revision ${run.dataset_revision} · nguồn gốc đã xóa`, `Snapshot revision ${run.dataset_revision} · source deleted`) : t("JSON dùng một lần", "One-off JSON")],
           ...(run.retry_of_id ? [[t("Lần chạy gốc", "Original run"), <Link key="retry" href={`/runs/${run.retry_of_id}`} className={link}>{run.retry_of_id.slice(0, 8).toUpperCase()} →</Link>] as [string, React.ReactNode]] : []),
           [t("Trạng thái solver", "Solver status"), solverStatusLabel(run.solver_status)],
           [t("Mốc thời gian", "Time origin"), formatDateTime(run.time_origin)],

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
 
 import { useI18n } from "@/components/i18n-provider";
@@ -28,6 +28,18 @@ interface PageHeaderProps {
 
 export function PageHeader({ eyebrow, title, description, back, actions, crumb, meta }: PageHeaderProps) {
   useCrumb(crumb);
+  const docTitle = typeof title === "string" ? title : crumb;
+  // Browser tab names the page (orientation when several tabs are open). Next streams its default
+  // metadata title after hydration, so re-apply ours whenever <head> changes while this page is shown.
+  useEffect(() => {
+    if (!docTitle) return;
+    const wanted = `${docTitle} · PlanWise`;
+    const apply = () => { if (document.title !== wanted) document.title = wanted; };
+    apply();
+    const observer = new MutationObserver(apply);
+    observer.observe(document.head, { subtree: true, childList: true, characterData: true });
+    return () => observer.disconnect();
+  }, [docTitle]);
   return (
     <header className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
       <div className="min-w-0">

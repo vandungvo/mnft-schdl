@@ -14,7 +14,7 @@ export function AppNavigation({ onNavigate }: { onNavigate?: () => void }) {
     <nav aria-label={t("Điều hướng chính", "Main navigation")} className="grid gap-5">
       {NAV_GROUPS.map((group) => (
         <div key={group.label[0]} className="grid gap-0.5">
-          <span className="px-2.5 pb-1 text-[11px] font-semibold tracking-wide text-sidebar-foreground/70 uppercase">{t(group.label)}</span>
+          <span className="px-2.5 pb-1 text-[11px] font-semibold tracking-wide text-sidebar-foreground uppercase">{t(group.label)}</span>
           {group.items.map((item) => {
             const active = isActive(item.href, pathname);
             const Icon = item.icon;

@@ -83,3 +83,10 @@ export function algorithmInfo(value: string): AlgorithmInfo {
     note: "",
   };
 }
+
+/** Methods that exist for one production model only (mirrors models.common.experiment.methods_for). */
+const SCHEMA5_ONLY: Algorithm[] = ["cp_rolling"];
+
+export function availableFor(value: Algorithm, schemaVersion: number | undefined): boolean {
+  return schemaVersion === 5 || !SCHEMA5_ONLY.includes(value);
+}

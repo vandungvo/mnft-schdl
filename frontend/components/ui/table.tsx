@@ -3,11 +3,31 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
+/** WCAG 2.1.1: a table that scrolls sideways must be reachable by keyboard; only then is it a tab stop. */
+function useOverflowFocusable() {
+  const ref = React.useRef<HTMLDivElement>(null)
+  const [overflowing, setOverflowing] = React.useState(false)
+  React.useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const check = () => setOverflowing(el.scrollWidth > el.clientWidth + 1)
+    check()
+    const observer = new ResizeObserver(check)
+    observer.observe(el)
+    if (el.firstElementChild) observer.observe(el.firstElementChild)
+    return () => observer.disconnect()
+  }, [])
+  return { ref, overflowing }
+}
+
 function Table({ className, ...props }: React.ComponentProps<"table">) {
+  const { ref, overflowing } = useOverflowFocusable()
   return (
     <div
+      ref={ref}
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      tabIndex={overflowing ? 0 : undefined}
+      className="relative w-full overflow-x-auto rounded-[inherit] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
     >
       <table
         data-slot="table"

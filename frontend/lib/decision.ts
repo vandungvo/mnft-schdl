@@ -1,6 +1,7 @@
 import { algorithmInfo } from "./algorithms";
 import { intlLocale, tr } from "./locale";
-import type { ScheduleOperation, ScheduleRunDetail, SchedulingInputDocument } from "./types";
+import { plantOf } from "./plant";
+import type { AnySchedulingInput, ScheduleOperation, ScheduleRunDetail } from "./types";
 
 /* ---------- objective terms & policies ---------- */
 
@@ -11,10 +12,14 @@ const TERM_TEXT: Record<string, [[string, string], [string, string]]> = {
   weighted_tardiness: [["Trễ có trọng số", "Weighted tardiness"], ["Σ ưu tiên đơn × số phút trễ hạn", "Σ order priority × minutes late"]],
   safety_shortfall: [["Thiếu tồn an toàn", "Safety-stock shortfall"], ["số đơn vị thiếu so với tồn an toàn, cộng qua các mốc cuối ngày", "units below safety stock, summed over end-of-day checkpoints"]],
   makespan: [["Hoàn tất lô bắt buộc", "Required-lot completion"], ["phút từ đầu horizon tới khi lô bắt buộc cuối cùng xong QC", "minutes from horizon start until the last required lot clears QC"]],
-  setup_minutes: [["Setup", "Setup"], ["phút đổi việc trên máy", "changeover minutes on machines"]],
+  setup_minutes: [["Chuẩn bị máy", "Setup"], ["phút đổi việc trên máy", "changeover minutes on machines"]],
   idle_minutes: [["Thời gian rảnh", "Idle time"], ["phút khả dụng không dùng trong các ca máy có bật", "available minutes left unused in opened machine shifts"]],
   maintenance_minutes: [["Bảo trì khuôn", "Mold maintenance"], ["phút bảo trì — hao mòn khuôn", "maintenance minutes — mold wear"]],
   surplus_holding: [["Dư tồn", "Surplus stock"], ["số đơn vị vượt tồn an toàn, cộng qua các mốc", "units above safety stock, summed over checkpoints"]],
+  // schema 5 (5-stage line, fixed runs)
+  nonproductive_minutes: [["Thời gian không sản xuất", "Non-productive time"], ["phút của các ca đã bật mà máy không gia công (rảnh, chuẩn bị, bảo trì)", "minutes of opened shifts not spent processing (idle, setup, maintenance)"]],
+  reserve_units: [["Sản xuất dự trữ", "Reserve production"], ["số đơn vị làm trước cho nhu cầu dài hạn (phương án dự trữ được chọn)", "units pulled ahead for long-term demand (chosen reserve options)"]],
+  btp_end_units: [["BTP tồn cuối kỳ", "Semi-finished at end"], ["tổng đơn vị bán thành phẩm còn lại cuối horizon", "semi-finished units left at the end of the horizon"]],
 };
 
 export const SERVICE_KEYS = ["weighted_tardiness", "safety_shortfall"];
@@ -67,7 +72,7 @@ export interface Alternative {
   late: number;
 }
 
-export function toAlternative(run: ScheduleRunDetail, input: SchedulingInputDocument | undefined, all: ScheduleRunDetail[]): Alternative | null {
+export function toAlternative(run: ScheduleRunDetail, input: AnySchedulingInput | undefined, all: ScheduleRunDetail[]): Alternative | null {
   if (run.status !== "SUCCEEDED" || !run.metrics) return null;
   const info = algorithmInfo(run.algorithm);
   const sameAlgo = all.filter((item) => item.algorithm === run.algorithm && item.status === "SUCCEEDED").length;
@@ -78,7 +83,8 @@ export function toAlternative(run: ScheduleRunDetail, input: SchedulingInputDocu
     metrics,
     algorithm: run.algorithm,
     label: sameAlgo > 1 ? `${info.short} · seed ${run.seed}` : info.short,
-    shifts: new Set(run.operations.map((op) => `${op.machine}|${op.shift}`)),
+    // Machines running around the clock (shift null) open no rostered shift.
+    shifts: new Set(run.operations.filter((op) => op.shift != null).map((op) => `${op.machine}|${op.shift}`)),
     late: typeof metrics.late_orders === "number" ? metrics.late_orders : input ? deliveriesOf(input, run.operations).filter((d) => d.tardiness > 0).length : 0,
   };
 }
@@ -162,22 +168,24 @@ export function shortlist(alts: Alternative[], weights: Record<string, number>, 
 
 export interface Delivery { order: string; product: string; quantity: number; time: number; due: number; tardiness: number; priority: number; urgent: boolean }
 
-export function deliveriesOf(input: SchedulingInputDocument, operations: ScheduleOperation[]): Delivery[] {
+export function deliveriesOf(input: AnySchedulingInput, operations: ScheduleOperation[]): Delivery[] {
+  const plant = plantOf(input);
   const qc = new Map<string, number>();
-  for (const op of operations) if (op.stage === "qc") qc.set(op.lot, op.end);
-  return input.orders.map((order) => {
+  for (const op of operations) if (op.stage === plant.lastStage) qc.set(op.lot, op.end);
+  return plant.orders.map((order) => {
     const ends = Object.keys(order.lot_allocations).map((lot) => qc.get(lot) ?? Number.POSITIVE_INFINITY);
     const time = Math.max(order.release, ...ends);
     return { order: order.id, product: order.product, quantity: order.quantity, time, due: order.due, tardiness: Math.max(0, time - order.due), priority: order.priority, urgent: order.urgent };
   });
 }
 
-export function activeShifts(input: SchedulingInputDocument | undefined, operations: ScheduleOperation[]): Array<{ machine: string; shift: string; start: number; end: number }> {
-  const keys = new Set(operations.map((op) => `${op.machine}|${op.shift}`));
+export function activeShifts(input: AnySchedulingInput | undefined, operations: ScheduleOperation[]): Array<{ machine: string; shift: string; start: number; end: number }> {
+  const plant = input ? plantOf(input) : null;
+  const keys = new Set(operations.filter((op) => op.shift != null).map((op) => `${op.machine}|${op.shift}`));
   const out: Array<{ machine: string; shift: string; start: number; end: number }> = [];
   for (const key of keys) {
     const [machine, shift] = key.split("|");
-    const def = input?.machines[machine]?.shifts.find((item) => item.id === shift);
+    const def = plant?.machine(machine)?.shifts.find((item) => item.id === shift);
     if (def) out.push({ machine, shift, start: def.start, end: def.end });
     else {
       const ops = operations.filter((op) => op.machine === machine && op.shift === shift);

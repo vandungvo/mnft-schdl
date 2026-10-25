@@ -1,0 +1,30 @@
+{
+  "method": "cp_sat_cold_long",
+  "seed": 11,
+  "run_id": "20261004T172544670619Z",
+  "input_sha256": "ff97168ecb584636c3b40cb31047b7e5c84dc5e91a754ce3b430052a8adc6a6a",
+  "budget_seconds": 43200.0,
+  "algorithm_seconds": 43213.8782454,
+  "environment": {
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "ortools": "9.15.6755",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "AMD64 Family 23 Model 104 Stepping 1, AuthenticAMD",
+    "workers": 8
+  },
+  "hint_source": null,
+  "status": "UNKNOWN",
+  "build_seconds": 1.8603166000102647,
+  "solve_seconds": 43208.543294400006,
+  "history": [],
+  "bound": null,
+  "bound_scope": "full_static_model",
+  "response_stats": "CpSolverResponse summary:\nstatus: UNKNOWN\nobjective: 7623720296649\nbest_bound: 160009422\nintegers: 28605\nbooleans: 233101\nconflicts: 10120950\nbranches: 36266319\npropagations: 35407231117\ninteger_propagations: 5218425153\nrestarts: 16106\nlp_iterations: 0\nwalltime: 43208.5\nusertime: 43208.5\ndeterministic_time: 70842.3\ngap_integral: 2.10116e+06\n",
+  "validation": {
+    "valid": false,
+    "errors": [
+      "No schedule returned"
+    ]
+  },
+  "total_seconds": 43213.8884309
+}

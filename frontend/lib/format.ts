@@ -27,6 +27,7 @@ export function formatInputName(value: string): string {
 export function solverStatusLabel(value: string | null): string {
   const labels: Record<string, string> = {
     HEURISTIC_FEASIBLE: tr("Có lịch khả thi", "Feasible schedule"),
+    HEURISTIC_FALLBACK: tr("Dùng lịch dự phòng EDD", "EDD fallback schedule"),
     OPTIMAL: tr("Tối ưu", "Optimal"),
     FEASIBLE: tr("Có lịch khả thi", "Feasible schedule"),
     INFEASIBLE: tr("Không có lịch khả thi", "No feasible schedule"),

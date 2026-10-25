@@ -45,7 +45,10 @@ export interface ScheduleRunSummary {
 
 export interface ScheduleOperation {
   id: number;
+  /** Schema 4: the lot. Schema 5: the run id (a lot is a run of the last stage). */
   lot: string;
+  /** Schema 5: what the run makes (semi-finished code or product). */
+  item?: string | null;
   stage: string;
   machine: string;
   block_start: number;
@@ -56,7 +59,8 @@ export interface ScheduleOperation {
   cycles_after: number;
   mold: string | null;
   window: number;
-  shift: string;
+  /** null on a machine that runs around the clock (schema 5 heat treatment). */
+  shift: string | null;
 }
 
 export interface ScheduleRunDetail extends ScheduleRunSummary {
@@ -87,6 +91,8 @@ export interface MasterDatasetCounts {
   machines: number;
   orders: number;
   lots: number;
+  /** Schema 5: fixed runs over every stage (lots = runs of the last stage). */
+  runs?: number;
 }
 
 export interface MasterDatasetSummary {
@@ -137,7 +143,7 @@ export interface OrderInput {
 }
 
 export interface SchedulingInputDocument {
-  schema_version: number;
+  schema_version: 4;
   name: string;
   seed: number;
   origin: string;
@@ -172,15 +178,101 @@ export interface SchedulingInputDocument {
   assumptions: string[];
 }
 
-export interface MasterDatasetDetail extends MasterDatasetSummary {
-  input: SchedulingInputDocument;
+/** Schema 5: fixed-size runs per stage on a 5-stage line (models/common/stage_runs). */
+export interface SchedulingInputV5 {
+  schema_version: 5;
+  derived_from?: string;
+  name: string;
+  origin: string;
+  time_unit: "minute";
+  horizon: number;
+  stages: string[];
+  run_size: Record<string, number>;
+  transfer_minutes: Record<string, number>;
+  checkpoints: number[];
+  machine_initial_state: string;
+  shift_template: Record<string, { start: number; end: number; breaks?: Array<[number, number]> }>;
+  /** route: {stage: item made at that stage}, the last stage makes the product itself. */
+  products: Record<string, { route: Record<string, string>; initial_stock: number; safety_stock: number; stock_cap: number }>;
+  btp: Record<string, { initial_stock: number; capacity?: number }>;
+  machines: Record<string, {
+    stage: string;
+    minutes_per_unit: Record<string, number>;
+    fixed_minutes: number;
+    setup: Record<string, Record<string, number>>;
+    mold_change_minutes?: number;
+    downtime?: Array<[number, number]>;
+    calendar?: "shifts" | "continuous";
+  }>;
+  molds?: Record<string, { item: string; cavities: number; limit_cycles: number; initial_cycles: number; maintenance_minutes: number; after_maintenance: string }>;
+  orders: Array<{ id: string; product: string; quantity: number; due: number; priority: number; release: number; initial_allocated: number; lot_allocations: Record<string, number> }>;
+  long_term_orders?: Array<{ id: string; product: string; quantity: number; due: number }>;
+  weights: Record<string, number>;
+  objective_tiers?: { tier1?: string[]; scale?: number };
+  reserve_options?: Record<string, { pull_ahead_for: string }>;
+  runs: Array<{ id: string; stage: string; item: string; reserve_option?: string }>;
 }
+
+export type AnySchedulingInput = SchedulingInputDocument | SchedulingInputV5;
+
+export function isV5(input: AnySchedulingInput | null | undefined): input is SchedulingInputV5 {
+  return input?.schema_version === 5;
+}
+
+export interface MasterDatasetDetail extends MasterDatasetSummary {
+  input: AnySchedulingInput;
+}
+
+/** A schema-4 scenario: the record-level editors (products, BTP, machines, orders) work on this. */
+export type MasterDatasetDetailV4 = MasterDatasetDetail & { input: SchedulingInputDocument };
 
 export interface MasterDatasetList {
   items: MasterDatasetSummary[];
   total: number;
   limit: number;
   offset: number;
+}
+
+/** A committed schedule (server-side, append-only). Figures are as shown when it was committed. */
+export interface ScheduleDecision {
+  id: string;
+  dataset_id: string | null;
+  run_id: string | null;
+  dataset_revision: number | null;
+  input_hash: string;
+  algorithm: Algorithm;
+  seed: number;
+  alternative: string;
+  policy: string;
+  score: string;
+  late: number;
+  shortfall: number;
+  shifts: number;
+  reason: string;
+  actor: string;
+  decided_at: string;
+  created_at: string;
+}
+
+export interface ScheduleDecisionList {
+  items: ScheduleDecision[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface ScheduleDecisionCreate {
+  run_id: string;
+  alternative: string;
+  policy: string;
+  score: string;
+  late: number;
+  shortfall: number;
+  shifts: number;
+  reason: string;
+  /** Only with legacy_key: importing a decision recorded in the browser before the server stored them. */
+  decided_at?: string;
+  legacy_key?: string;
 }
 
 export interface ProductionPlanSummary {

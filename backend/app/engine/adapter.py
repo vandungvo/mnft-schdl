@@ -8,9 +8,34 @@ from dataclasses import dataclass
 from typing import Any
 
 import ortools
-from models.common.evaluate import evaluate, validate
+from models.common import evaluate as evaluate_v4
 from models.common.experiment import execute
 from models.common.instance import upgrade_input
+from models.common.stage_runs import evaluate as evaluate_v5
+
+# Columns of schedule_operations; anything else an engine returns stays out of the row.
+OPERATION_FIELDS = (
+    "stage", "machine", "block_start", "start", "end", "setup_minutes",
+    "maintenance_minutes", "cycles_after", "mold", "window", "shift",
+)
+
+
+def _checker(input_data: dict[str, Any]):  # type: ignore[no-untyped-def]
+    """(validate, evaluate) of the production model the input belongs to."""
+    module = evaluate_v5 if input_data.get("schema_version") == 5 else evaluate_v4
+    return module.validate, module.evaluate
+
+
+def _stored_rows(operations: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Engine rows -> schedule_operations rows. Schema 5 names a row by its run and
+    item; it is stored in `lot` (the run id) and `item`."""
+    rows = []
+    for op in operations:
+        row = {key: op.get(key) for key in OPERATION_FIELDS}
+        row["lot"] = op["run"] if "run" in op else op["lot"]
+        row["item"] = op.get("item")
+        rows.append(row)
+    return rows
 
 
 @dataclass(frozen=True, slots=True)
@@ -69,6 +94,7 @@ class SchedulingEngine:
         if not operations:
             raise NoScheduleError(solver_status, metadata)
 
+        validate, evaluate = _checker(input_data)
         validation = validate(input_data, operations)
         if not validation["valid"]:
             raise InvalidScheduleError(validation)
@@ -86,7 +112,7 @@ class SchedulingEngine:
                 }
             )
         return EngineResult(
-            operations=operations,
+            operations=_stored_rows(operations),
             solver_status=solver_status,
             solver_metadata=metadata,
             validation=validation,

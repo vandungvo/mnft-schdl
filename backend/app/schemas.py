@@ -5,7 +5,15 @@ from typing import Annotated, Any, Literal
 
 from models.common.experiment import METHODS
 from models.common.instance import check_input, upgrade_input
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Discriminator,
+    Field,
+    Tag,
+    field_validator,
+    model_validator,
+)
 
 NonNegativeInt = Annotated[int, Field(ge=0)]
 PositiveInt = Annotated[int, Field(gt=0)]
@@ -151,6 +159,149 @@ class SchedulingInput(StrictModel):
         return self.model_dump(mode="json", exclude_none=True)
 
 
+# ---------- schema 5: fixed runs per stage (models/common/stage_runs) ----------
+# A different production model from schema 4, not a newer version of it: every stage
+# processes fixed-size runs, molds are a shared pool, heat treatment may run around the
+# clock. Kept as one validated document (no normalised tables).
+
+
+class ShiftTemplate(StrictModel):
+    start: NonNegativeInt
+    end: PositiveInt
+    breaks: list[tuple[NonNegativeInt, PositiveInt]] = Field(default_factory=list)
+
+
+class ProductV5(StrictModel):
+    route: dict[str, str] = Field(min_length=1)
+    initial_stock: NonNegativeInt
+    safety_stock: NonNegativeInt
+    stock_cap: PositiveInt
+
+
+class BtpStock(StrictModel):
+    initial_stock: NonNegativeInt
+    capacity: PositiveInt | None = None
+
+
+class MachineV5(StrictModel):
+    stage: str = Field(min_length=1, max_length=40)
+    # 0 is legal: a batch furnace takes fixed_minutes whatever the run size.
+    minutes_per_unit: dict[str, Annotated[int | float, Field(ge=0)]] = Field(min_length=1)
+    fixed_minutes: NonNegativeInt
+    setup: dict[str, dict[str, NonNegativeInt]] = Field(min_length=1)
+    mold_change_minutes: NonNegativeInt | None = None
+    downtime: list[tuple[NonNegativeInt, PositiveInt]] = Field(default_factory=list)
+    calendar: Literal["shifts", "continuous"] | None = None
+
+
+class MoldV5(StrictModel):
+    item: str = Field(min_length=1, max_length=100)
+    cavities: PositiveInt
+    limit_cycles: PositiveInt
+    initial_cycles: NonNegativeInt
+    maintenance_minutes: PositiveInt
+    after_maintenance: str = Field(min_length=1, max_length=100)
+
+
+class OrderV5(StrictModel):
+    id: str = Field(min_length=1, max_length=100)
+    product: str = Field(min_length=1, max_length=100)
+    quantity: PositiveInt
+    due: NonNegativeInt
+    priority: PositiveInt
+    release: NonNegativeInt
+    initial_allocated: NonNegativeInt
+    lot_allocations: dict[str, PositiveInt]
+
+    @model_validator(mode="after")
+    def validate_timing(self) -> OrderV5:
+        if self.release > self.due:
+            raise ValueError("Order release must be less than or equal to due")
+        return self
+
+
+class LongTermOrder(StrictModel):
+    id: str = Field(min_length=1, max_length=100)
+    product: str = Field(min_length=1, max_length=100)
+    quantity: PositiveInt
+    due: NonNegativeInt
+
+
+class ObjectiveTiers(StrictModel):
+    tier1: list[str] = Field(default_factory=list)
+    scale: Annotated[int | float, Field(gt=0)] = 1
+
+
+class ReserveOption(StrictModel):
+    pull_ahead_for: str = Field(min_length=1, max_length=100)
+
+
+class StageRun(StrictModel):
+    id: str = Field(min_length=1, max_length=100)
+    stage: str = Field(min_length=1, max_length=40)
+    item: str = Field(min_length=1, max_length=100)
+    reserve_option: str | None = None
+
+
+class SchedulingInputV5(StrictModel):
+    schema_version: Literal[5]
+    derived_from: str | None = Field(default=None, max_length=200)
+    name: str = Field(min_length=1, max_length=200)
+    origin: str = Field(min_length=1, max_length=80)
+    time_unit: Literal["minute"]
+    horizon: PositiveInt
+    stages: list[str] = Field(min_length=2)
+    run_size: dict[str, PositiveInt]
+    transfer_minutes: dict[str, NonNegativeInt]
+    checkpoints: list[PositiveInt] = Field(min_length=1)
+    machine_initial_state: str = Field(min_length=1, max_length=100)
+    shift_template: dict[str, ShiftTemplate] = Field(min_length=1)
+    products: dict[str, ProductV5] = Field(min_length=1)
+    btp: dict[str, BtpStock] = Field(default_factory=dict)
+    machines: dict[str, MachineV5] = Field(min_length=1)
+    molds: dict[str, MoldV5] = Field(default_factory=dict)
+    orders: list[OrderV5] = Field(min_length=1)
+    long_term_orders: list[LongTermOrder] = Field(default_factory=list)
+    weights: dict[str, Annotated[int | float, Field(ge=0)]] = Field(min_length=1)
+    objective_tiers: ObjectiveTiers | None = None
+    reserve_options: dict[str, ReserveOption] = Field(default_factory=dict)
+    runs: list[StageRun] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_engine_contract(self) -> SchedulingInputV5:
+        if any(order.due > self.horizon for order in self.orders):
+            raise ValueError("Order due must be within the scheduling horizon")
+        if any(checkpoint > self.horizon for checkpoint in self.checkpoints):
+            raise ValueError("Checkpoint must be within the scheduling horizon")
+        from models.common.stage_runs.instance import check as check_v5
+
+        try:
+            check_v5(self.to_engine_dict())
+        except (KeyError, TypeError, ValueError) as exc:
+            message = str(exc) or exc.__class__.__name__
+            raise ValueError(f"Input violates scheduling contract: {message}") from exc
+        return self
+
+    def to_engine_dict(self) -> dict[str, Any]:
+        return self.model_dump(mode="json", exclude_none=True)
+
+
+def _schema_tag(value: Any) -> str:
+    if isinstance(value, dict):
+        version = value.get("schema_version")
+    else:
+        version = getattr(value, "schema_version", None)
+    # Everything but 5 goes to the schema-4 model, which also upgrades legacy v3 documents.
+    return "v5" if version == 5 else "v4"
+
+
+# Either production model; `schema_version` picks the validator.
+AnySchedulingInput = Annotated[
+    Annotated[SchedulingInput, Tag("v4")] | Annotated[SchedulingInputV5, Tag("v5")],
+    Discriminator(_schema_tag),
+]
+
+
 Algorithm = Literal[
     "fifo",
     "edd",
@@ -165,7 +316,7 @@ Algorithm = Literal[
 
 
 class ScheduleRunCreate(StrictModel):
-    input: SchedulingInput | None = None
+    input: AnySchedulingInput | None = None
     dataset_id: str | None = Field(default=None, min_length=36, max_length=36)
     plan_id: str | None = Field(default=None, min_length=36, max_length=36)
     algorithm: Algorithm = "cp_sat_hint"
@@ -281,7 +432,7 @@ class ProductionPlanList(StrictModel):
 
 
 class MasterDatasetImport(StrictModel):
-    input: SchedulingInput
+    input: AnySchedulingInput
     expected_revision: PositiveInt | None = None
 
 
@@ -357,6 +508,8 @@ class MasterDatasetCounts(StrictModel):
     machines: int
     orders: int
     lots: int
+    # Schema 5: fixed runs over every stage (lots = runs of the last stage).
+    runs: int | None = None
 
 
 class MasterDatasetSummary(BaseModel):
@@ -377,7 +530,7 @@ class MasterDatasetSummary(BaseModel):
 
 
 class MasterDatasetDetail(MasterDatasetSummary):
-    input: SchedulingInput
+    input: AnySchedulingInput
 
 
 class MasterDatasetList(StrictModel):
@@ -392,6 +545,7 @@ class ScheduleOperationResponse(BaseModel):
 
     id: int
     lot: str
+    item: str | None = None
     stage: str
     machine: str
     block_start: int
@@ -402,7 +556,7 @@ class ScheduleOperationResponse(BaseModel):
     cycles_after: int
     mold: str | None
     window: int
-    shift: str
+    shift: str | None
 
 
 class ScheduleRunSummary(BaseModel):
@@ -491,3 +645,56 @@ class ApiErrorDetail(StrictModel):
 
 class ApiError(StrictModel):
     error: ApiErrorDetail
+
+
+class ScheduleDecisionCreate(StrictModel):
+    """What the planner saw when committing; algorithm, seed and snapshot come from the run."""
+
+    run_id: str = Field(min_length=1, max_length=36)
+    alternative: str = Field(min_length=1, max_length=200)
+    policy: str = Field(min_length=1, max_length=80)
+    score: str = Field(max_length=80)
+    late: NonNegativeInt
+    shortfall: float = Field(ge=0)
+    shifts: NonNegativeInt
+    reason: str = Field(min_length=1, max_length=2000)
+    # Only for importing decisions recorded in a browser before the server stored them.
+    decided_at: datetime | None = None
+    legacy_key: str | None = Field(default=None, min_length=1, max_length=200)
+
+    @field_validator("reason")
+    @classmethod
+    def reason_is_not_blank(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("reason must not be blank: a decision has to be explainable")
+        return value
+
+
+class ScheduleDecisionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    dataset_id: str | None
+    run_id: str | None
+    dataset_revision: int | None
+    input_hash: str
+    algorithm: str
+    seed: int
+    alternative: str
+    policy: str
+    score: str
+    late: int
+    shortfall: float
+    shifts: int
+    reason: str
+    actor: str
+    decided_at: datetime
+    created_at: datetime
+
+
+class ScheduleDecisionList(StrictModel):
+    items: list[ScheduleDecisionResponse]
+    total: int
+    limit: int
+    offset: int

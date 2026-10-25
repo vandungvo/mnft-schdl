@@ -6,7 +6,8 @@ import { stageLabel } from "./format";
 import { tr } from "./locale";
 import type { MachineInput, SchedulingInputDocument } from "./types";
 
-export const MD_TABS = ["overview", "products", "btp", "machines", "orders", "settings", "history"] as const;
+// "runs" exists for schema-5 scenarios only (fixed runs per stage).
+export const MD_TABS = ["overview", "products", "btp", "machines", "orders", "runs", "settings", "history"] as const;
 export type MdTab = (typeof MD_TABS)[number];
 
 export function isMdTab(value: string | null): value is MdTab {
@@ -235,6 +236,7 @@ export const AUDIT_LABELS: Record<string, readonly [string, string]> = {
   "machine.deleted": ["Xóa máy", "Machine deleted"],
   "order.updated": ["Cập nhật đơn hàng", "Order updated"],
   "order.deleted": ["Xóa đơn hàng", "Order deleted"],
+  "schedule.committed": ["Chốt phương án lịch", "Schedule committed"],
 };
 
 /** Which tab an audit action belongs to, so history rows can link to the record. */

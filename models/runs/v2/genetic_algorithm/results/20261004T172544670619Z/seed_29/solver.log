@@ -1,0 +1,835 @@
+{
+  "status": "HEURISTIC_FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.06587909999871044,
+      "objective": 323465104894,
+      "evaluations": 1
+    },
+    {
+      "seconds": 0.1506149999986519,
+      "objective": 244430115960,
+      "evaluations": 2
+    },
+    {
+      "seconds": 2.25991090000025,
+      "objective": 237830110356,
+      "evaluations": 31
+    },
+    {
+      "seconds": 2.8633173999987775,
+      "objective": 230810113137,
+      "evaluations": 39
+    },
+    {
+      "seconds": 3.8826368000009097,
+      "objective": 204230110426,
+      "evaluations": 53
+    },
+    {
+      "seconds": 4.267673800000921,
+      "objective": 149960115812,
+      "evaluations": 58
+    },
+    {
+      "seconds": 6.039438199997676,
+      "objective": 139760113027,
+      "evaluations": 81
+    },
+    {
+      "seconds": 6.957500500000606,
+      "objective": 128660110227,
+      "evaluations": 93
+    },
+    {
+      "seconds": 8.522950499998842,
+      "objective": 128660110159,
+      "evaluations": 113
+    },
+    {
+      "seconds": 8.59766479999962,
+      "objective": 128660108905,
+      "evaluations": 114
+    },
+    {
+      "seconds": 8.908691399999952,
+      "objective": 128120117362,
+      "evaluations": 118
+    },
+    {
+      "seconds": 9.348833600000944,
+      "objective": 118155113161,
+      "evaluations": 124
+    },
+    {
+      "seconds": 10.944956700001057,
+      "objective": 112875115820,
+      "evaluations": 145
+    },
+    {
+      "seconds": 11.31647779999912,
+      "objective": 102855113295,
+      "evaluations": 150
+    },
+    {
+      "seconds": 13.014463799998339,
+      "objective": 97530114717,
+      "evaluations": 173
+    },
+    {
+      "seconds": 15.084996400000819,
+      "objective": 97530113163,
+      "evaluations": 201
+    },
+    {
+      "seconds": 16.888157400000637,
+      "objective": 97530111999,
+      "evaluations": 226
+    },
+    {
+      "seconds": 17.539990400000534,
+      "objective": 96720114755,
+      "evaluations": 235
+    },
+    {
+      "seconds": 18.3987558000008,
+      "objective": 91440115003,
+      "evaluations": 247
+    },
+    {
+      "seconds": 20.117438400000538,
+      "objective": 84750118899,
+      "evaluations": 271
+    },
+    {
+      "seconds": 20.685822200000985,
+      "objective": 84750116303,
+      "evaluations": 279
+    },
+    {
+      "seconds": 21.73170949999985,
+      "objective": 74055113782,
+      "evaluations": 293
+    },
+    {
+      "seconds": 23.62736859999859,
+      "objective": 74055112522,
+      "evaluations": 318
+    },
+    {
+      "seconds": 25.14855069999976,
+      "objective": 68730115072,
+      "evaluations": 339
+    },
+    {
+      "seconds": 26.21600309999849,
+      "objective": 68730112316,
+      "evaluations": 355
+    },
+    {
+      "seconds": 28.11673040000096,
+      "objective": 61450113866,
+      "evaluations": 384
+    },
+    {
+      "seconds": 29.395198899997922,
+      "objective": 61450110822,
+      "evaluations": 403
+    },
+    {
+      "seconds": 30.682686500000273,
+      "objective": 61360108138,
+      "evaluations": 423
+    },
+    {
+      "seconds": 31.580873499999143,
+      "objective": 58570112520,
+      "evaluations": 437
+    },
+    {
+      "seconds": 33.129866799998126,
+      "objective": 58570112384,
+      "evaluations": 461
+    },
+    {
+      "seconds": 34.15767259999848,
+      "objective": 55810110868,
+      "evaluations": 477
+    },
+    {
+      "seconds": 35.46412599999894,
+      "objective": 48670113850,
+      "evaluations": 497
+    },
+    {
+      "seconds": 36.45283709999785,
+      "objective": 48670112460,
+      "evaluations": 512
+    },
+    {
+      "seconds": 36.9346899000011,
+      "objective": 45745116652,
+      "evaluations": 519
+    },
+    {
+      "seconds": 37.32434360000116,
+      "objective": 45745111024,
+      "evaluations": 525
+    },
+    {
+      "seconds": 39.54047169999831,
+      "objective": 45745110910,
+      "evaluations": 558
+    },
+    {
+      "seconds": 39.60496449999846,
+      "objective": 45665115422,
+      "evaluations": 559
+    },
+    {
+      "seconds": 40.51342509999813,
+      "objective": 39325113548,
+      "evaluations": 572
+    },
+    {
+      "seconds": 41.630621899999824,
+      "objective": 37525115316,
+      "evaluations": 589
+    },
+    {
+      "seconds": 41.89746849999938,
+      "objective": 37525112114,
+      "evaluations": 593
+    },
+    {
+      "seconds": 42.77655070000037,
+      "objective": 36985113786,
+      "evaluations": 607
+    },
+    {
+      "seconds": 43.91058100000009,
+      "objective": 36985112120,
+      "evaluations": 624
+    },
+    {
+      "seconds": 44.431493000000046,
+      "objective": 36985111784,
+      "evaluations": 632
+    },
+    {
+      "seconds": 46.67967420000059,
+      "objective": 36985110690,
+      "evaluations": 665
+    },
+    {
+      "seconds": 48.51647899999807,
+      "objective": 36985110492,
+      "evaluations": 692
+    },
+    {
+      "seconds": 48.988242999999784,
+      "objective": 30755112120,
+      "evaluations": 699
+    },
+    {
+      "seconds": 50.06734040000083,
+      "objective": 30755112084,
+      "evaluations": 715
+    },
+    {
+      "seconds": 50.95035060000009,
+      "objective": 30755112042,
+      "evaluations": 728
+    },
+    {
+      "seconds": 51.488728600001195,
+      "objective": 30755111982,
+      "evaluations": 736
+    },
+    {
+      "seconds": 51.90595670000039,
+      "objective": 30290112190,
+      "evaluations": 742
+    },
+    {
+      "seconds": 53.251511700000265,
+      "objective": 30290112126,
+      "evaluations": 762
+    },
+    {
+      "seconds": 54.30302709999887,
+      "objective": 30290109578,
+      "evaluations": 777
+    },
+    {
+      "seconds": 55.35035029999926,
+      "objective": 25085110964,
+      "evaluations": 792
+    },
+    {
+      "seconds": 58.019525600000634,
+      "objective": 24905112178,
+      "evaluations": 831
+    },
+    {
+      "seconds": 59.509144200001174,
+      "objective": 15245112376,
+      "evaluations": 853
+    },
+    {
+      "seconds": 61.013420600000245,
+      "objective": 15245109826,
+      "evaluations": 875
+    },
+    {
+      "seconds": 62.50586889999977,
+      "objective": 15245109778,
+      "evaluations": 897
+    },
+    {
+      "seconds": 64.57286699999895,
+      "objective": 15245109630,
+      "evaluations": 927
+    },
+    {
+      "seconds": 64.70934959999795,
+      "objective": 8705115498,
+      "evaluations": 929
+    },
+    {
+      "seconds": 66.00357910000093,
+      "objective": 8705111160,
+      "evaluations": 948
+    },
+    {
+      "seconds": 66.54249609999897,
+      "objective": 7965114018,
+      "evaluations": 956
+    },
+    {
+      "seconds": 72.36389509999935,
+      "objective": 7965113982,
+      "evaluations": 1042
+    },
+    {
+      "seconds": 73.47940169999856,
+      "objective": 7965111144,
+      "evaluations": 1058
+    },
+    {
+      "seconds": 77.28991859999951,
+      "objective": 7965111114,
+      "evaluations": 1115
+    },
+    {
+      "seconds": 79.12210729999788,
+      "objective": 7965109804,
+      "evaluations": 1142
+    },
+    {
+      "seconds": 82.73933960000068,
+      "objective": 7965108770,
+      "evaluations": 1197
+    },
+    {
+      "seconds": 83.91750630000024,
+      "objective": 7965105988,
+      "evaluations": 1215
+    },
+    {
+      "seconds": 85.5471335000002,
+      "objective": 7965104710,
+      "evaluations": 1240
+    },
+    {
+      "seconds": 86.76189019999947,
+      "objective": 7965104666,
+      "evaluations": 1259
+    },
+    {
+      "seconds": 87.52612759999829,
+      "objective": 7965104528,
+      "evaluations": 1271
+    },
+    {
+      "seconds": 88.05368349999844,
+      "objective": 7965104486,
+      "evaluations": 1279
+    },
+    {
+      "seconds": 88.30883189999804,
+      "objective": 7965101838,
+      "evaluations": 1283
+    },
+    {
+      "seconds": 88.5693050000009,
+      "objective": 7965101794,
+      "evaluations": 1287
+    },
+    {
+      "seconds": 93.18871360000048,
+      "objective": 7965101680,
+      "evaluations": 1357
+    },
+    {
+      "seconds": 105.60883130000002,
+      "objective": 7965101560,
+      "evaluations": 1540
+    },
+    {
+      "seconds": 116.03180079999947,
+      "objective": 7965101546,
+      "evaluations": 1693
+    },
+    {
+      "seconds": 120.01134209999873,
+      "objective": 7965101542,
+      "evaluations": 1751
+    },
+    {
+      "seconds": 126.19295720000082,
+      "objective": 7965101538,
+      "evaluations": 1840
+    },
+    {
+      "seconds": 130.51944309999817,
+      "objective": 7965101482,
+      "evaluations": 1902
+    },
+    {
+      "seconds": 135.68811149999965,
+      "objective": 7965101446,
+      "evaluations": 1975
+    },
+    {
+      "seconds": 140.631610299999,
+      "objective": 7965101442,
+      "evaluations": 2045
+    },
+    {
+      "seconds": 161.1998053999996,
+      "objective": 7965101386,
+      "evaluations": 2340
+    },
+    {
+      "seconds": 189.0041257999983,
+      "objective": 7965101378,
+      "evaluations": 2736
+    },
+    {
+      "seconds": 225.4490451999991,
+      "objective": 7965101358,
+      "evaluations": 3256
+    },
+    {
+      "seconds": 253.10809840000002,
+      "objective": 7965101288,
+      "evaluations": 3649
+    },
+    {
+      "seconds": 411.20720209999854,
+      "objective": 7965101236,
+      "evaluations": 5898
+    },
+    {
+      "seconds": 423.2599201999983,
+      "objective": 7965101228,
+      "evaluations": 6071
+    },
+    {
+      "seconds": 495.154767,
+      "objective": 7965101178,
+      "evaluations": 7109
+    },
+    {
+      "seconds": 578.9494888000008,
+      "objective": 3945105698,
+      "evaluations": 8310
+    },
+    {
+      "seconds": 580.4773112000003,
+      "objective": 3945105380,
+      "evaluations": 8332
+    },
+    {
+      "seconds": 581.4514338000008,
+      "objective": 3945104158,
+      "evaluations": 8346
+    },
+    {
+      "seconds": 581.5893016000009,
+      "objective": 3945102666,
+      "evaluations": 8348
+    },
+    {
+      "seconds": 584.0633617999993,
+      "objective": 3945102634,
+      "evaluations": 8384
+    },
+    {
+      "seconds": 590.3392297999999,
+      "objective": 3945102574,
+      "evaluations": 8474
+    },
+    {
+      "seconds": 609.5020489999988,
+      "objective": 3945101222,
+      "evaluations": 8751
+    },
+    {
+      "seconds": 625.0940891999999,
+      "objective": 3165105582,
+      "evaluations": 8973
+    },
+    {
+      "seconds": 628.0038486999983,
+      "objective": 3165105560,
+      "evaluations": 9014
+    },
+    {
+      "seconds": 631.531592299998,
+      "objective": 3165105548,
+      "evaluations": 9064
+    },
+    {
+      "seconds": 632.574708600001,
+      "objective": 3165105544,
+      "evaluations": 9079
+    },
+    {
+      "seconds": 632.6449102000006,
+      "objective": 3165104210,
+      "evaluations": 9080
+    },
+    {
+      "seconds": 636.5811604999981,
+      "objective": 3165104180,
+      "evaluations": 9136
+    },
+    {
+      "seconds": 636.7869902999992,
+      "objective": 3165104174,
+      "evaluations": 9139
+    },
+    {
+      "seconds": 642.8028683000011,
+      "objective": 3165102760,
+      "evaluations": 9225
+    },
+    {
+      "seconds": 643.285240199999,
+      "objective": 3165102700,
+      "evaluations": 9232
+    },
+    {
+      "seconds": 645.6676213999999,
+      "objective": 3165102676,
+      "evaluations": 9266
+    },
+    {
+      "seconds": 646.0972987999994,
+      "objective": 3165102640,
+      "evaluations": 9272
+    },
+    {
+      "seconds": 664.934934500001,
+      "objective": 3165101326,
+      "evaluations": 9540
+    },
+    {
+      "seconds": 669.1552469999988,
+      "objective": 3165101290,
+      "evaluations": 9600
+    },
+    {
+      "seconds": 680.8099898,
+      "objective": 3165101266,
+      "evaluations": 9765
+    },
+    {
+      "seconds": 681.723651100001,
+      "objective": 3165100134,
+      "evaluations": 9778
+    },
+    {
+      "seconds": 682.722165799998,
+      "objective": 3165099936,
+      "evaluations": 9792
+    },
+    {
+      "seconds": 685.2504518999995,
+      "objective": 3165099912,
+      "evaluations": 9828
+    },
+    {
+      "seconds": 686.5319194000003,
+      "objective": 3165099908,
+      "evaluations": 9846
+    },
+    {
+      "seconds": 758.7192198000012,
+      "objective": 3165099900,
+      "evaluations": 10875
+    },
+    {
+      "seconds": 780.4874524000006,
+      "objective": 2445104562,
+      "evaluations": 11187
+    },
+    {
+      "seconds": 783.0408686999981,
+      "objective": 2445103392,
+      "evaluations": 11224
+    },
+    {
+      "seconds": 783.8631075999983,
+      "objective": 2445101898,
+      "evaluations": 11236
+    },
+    {
+      "seconds": 784.9574589000003,
+      "objective": 2445101808,
+      "evaluations": 11252
+    },
+    {
+      "seconds": 788.7377960000013,
+      "objective": 2445101764,
+      "evaluations": 11308
+    },
+    {
+      "seconds": 790.2098583999978,
+      "objective": 2365101840,
+      "evaluations": 11329
+    },
+    {
+      "seconds": 791.189800600001,
+      "objective": 2365101796,
+      "evaluations": 11343
+    },
+    {
+      "seconds": 792.6375511000006,
+      "objective": 2365101772,
+      "evaluations": 11364
+    },
+    {
+      "seconds": 793.6031689999982,
+      "objective": 2365101756,
+      "evaluations": 11378
+    },
+    {
+      "seconds": 795.6632291999995,
+      "objective": 2365101712,
+      "evaluations": 11408
+    },
+    {
+      "seconds": 804.4292499000003,
+      "objective": 2365101696,
+      "evaluations": 11533
+    },
+    {
+      "seconds": 808.0578548000012,
+      "objective": 2365101636,
+      "evaluations": 11586
+    },
+    {
+      "seconds": 812.1491275000008,
+      "objective": 2365101628,
+      "evaluations": 11645
+    },
+    {
+      "seconds": 819.0866836999994,
+      "objective": 2365101612,
+      "evaluations": 11744
+    },
+    {
+      "seconds": 820.3860381999984,
+      "objective": 2365101556,
+      "evaluations": 11762
+    },
+    {
+      "seconds": 837.4560297999997,
+      "objective": 2365101548,
+      "evaluations": 12007
+    },
+    {
+      "seconds": 889.0506849000012,
+      "objective": 2365101524,
+      "evaluations": 12747
+    },
+    {
+      "seconds": 921.1894769999999,
+      "objective": 2365101466,
+      "evaluations": 13209
+    },
+    {
+      "seconds": 933.6513535000013,
+      "objective": 2365100218,
+      "evaluations": 13385
+    },
+    {
+      "seconds": 949.7039798000005,
+      "objective": 2365100200,
+      "evaluations": 13625
+    },
+    {
+      "seconds": 951.6988751999997,
+      "objective": 2365100080,
+      "evaluations": 13655
+    },
+    {
+      "seconds": 960.2185823,
+      "objective": 2365100044,
+      "evaluations": 13777
+    },
+    {
+      "seconds": 1151.8050807,
+      "objective": 2365100032,
+      "evaluations": 16528
+    },
+    {
+      "seconds": 1240.5084712999997,
+      "objective": 2365099858,
+      "evaluations": 17800
+    },
+    {
+      "seconds": 1245.811773999998,
+      "objective": 2365099854,
+      "evaluations": 17875
+    },
+    {
+      "seconds": 1273.7364202999997,
+      "objective": 2365099812,
+      "evaluations": 18273
+    },
+    {
+      "seconds": 1276.3771487000013,
+      "objective": 2365098446,
+      "evaluations": 18311
+    },
+    {
+      "seconds": 1284.9311713999996,
+      "objective": 2365098442,
+      "evaluations": 18431
+    },
+    {
+      "seconds": 1290.4622576000002,
+      "objective": 2365098370,
+      "evaluations": 18509
+    },
+    {
+      "seconds": 1304.9171605999982,
+      "objective": 2365098362,
+      "evaluations": 18714
+    },
+    {
+      "seconds": 1524.293031199999,
+      "objective": 2365098314,
+      "evaluations": 21794
+    },
+    {
+      "seconds": 1582.0457277999994,
+      "objective": 2365098310,
+      "evaluations": 22592
+    },
+    {
+      "seconds": 1602.3973248000002,
+      "objective": 2365098270,
+      "evaluations": 22876
+    },
+    {
+      "seconds": 1673.9450249000001,
+      "objective": 2365098096,
+      "evaluations": 23903
+    },
+    {
+      "seconds": 1734.3231231999998,
+      "objective": 2365098012,
+      "evaluations": 24754
+    },
+    {
+      "seconds": 1841.8524571999988,
+      "objective": 2365098008,
+      "evaluations": 26265
+    },
+    {
+      "seconds": 2270.3587497000008,
+      "objective": 2365097996,
+      "evaluations": 32324
+    },
+    {
+      "seconds": 2371.1566839000006,
+      "objective": 2365097936,
+      "evaluations": 33751
+    },
+    {
+      "seconds": 2403.1469303999984,
+      "objective": 2365097912,
+      "evaluations": 34204
+    },
+    {
+      "seconds": 2560.3952069999978,
+      "objective": 2365097888,
+      "evaluations": 36431
+    },
+    {
+      "seconds": 2980.224626200001,
+      "objective": 2365097884,
+      "evaluations": 42433
+    },
+    {
+      "seconds": 3034.4266317,
+      "objective": 2365097848,
+      "evaluations": 43206
+    },
+    {
+      "seconds": 3182.8254825000004,
+      "objective": 2365097812,
+      "evaluations": 45324
+    },
+    {
+      "seconds": 3486.8496668000007,
+      "objective": 2365097808,
+      "evaluations": 49601
+    },
+    {
+      "seconds": 3872.315106099999,
+      "objective": 2365097768,
+      "evaluations": 54976
+    },
+    {
+      "seconds": 3892.2053777,
+      "objective": 2365096478,
+      "evaluations": 55256
+    },
+    {
+      "seconds": 4038.5555282999994,
+      "objective": 2365096442,
+      "evaluations": 57323
+    },
+    {
+      "seconds": 4648.2335158999995,
+      "objective": 2365093652,
+      "source": "compact"
+    }
+  ],
+  "evaluations": 65719,
+  "bound": null,
+  "patience_seconds": 600.0,
+  "stop_reason": "no_improvement",
+  "search_seconds": 4638.583034899999,
+  "genes": {
+    "delay_max": 960,
+    "options": [
+      "RB001",
+      "RB002",
+      "RL001",
+      "RL002",
+      "RL003"
+    ]
+  },
+  "generations": 5476,
+  "population_size": 14,
+  "elite": 2,
+  "selection": "tournament_3",
+  "crossover": "uniform_random_keys"
+}

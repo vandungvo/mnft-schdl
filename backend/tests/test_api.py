@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import time
 from copy import deepcopy
 from pathlib import Path
@@ -639,3 +640,225 @@ def test_entity_edits_are_validated_and_use_optimistic_revision(client, scheduli
     # F_SILVER's own routing to the shared code (untouched by UNUSED_SKU's
     # deletion) proves the code survives losing one of its two routers.
     assert deleted.json()["input"]["btp_routing"]["F_SILVER"]["cast"] == "SHARED_CAST_V2"
+
+
+def _dataset_with_run(client, scheduling_input) -> tuple[dict, dict]:
+    dataset = client.post(
+        "/api/v1/master-data/datasets/import", json={"input": scheduling_input}
+    ).json()
+    run = client.post(
+        "/api/v1/schedule-runs",
+        json={
+            "dataset_id": dataset["id"],
+            "algorithm": "edd",
+            "seed": 11,
+            "time_budget_seconds": 1,
+        },
+    ).json()
+    assert run["status"] == "SUCCEEDED"
+    return dataset, run
+
+
+def decision_payload(run_id: str, **overrides) -> dict:
+    payload = {
+        "run_id": run_id,
+        "alternative": "Tốt nhất mọi mặt",
+        "policy": "Giao hàng trước",
+        "score": "13.700 · 32.812",
+        "late": 1,
+        "shortfall": 136,
+        "shifts": 82,
+        "reason": "  Giữ đủ tồn an toàn cho đơn dài hạn.  ",
+    }
+    payload.update(overrides)
+    return payload
+
+
+def test_decision_is_stored_with_run_snapshot_and_audited(client, scheduling_input) -> None:
+    dataset, run = _dataset_with_run(client, scheduling_input)
+    url = f"/api/v1/master-data/datasets/{dataset['id']}/decisions"
+
+    created = client.post(url, json=decision_payload(run["id"]))
+    assert created.status_code == 201, created.text
+    decision = created.json()
+    assert decision["run_id"] == run["id"]
+    assert decision["algorithm"] == "edd"
+    assert decision["seed"] == 11
+    assert decision["input_hash"] == run["input_hash"]
+    assert decision["dataset_revision"] == 1
+    assert decision["reason"] == "Giữ đủ tồn an toàn cho đơn dài hạn."
+    assert decision["actor"] == "local-operator"
+
+    later = client.post(url, json=decision_payload(run["id"], reason="Đổi ý sau họp giao ban."))
+    assert later.status_code == 201
+    listing = client.get(url).json()
+    assert listing["total"] == 2
+    assert [item["id"] for item in listing["items"]] == [later.json()["id"], decision["id"]]
+
+    events = client.get(
+        "/api/v1/audit-events",
+        params={"resource_type": "master_dataset", "resource_id": dataset["id"]},
+    ).json()["items"]
+    committed = [event for event in events if event["action"] == "schedule.committed"]
+    assert len(committed) == 2
+    assert committed[-1]["details"]["decision_id"] == decision["id"]
+
+
+def test_decision_requires_reason_and_a_succeeded_run_of_the_scenario(
+    client, scheduling_input
+) -> None:
+    dataset, run = _dataset_with_run(client, scheduling_input)
+    url = f"/api/v1/master-data/datasets/{dataset['id']}/decisions"
+
+    blank = client.post(url, json=decision_payload(run["id"], reason="   "))
+    assert blank.status_code == 422
+
+    missing = client.post(url, json=decision_payload("00000000-0000-0000-0000-000000000000"))
+    assert missing.status_code == 404
+    assert missing.json()["error"]["code"] == "RUN_NOT_FOUND"
+
+    one_off = client.post("/api/v1/schedule-runs", json=run_payload(scheduling_input)).json()
+    mismatch = client.post(url, json=decision_payload(one_off["id"]))
+    assert mismatch.status_code == 422
+    assert mismatch.json()["error"]["code"] == "DECISION_RUN_MISMATCH"
+
+    backdated = client.post(
+        url, json=decision_payload(run["id"], decided_at="2026-01-01T00:00:00Z")
+    )
+    assert backdated.status_code == 422
+    assert backdated.json()["error"]["code"] == "DECIDED_AT_NOT_ALLOWED"
+
+    unknown = client.get("/api/v1/master-data/datasets/nope/decisions")
+    assert unknown.status_code == 404
+    assert client.get(url).json()["total"] == 0
+
+
+def test_legacy_browser_decisions_import_once_with_their_original_time(
+    client, scheduling_input
+) -> None:
+    dataset, run = _dataset_with_run(client, scheduling_input)
+    url = f"/api/v1/master-data/datasets/{dataset['id']}/decisions"
+    legacy = decision_payload(
+        run["id"], decided_at="2026-10-04T03:30:00Z", legacy_key=f"local:{dataset['id']}:1"
+    )
+
+    first = client.post(url, json=legacy)
+    again = client.post(url, json=legacy)
+
+    assert first.status_code == 201
+    assert again.status_code == 200
+    assert again.json()["id"] == first.json()["id"]
+    assert first.json()["decided_at"].startswith("2026-10-04T03:30:00")
+    assert client.get(url).json()["total"] == 1
+
+    future = client.post(
+        url,
+        json=decision_payload(
+            run["id"], decided_at="2999-01-01T00:00:00Z", legacy_key="local:future"
+        ),
+    )
+    assert future.status_code == 201
+    assert not future.json()["decided_at"].startswith("2999")
+
+
+def _schema5_input() -> dict:
+    root = Path(__file__).resolve().parents[2]
+    path = root / "dataset/wheel-factory-small/model_input.json"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def test_schema5_scenario_imports_runs_and_is_validated_by_its_own_engine(client) -> None:
+    document = _schema5_input()
+    imported = client.post("/api/v1/master-data/datasets/import", json={"input": document})
+    assert imported.status_code == 201, imported.text
+    dataset = imported.json()
+    assert dataset["schema_version"] == 5
+    assert dataset["is_ready"] is True
+    last = document["stages"][-1]
+    assert dataset["counts"]["runs"] == len(document["runs"])
+    assert dataset["counts"]["lots"] == sum(run["stage"] == last for run in document["runs"])
+    assert dataset["input"]["stages"] == document["stages"]
+
+    again = client.post("/api/v1/master-data/datasets/import", json={"input": document})
+    assert again.json()["id"] == dataset["id"]
+
+    run = client.post(
+        "/api/v1/schedule-runs",
+        json={
+            "dataset_id": dataset["id"],
+            "algorithm": "edd",
+            "seed": 11,
+            "time_budget_seconds": 1,
+        },
+    ).json()
+    assert run["status"] == "SUCCEEDED", run
+    detail = client.get(f"/api/v1/schedule-runs/{run['id']}").json()
+    assert detail["validation"]["valid"] is True
+    assert detail["validation"]["scope"].startswith("schema 5")
+    operations = detail["operations"]
+    assert {op["stage"] for op in operations} == set(document["stages"])
+    assert all(op["item"] for op in operations)
+    machines = document["machines"]
+    continuous = {m for m, spec in machines.items() if spec.get("calendar") == "continuous"}
+    assert continuous
+    assert all(op["shift"] is None for op in operations if op["machine"] in continuous)
+    assert "late_orders" in detail["metrics"]
+
+    decision = client.post(
+        f"/api/v1/master-data/datasets/{dataset['id']}/decisions",
+        json=decision_payload(run["id"]),
+    )
+    assert decision.status_code == 201, decision.text
+
+
+def test_schema5_guards_planning_record_edits_and_model_specific_algorithms(
+    client, scheduling_input
+) -> None:
+    v5 = client.post(
+        "/api/v1/master-data/datasets/import", json={"input": _schema5_input()}
+    ).json()
+    v4 = client.post(
+        "/api/v1/master-data/datasets/import", json={"input": scheduling_input}
+    ).json()
+
+    plan = client.post(
+        "/api/v1/production-plans",
+        json={"dataset_id": v5["id"], "period_start": 0, "bucket_minutes": 1440},
+    )
+    assert plan.status_code == 422
+    assert plan.json()["error"]["code"] == "PLANNING_NOT_AVAILABLE"
+
+    order = v5["input"]["orders"][0]["id"]
+    edit = client.patch(
+        f"/api/v1/master-data/datasets/{v5['id']}/orders/{order}",
+        json={"expected_revision": 1, "release": 0, "due": 1440, "priority": 1, "urgent": False},
+    )
+    assert edit.status_code == 409
+    assert edit.json()["error"]["code"] == "SCHEMA5_EDIT_VIA_JSON"
+
+    rolling_v4 = client.post(
+        "/api/v1/schedule-runs",
+        json={"dataset_id": v4["id"], "algorithm": "cp_rolling", "time_budget_seconds": 1},
+    )
+    assert rolling_v4.status_code == 422
+    assert rolling_v4.json()["error"]["code"] == "ALGORITHM_NOT_AVAILABLE"
+
+
+def test_scenario_can_be_replaced_across_production_models(client, scheduling_input) -> None:
+    v4 = client.post(
+        "/api/v1/master-data/datasets/import", json={"input": scheduling_input}
+    ).json()
+    url = f"/api/v1/master-data/datasets/{v4['id']}"
+
+    to_v5 = client.put(url, json={"input": _schema5_input(), "expected_revision": v4["revision"]})
+    assert to_v5.status_code == 200, to_v5.text
+    assert to_v5.json()["schema_version"] == 5
+    assert to_v5.json()["revision"] == v4["revision"] + 1
+
+    back = client.put(
+        url, json={"input": scheduling_input, "expected_revision": v4["revision"] + 1}
+    )
+    assert back.status_code == 200, back.text
+    assert back.json()["schema_version"] == 4
+    assert back.json()["counts"]["lots"] == len(scheduling_input["lots"])
+    assert back.json()["counts"].get("runs") is None

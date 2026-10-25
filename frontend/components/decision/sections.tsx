@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, ChevronDown } from "lucide-react";
+import { CheckCircle2, ChevronDown, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 
@@ -18,8 +18,9 @@ import {
   termsOf, tierKeys, type Alternative, type Delivery, type PolicyKey, type Shortlist,
 } from "@/lib/decision";
 import type { DecisionEntry } from "@/lib/decision-log";
-import { formatClock, formatDateTime, formatDuration, productLabel } from "@/lib/format";
-import type { ScheduleRunDetail, SchedulingInputDocument } from "@/lib/types";
+import { formatClock, formatDateTime, formatDuration, productLabel, solverStatusLabel } from "@/lib/format";
+import { plantOf } from "@/lib/plant";
+import type { AnySchedulingInput, ScheduleRunDetail } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { ConvergenceChart, type ConvergenceSeries } from "./charts";
 
@@ -33,7 +34,7 @@ export interface WorkspaceCtx {
   policy: PolicyKey;
   list: Shortlist;
   displayName: (id: string) => string;
-  input?: SchedulingInputDocument;
+  input?: AnySchedulingInput;
   origin: string;
   nOrders: number;
 }
@@ -47,7 +48,7 @@ export function FormulaDetails({ ctx }: { ctx: WorkspaceCtx }) {
   const part = (keys: string[]) => terms.filter((term) => keys.includes(term.key)).map((term, i) => <span key={term.key}>{i ? " + " : ""}<b className="text-primary">{ctx.weights[term.key]}</b>×{term.label}</span>);
   return (
     <Collapsible className="mt-3">
-      <CollapsibleTrigger className="group inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+      <CollapsibleTrigger className="group inline-flex min-h-6 items-center gap-1 py-1 text-sm font-semibold text-primary hover:underline">
         {t("Cách tính điểm theo chính sách này", "How this policy scores schedules")}<ChevronDown className="size-4 transition-transform group-data-[state=open]:rotate-180" />
       </CollapsibleTrigger>
       <CollapsibleContent className="mt-3 space-y-2 text-sm leading-7">
@@ -111,7 +112,7 @@ export function AlternativeCards({ ctx, current, decided, onPick }: { ctx: Works
             <span className="text-[13px] leading-snug text-muted-foreground">{trade}</span>
             <span className="mt-auto flex items-center justify-between gap-2 border-t pt-2.5 text-xs">
               <span className="text-muted-foreground">{t("Điểm", "Score")} <b className="font-semibold text-foreground tabular-nums">{fmtScore(score(alt, ctx.weights, ctx.policy), ctx.policy)}</b></span>
-              {active ? <span className="font-semibold text-primary">{t("Đang xem", "Viewing")}</span> : <span className="font-medium text-muted-foreground group-hover:text-primary">{t("Xem lịch", "View schedule")} →</span>}
+              {active ? <span className="font-semibold text-primary">{t("Đang xem", "Viewing")}</span> : <span className="font-medium text-muted-foreground group-hover:text-primary">{t("Xem nhanh", "Quick look")} →</span>}
             </span>
             {twins.length > 0 && <span className="text-xs text-muted-foreground">{t("Trùng kết quả với", "Same result as")} {twins.map(ctx.displayName).join(", ")}</span>}
           </button>
@@ -130,7 +131,7 @@ export function StatTiles({ ctx, alt }: { ctx: WorkspaceCtx; alt: Alternative })
     [t("Đơn trễ", "Late orders"), `${alt.late} / ${ctx.nOrders}`, alt.late ? "warn" : "ok"],
     [t("Ca-máy bật", "Machine-shifts open"), String(alt.shifts.size), "default"],
     [t("Thời gian rảnh", "Idle time"), formatDuration(m.idle_minutes ?? 0), "default"],
-    ["Setup", formatDuration(m.setup_minutes ?? 0), "default"],
+    [t("Chuẩn bị máy", "Setup"), formatDuration(m.setup_minutes ?? 0), "default"],
     [t("Lô bắt buộc cuối xong", "Last required lot done"), formatClock(ctx.origin, m.makespan ?? 0), "default"],
     [t("Thiếu tồn an toàn", "Safety-stock shortfall"), fmtN(m.safety_shortfall ?? 0), m.safety_shortfall ? "warn" : "ok"],
     [`${t("Điểm", "Score")} (${policyOf(ctx.policy).name.toLowerCase()})`, fmtScore(score(alt, ctx.weights, ctx.policy), ctx.policy), "default"],
@@ -188,7 +189,7 @@ export function DeliveriesTable({ ctx, deliveries }: { ctx: WorkspaceCtx; delive
   const sorted = [...deliveries].sort((a, b) => a.time - b.time);
   return (
     <Panel title={t("Giao hàng", "Deliveries")}>
-      <div className="max-h-[440px] overflow-y-auto">
+      <div className="max-h-[440px] overflow-y-auto rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" tabIndex={0} role="region" aria-label={t("Bảng giao hàng (cuộn được)", "Deliveries table (scrollable)")}>
         <Table>
           <TableHeader className="sticky top-0 bg-card"><TableRow><TableHead>{t("Đơn", "Order")}</TableHead><TableHead>{t("Sản phẩm", "Product")}</TableHead><TableHead className={N}>{t("Số lượng", "Quantity")}</TableHead><TableHead>{t("Giao lúc", "Delivered")}</TableHead><TableHead>{t("Hạn", "Due")}</TableHead><TableHead className={N}>{t("Còn dư", "Slack")}</TableHead></TableRow></TableHeader>
           <TableBody>{sorted.map((d) => {
@@ -206,21 +207,21 @@ export function DeliveriesTable({ ctx, deliveries }: { ctx: WorkspaceCtx; delive
 export function StockCard({ ctx, alt }: { ctx: WorkspaceCtx; alt: Alternative }) {
   const { t } = useI18n();
   const end = (alt.run.metrics?.end_inventory ?? {}) as unknown as Record<string, number>;
-  const input = ctx.input;
-  if (!input) return null;
+  if (!ctx.input) return null;
+  const plant = plantOf(ctx.input);
   return (
     <Panel title={t("Tồn thành phẩm cuối kỳ", "Closing finished-goods stock")}>
       <Table>
         <TableHeader><TableRow><TableHead>{t("Sản phẩm", "Product")}</TableHead><TableHead className={N}>{t("Đầu kỳ", "Opening")}</TableHead><TableHead className={N}>{t("Cuối kỳ", "Closing")}</TableHead><TableHead className={N}>{t("An toàn", "Safety")}</TableHead><TableHead className="w-32">{t("So với an toàn", "Versus safety")}</TableHead></TableRow></TableHeader>
-        <TableBody>{input.products.map((p) => {
-          const value = end[p] ?? 0, safe = input.safety_stock[p] ?? 0;
+        <TableBody>{plant.products.map((p) => {
+          const value = end[p] ?? 0, safe = plant.safetyStock[p] ?? 0;
           const ratio = Math.min(1.5, safe ? value / safe : 1.5);
-          return <TableRow key={p}><TableCell><span className="inline-flex items-center gap-2"><i className="size-2.5 rounded-xs" style={{ background: productColor(p, input.products)[0] }} />{productLabel(p)}</span></TableCell>
-            <TableCell className={N}>{fmtN(input.initial_inventory[p] ?? 0)}</TableCell><TableCell className={cn(N, "font-semibold", value < safe && "text-warning")}>{fmtN(value)}</TableCell><TableCell className={N}>{fmtN(safe)}</TableCell>
+          return <TableRow key={p}><TableCell><span className="inline-flex items-center gap-2"><i className="size-2.5 rounded-xs" style={{ background: productColor(p, plant.products)[0] }} />{productLabel(p)}</span></TableCell>
+            <TableCell className={N}>{fmtN(plant.initialStock[p] ?? 0)}</TableCell><TableCell className={cn(N, "font-semibold", value < safe && "text-warning")}>{fmtN(value)}</TableCell><TableCell className={N}>{fmtN(safe)}</TableCell>
             <TableCell><Meter value={ratio / 1.5} marker={1 / 1.5} tone={value < safe ? "warn" : "ok"} label={`${fmtN(value)} / ${fmtN(safe)}`} /></TableCell></TableRow>;
         })}</TableBody>
       </Table>
-      <Hint>{t(`Tồn an toàn được đo ở ${input.checkpoints.length} mốc cuối ngày; bảng này chỉ là mốc cuối kỳ. Vạch dọc trên thanh là mức tồn an toàn.`, `Safety stock is measured at ${input.checkpoints.length} end-of-day checkpoints; this table shows only the final one. The vertical tick on each bar marks the safety level.`)}</Hint>
+      <Hint>{t(`Tồn an toàn được đo ở ${plant.checkpoints.length} mốc cuối ngày; bảng này chỉ là mốc cuối kỳ. Vạch dọc trên thanh là mức tồn an toàn.`, `Safety stock is measured at ${plant.checkpoints.length} end-of-day checkpoints; this table shows only the final one. The vertical tick on each bar marks the safety level.`)}</Hint>
     </Panel>
   );
 }
@@ -229,7 +230,7 @@ export function WhyCards({ ctx, alt }: { ctx: WorkspaceCtx; alt: Alternative }) 
   const { t } = useI18n();
   const info = algorithmInfo(alt.algorithm);
   const items: Array<[string, string]> = [[`${ctx.displayName(alt.id)} — ${info.label}`, info.note], ...familyWhy(info.family)];
-  if (alt.run.solver_status) items.push([t("Trạng thái solver", "Solver status"), `${alt.run.solver_status}${alt.run.validation ? ` · ${t("bộ kiểm độc lập", "independent validator")}: ${alt.run.validation.valid ? t("hợp lệ", "valid") : t("lỗi", "invalid")} (${alt.run.validation.operations_checked ?? alt.run.operations.length} ${t("lượt", "operations")})` : ""}.`]);
+  if (alt.run.solver_status) items.push([t("Trạng thái solver", "Solver status"), `${solverStatusLabel(alt.run.solver_status)}${alt.run.validation ? ` · ${t("bộ kiểm độc lập", "independent validator")}: ${alt.run.validation.valid ? t("hợp lệ", "valid") : t("lỗi", "invalid")} (${alt.run.validation.operations_checked ?? alt.run.operations.length} ${t("lượt", "operations")})` : ""}.`]);
   return <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr))]">{items.map(([h, p]) => <Panel key={h} title={h}><p className="text-[13.5px] text-muted-foreground">{p}</p></Panel>)}</div>;
 }
 
@@ -245,7 +246,7 @@ export function SpeedSection({ ctx, runs }: { ctx: WorkspaceCtx; runs: ScheduleR
     const best = ok.map((run) => ctx.byId.get(run.id)).filter((alt): alt is Alternative => Boolean(alt)).sort((a, b) => compareScore(a, b, ctx.weights, ctx.policy))[0];
     const bestHistory = best ? historyOf(best.run) : [];
     const bestAt = bestHistory.length ? bestHistory[bestHistory.length - 1].seconds : best ? runSeconds(best.run) : null;
-    return { algorithm, list, ok, best, bestAt, seconds: median(list.map(runSeconds).filter((v): v is number => v != null)), statuses: [...new Set(list.map((run) => run.solver_status ?? run.status))] };
+    return { algorithm, list, ok, best, bestAt, seconds: median(list.map(runSeconds).filter((v): v is number => v != null)), statuses: [...new Set(list.map((run) => run.solver_status ? solverStatusLabel(run.solver_status) : run.status))] };
   }).sort((a, b) => (a.best && b.best ? compareScore(a.best, b.best, ctx.weights, ctx.policy) : a.best ? -1 : 1));
   const fastest = groups.filter((g) => g.seconds != null).sort((a, b) => a.seconds! - b.seconds!)[0];
   const winner = groups.find((g) => g.best);
@@ -291,31 +292,35 @@ export function SpeedSection({ ctx, runs }: { ctx: WorkspaceCtx; runs: ScheduleR
 
 /* ---------- decision ---------- */
 
-export function DecisionPanel({ ctx, alt, entries, onSave }: { ctx: WorkspaceCtx; alt: Alternative; entries: DecisionEntry[]; onSave: (reason: string) => boolean }) {
+export function DecisionPanel({ ctx, alt, entries, onSave, onChangeOption }: { ctx: WorkspaceCtx; alt: Alternative; entries: DecisionEntry[]; onSave: (reason: string) => Promise<boolean>; onChangeOption: () => void }) {
   const { t } = useI18n();
   const [reason, setReason] = useState("");
   const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
   return (
     <Panel>
-      <p className="mb-4 text-sm leading-relaxed">{t("Bạn đang chốt", "You are committing")}: <b>{ctx.displayName(alt.id)}</b> <span className="text-muted-foreground">({algorithmInfo(alt.algorithm).label}, seed {alt.run.seed})</span> · {t("chính sách", "policy")} <b>{policyOf(ctx.policy).name}</b> · {t("giao đúng hạn", "on time")} {ctx.nOrders - alt.late}/{ctx.nOrders} · {t("thiếu tồn", "shortfall")} {fmtN(alt.metrics.safety_shortfall ?? 0)} · {alt.shifts.size} {t("ca-máy", "machine-shifts")}. <a href="#sec-choose" className="font-semibold text-primary hover:underline">{t("Đổi phương án", "Change option")}</a></p>
+      <p className="mb-4 text-sm leading-relaxed">{t("Bạn đang chốt", "You are committing")}: <b>{ctx.displayName(alt.id)}</b> <span className="text-muted-foreground">({algorithmInfo(alt.algorithm).label}, seed {alt.run.seed})</span> · {t("chính sách", "policy")} <b>{policyOf(ctx.policy).name}</b> · {t("giao đúng hạn", "on time")} {ctx.nOrders - alt.late}/{ctx.nOrders} · {t("thiếu tồn", "shortfall")} {fmtN(alt.metrics.safety_shortfall ?? 0)} · {alt.shifts.size} {t("ca-máy", "machine-shifts")}. <button type="button" onClick={onChangeOption} className="inline-block min-h-6 font-semibold text-primary hover:underline">{t("Đổi phương án", "Change option")}</button></p>
       <label className="grid gap-1.5">
         <span className="text-xs font-semibold text-muted-foreground">{t("Lý do chọn", "Reason")}</span>
         <Textarea id="decision-reason" rows={3} value={reason} onChange={(event) => { setReason(event.target.value); setMessage(""); }} placeholder={t("Ví dụ: chấp nhận bật thêm 3 ca để giữ đủ tồn an toàn F bạc cho đơn dài hạn.", "Example: accept 3 extra shifts to keep enough F silver safety stock for long-dated orders.")} />
       </label>
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Button onClick={() => {
+        <Button disabled={saving} onClick={async () => {
           if (!reason.trim()) { setMessage(t("Nhập lý do trước khi chốt — quyết định cần giải thích được.", "Enter a reason before committing — the decision must be explainable.")); return; }
-          const ok = onSave(reason.trim());
-          setMessage(ok ? t("Đã chốt phương án.", "Option committed.") : t("Trình duyệt không cho lưu; quyết định chưa được ghi.", "The browser blocked saving; the decision was not recorded."));
+          setSaving(true);
+          setMessage("");
+          const ok = await onSave(reason.trim());
+          setSaving(false);
+          setMessage(ok ? t("Đã chốt phương án.", "Option committed.") : t("Không lưu được lên máy chủ; quyết định chưa được ghi. Lý do vẫn còn trong ô, thử lại sau.", "Could not save to the server; the decision was not recorded. Your reason is still in the box — try again."));
           if (ok) setReason("");
-        }}><CheckCircle2 />{t("Chốt phương án này", "Commit this option")}</Button>
+        }}>{saving ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}{saving ? t("Đang lưu…", "Saving…") : t("Chốt phương án này", "Commit this option")}</Button>
         <Button variant="outline" asChild><Link href={`/runs/${alt.id}`}>{t("Mở chi tiết lần chạy", "Open run details")}</Link></Button>
         <span className="text-sm text-muted-foreground" role="status">{message}</span>
       </div>
       {entries.length ? (
         <div className="mt-5">
           <Table>
-            <TableHeader><TableRow><TableHead>{t("Thời điểm", "Time")}</TableHead><TableHead>{t("Phương án", "Option")}</TableHead><TableHead>{t("Chính sách", "Policy")}</TableHead><TableHead className={N}>{t("Đơn trễ", "Late orders")}</TableHead><TableHead className={N}>{t("Thiếu tồn", "Shortfall")}</TableHead><TableHead className={N}>{t("Ca-máy", "Machine-shifts")}</TableHead><TableHead>{t("Lý do", "Reason")}</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>{t("Thời điểm", "Time")}</TableHead><TableHead>{t("Phương án", "Option")}</TableHead><TableHead>{t("Chính sách", "Policy")}</TableHead><TableHead className={N}>{t("Đơn trễ", "Late orders")}</TableHead><TableHead className={N}>{t("Thiếu tồn", "Shortfall")}</TableHead><TableHead className={N}>{t("Ca-máy", "Machine-shifts")}</TableHead><TableHead>{t("Lý do", "Reason")}</TableHead><TableHead>{t("Người chốt", "Committed by")}</TableHead></TableRow></TableHeader>
             <TableBody>{[...entries].reverse().map((entry) => (
               <TableRow key={entry.at + entry.runId}>
                 <TableCell>{formatDateTime(entry.at)}</TableCell>
@@ -323,12 +328,13 @@ export function DecisionPanel({ ctx, alt, entries, onSave }: { ctx: WorkspaceCtx
                 <TableCell>{entry.policy}<span className="block text-xs text-muted-foreground">{entry.score}</span></TableCell>
                 <TableCell className={N}>{entry.late}</TableCell><TableCell className={N}>{entry.shortfall}</TableCell><TableCell className={N}>{entry.shifts}</TableCell>
                 <TableCell className={cn(WRAP, "min-w-60")}>{entry.reason}</TableCell>
+                <TableCell className="text-xs text-muted-foreground">{entry.actor ?? "—"}</TableCell>
               </TableRow>
             ))}</TableBody>
           </Table>
         </div>
       ) : <Hint>{t("Chưa chốt phương án nào cho bộ dữ liệu này.", "No option has been committed for this dataset yet.")}</Hint>}
-      <Hint>{t("Nhật ký quyết định hiện lưu trên thiết bị này. Bước tiếp theo của sản phẩm: lưu vào cơ sở dữ liệu cùng snapshot, chính sách và người chọn.", "The decision log is stored on this device for now. Next product step: save it in the database with the snapshot, policy and who chose it.")}</Hint>
+      <Hint>{t("Nhật ký lưu trên máy chủ, chỉ ghi thêm (không sửa, không xóa): mỗi lần chốt giữ lần chạy, snapshot dữ liệu, chính sách, số liệu lúc chốt và người chốt. Chốt lại sẽ tạo dòng mới thay cho quyết định trước.", "The log is stored on the server and is append-only (never edited or deleted): each commit keeps the run, data snapshot, policy, the figures at that moment and who committed. Committing again adds a new row that supersedes the previous one.")}</Hint>
     </Panel>
   );
 }
@@ -348,7 +354,7 @@ export function RankingTable({ ctx, current, onPick }: { ctx: WorkspaceCtx; curr
           <TableCell className={cn(N, index === 0 && "font-semibold text-success")}>{fmtScore(score(alt, ctx.weights, ctx.policy), ctx.policy)}</TableCell>
           <TableCell className={N}>{alt.late}</TableCell><TableCell className={N}>{fmtN(alt.metrics.safety_shortfall ?? 0)}</TableCell><TableCell className={N}>{fmtN(opsCost(alt, ctx.weights))}</TableCell>
           <TableCell className={N}>{alt.shifts.size}</TableCell><TableCell className={N}>{fmtN(alt.metrics.idle_minutes ?? 0)}</TableCell><TableCell>{formatClock(ctx.origin, alt.metrics.makespan ?? 0)}</TableCell>
-          <TableCell className={N}>{fmtSeconds(runSeconds(alt.run))}</TableCell><TableCell className="text-xs text-muted-foreground">{alt.run.solver_status}</TableCell>
+          <TableCell className={N}>{fmtSeconds(runSeconds(alt.run))}</TableCell><TableCell className="text-xs text-muted-foreground">{solverStatusLabel(alt.run.solver_status)}</TableCell>
         </TableRow>
       ))}</TableBody>
     </Table>

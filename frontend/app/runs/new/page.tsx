@@ -14,7 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApiError, apiErrorMessage, createScheduleRun, getHealth, listMasterDatasets, listProductionPlans } from "@/lib/api";
-import { algorithmInfo } from "@/lib/algorithms";
+import { algorithmInfo, availableFor } from "@/lib/algorithms";
+import { readScheduleInputFile } from "@/lib/files";
 import { formatDateTime, formatInputName } from "@/lib/format";
 import type { Algorithm } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -53,7 +54,9 @@ function NewRunForm() {
   const selectedPlan = plans.data?.items.find((item) => item.id === effectivePlanId);
   const maxBudget = health.data?.solver_max_budget_seconds ?? 900;
   const effectiveBudget = budget ?? health.data?.solver_default_budget_seconds ?? 30;
-  const availableAlgorithms = algorithmOptions.filter((option) => !health.data || health.data.supported_algorithms.includes(option.value));
+  // cp_rolling exists for schema-5 inputs only; plans are always schema 4.
+  const sourceSchema = source === "dataset" ? selectedDataset?.schema_version : source === "plan" ? 4 : (input as { schema_version?: number } | undefined)?.schema_version;
+  const availableAlgorithms = algorithmOptions.filter((option) => (!health.data || health.data.supported_algorithms.includes(option.value)) && availableFor(option.value, sourceSchema));
   const selectedAlgorithm = algorithmOptions.find((option) => option.value === algorithm);
 
   const sourceReady = source === "dataset" ? Boolean(effectiveDatasetId && selectedDataset?.is_ready) : source === "plan" ? Boolean(effectivePlanId) : Boolean(input);
@@ -74,9 +77,9 @@ function NewRunForm() {
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { setFileError(t("File JSON không được vượt quá 5 MB.", "The JSON file must not exceed 5 MB.")); return; }
     try {
-      const parsed = JSON.parse(await file.text()) as Record<string, unknown>;
-      if (!parsed || typeof parsed.schema_version !== "number" || !Array.isArray(parsed.lots) || !parsed.machines || !Array.isArray(parsed.orders)) {
-        throw new Error(t("File không có cấu trúc scheduling input hợp lệ (cần schema_version, machines, orders, lots).", "The file is not a valid scheduling input (needs schema_version, machines, orders, lots)."));
+      const parsed = await readScheduleInputFile(file);
+      if (!parsed.machines || !Array.isArray(parsed.orders) || !(Array.isArray(parsed.lots) || Array.isArray(parsed.runs))) {
+        throw new Error(t("File không có cấu trúc scheduling input hợp lệ (cần schema_version, machines, orders và lots hoặc runs).", "The file is not a valid scheduling input (needs schema_version, machines, orders and lots or runs)."));
       }
       setInput(parsed); setFileName(file.name);
     } catch (error) {
@@ -94,7 +97,7 @@ function NewRunForm() {
   return (
     <div className="max-w-6xl">
       <PageHeader title={t("Tạo một lần chạy", "Create a run")}
-        description={<>{t("Chạy một thuật toán trên một nguồn dữ liệu. Muốn sinh nhiều phương án để so sánh và chốt, dùng", "Run one algorithm on one data source. To generate several options to compare and commit, use the")} <Link href="/decide" className="font-semibold text-primary hover:underline">{t("Bàn điều độ", "Scheduling desk")}</Link>.</>} />
+        description={<>{t("Chạy một thuật toán trên một nguồn dữ liệu. Muốn sinh nhiều phương án để so sánh và chốt, dùng", "Run one algorithm on one data source. To generate several options to compare and commit, use the")} <Link href="/scenarios" className="font-semibold text-primary hover:underline">{t("trang kịch bản", "scenario page")}</Link>.</>} />
       <form className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_320px]" onSubmit={submit} noValidate>
         <div className="grid gap-4">
           <FormStep step="1" title={t("Chọn nguồn dữ liệu", "Choose a data source")} description={t("Mỗi lần chạy lưu một snapshot độc lập để có thể tái lập.", "Each run stores its own snapshot so it can be reproduced.")}>
@@ -115,7 +118,7 @@ function NewRunForm() {
                     <SelectContent>{datasets.data.items.map((dataset) => <SelectItem key={dataset.id} value={dataset.id}>{formatInputName(dataset.name)} · rev {dataset.revision} · {dataset.counts.orders} {t("đơn", "orders")}</SelectItem>)}</SelectContent>
                   </Select>
                 </Field>
-              ) : <Alert className="border-warning/40 bg-warning-soft"><AlertDescription>{t("Chưa có master data.", "No master data yet.")} <Link href="/master-data" className="font-semibold text-primary hover:underline">{t("Mở quản lý dữ liệu", "Open data management")}</Link></AlertDescription></Alert>
+              ) : <Alert className="border-warning/40 bg-warning-soft"><AlertDescription>{t("Chưa có master data.", "No master data yet.")} <Link href="/scenarios" className="font-semibold text-primary hover:underline">{t("Nhập một kịch bản", "Import a scenario")}</Link></AlertDescription></Alert>
             ) : source === "plan" ? (
               plans.isLoading ? <Skeleton className="h-9" /> : plans.data?.items.length ? (
                 <Field label={t("Kế hoạch tổng hợp", "Aggregate plan")} hint={t("Lần chạy dùng snapshot đã khóa trong kế hoạch.", "The run uses the snapshot locked in the plan.")}>

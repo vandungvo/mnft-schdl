@@ -280,7 +280,7 @@ function SetupMatrix({ draft, setDraft, saved }: { draft: Draft; setDraft: (draf
                   return (
                     <td key={to} className={cn("min-w-12 rounded text-center tabular-nums", changed && "ring-2 ring-warning")} style={{ background: from === to ? "var(--muted)" : `color-mix(in oklab, var(--primary) ${Math.round(share * 70)}%, transparent)`, color: share > 0.55 && from !== to ? "var(--primary-foreground)" : undefined }}>
                       {editing && from !== to
-                        ? <input type="number" min={0} step={1} aria-label={t(`Setup từ ${from} sang ${to}`, `Setup from ${from} to ${to}`)} className="w-full rounded bg-card/80 px-1 py-1 text-center text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring" value={value} onChange={(event) => setDraft({ ...draft, setup: { ...draft.setup, [from]: { ...draft.setup[from], [to]: Number(event.target.value) } } })} />
+                        ? <input type="number" min={0} step={1} aria-label={t(`Chuẩn bị máy từ ${from} sang ${to}`, `Setup from ${from} to ${to}`)} className="w-full rounded bg-card/80 px-1 py-1 text-center text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring" value={value} onChange={(event) => setDraft({ ...draft, setup: { ...draft.setup, [from]: { ...draft.setup[from], [to]: Number(event.target.value) } } })} />
                         : <span className="block px-1 py-1.5">{from === to ? "·" : value}</span>}
                     </td>
                   );

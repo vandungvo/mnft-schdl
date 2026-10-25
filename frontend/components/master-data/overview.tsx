@@ -13,7 +13,7 @@ import { BTP_STAGES, demandByProduct, machinesByStage, stageLoads, sum, type Dat
 import type { ScheduleRunSummary } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-import { ProductDot, SeverityDot, useDataset } from "./shared";
+import { ProductDot, SeverityDot, useDataset, useScenarioMeta } from "./shared";
 import { HorizonStrip } from "./timelines";
 
 type Go = (tab: MdTab, item?: string) => void;
@@ -24,6 +24,7 @@ const TAB_LABEL: Record<MdTab, readonly [string, string]> = {
   btp: ["Bán thành phẩm", "Semi-finished"],
   machines: ["Máy & lịch ca", "Machines & calendar"],
   orders: ["Đơn hàng & lô", "Orders & lots"],
+  runs: ["Mẻ chạy", "Runs"],
   settings: ["Thiết lập & chính sách", "Settings & policy"],
   history: ["Lịch sử", "History"],
 };
@@ -52,7 +53,7 @@ export function ReadinessPanel({ issues, go }: { issues: DataIssue[]; go: Go }) 
             </h2>
             <p className="text-sm text-muted-foreground">
               {blocked
-                ? t(`Backend báo ${dataset.readiness_errors.length} lỗi kiểm tra. Sửa các mục dưới đây rồi quay lại bàn điều độ.`, `The backend reports ${dataset.readiness_errors.length} validation errors. Fix the items below, then return to the desk.`)
+                ? t(`Backend báo ${dataset.readiness_errors.length} lỗi kiểm tra. Sửa các mục dưới đây rồi sinh phương án.`, `The backend reports ${dataset.readiness_errors.length} validation errors. Fix the items below, then generate options.`)
                 : t("Dữ liệu đã qua kiểm tra của backend. Các gợi ý dưới đây do giao diện tự phân tích, không chặn việc lập lịch.", "The data passed backend validation. The hints below come from the interface's own analysis and do not block scheduling.")}
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -62,7 +63,7 @@ export function ReadinessPanel({ issues, go }: { issues: DataIssue[]; go: Go }) 
             </div>
           </div>
         </div>
-        {!blocked && <Button asChild className="shrink-0"><Link href={`/decide/${dataset.id}`}><Compass />{t("Lập lịch trên bàn điều độ", "Schedule on the desk")}</Link></Button>}
+        {!blocked && <Button asChild className="shrink-0"><Link href={`/scenarios/${dataset.id}?tab=options`}><Compass />{t("Xem phương án lịch", "View schedule options")}</Link></Button>}
       </div>
       {issues.length > 0 && (
         <ul className="mt-4 divide-y rounded-md border">
@@ -102,7 +103,7 @@ export function KeyFigures({ go }: { go: Go }) {
     { tab: "products", label: t("Sản phẩm", "Products"), value: formatNumber(input.products.length), hint: t(`${new Set(Object.values(input.product_line)).size} dòng · ${new Set(Object.values(input.product_color)).size} màu`, `${new Set(Object.values(input.product_line)).size} lines · ${new Set(Object.values(input.product_color)).size} colours`) },
     { tab: "btp", label: t("Mã BTP", "Semi-finished codes"), value: formatNumber(input.btp_codes.length), hint: t(`${formatNumber(sum(Object.values(input.inventory_btp)))} đơn vị tồn đầu`, `${formatNumber(sum(Object.values(input.inventory_btp)))} units opening stock`) },
     { tab: "machines", label: t("Máy", "Machines"), value: formatNumber(Object.keys(input.machines).length), hint: t(`${input.stages.length} công đoạn · ${Object.values(input.machines).filter((machine) => machine.mold).length} khuôn`, `${input.stages.length} stages · ${Object.values(input.machines).filter((machine) => machine.mold).length} molds`) },
-    { tab: "settings", label: t("Horizon", "Horizon"), value: t(`${days} ngày`, `${days} days`), hint: t(`${input.working_days.length} ngày làm việc`, `${input.working_days.length} working days`) },
+    { tab: "settings", label: t("Tầm kế hoạch", "Horizon"), value: t(`${days} ngày`, `${days} days`), hint: t(`${input.working_days.length} ngày làm việc`, `${input.working_days.length} working days`) },
   ];
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
@@ -232,7 +233,7 @@ export function DemandPanel({ go }: { go: Go }) {
 /** Revision context (GitHub "this commit is used by…"): which revisions existing runs were made from. */
 export function RevisionPanel({ runs, go }: { runs: ScheduleRunSummary[] | undefined; go: Go }) {
   const { t } = useI18n();
-  const { dataset } = useDataset();
+  const dataset = useScenarioMeta();
   const byRevision = new Map<number, number>();
   for (const run of runs ?? []) if (run.dataset_revision != null) byRevision.set(run.dataset_revision, (byRevision.get(run.dataset_revision) ?? 0) + 1);
   const current = byRevision.get(dataset.revision) ?? 0;

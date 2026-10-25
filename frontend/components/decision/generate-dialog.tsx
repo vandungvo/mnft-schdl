@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ALGORITHMS, familyLabel, type AlgorithmFamily } from "@/lib/algorithms";
+import { ALGORITHMS, availableFor, familyLabel, type AlgorithmFamily } from "@/lib/algorithms";
 import { apiErrorMessage, createScheduleRun, getHealth } from "@/lib/api";
 import type { Algorithm } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -20,7 +20,7 @@ const DEFAULT: Algorithm[] = ["edd", "simulated_annealing", "cp_sat_hint", "cp_l
 const SEED_POOL = [11, 47, 83];
 const deterministic = (value: Algorithm) => ["fifo", "edd", "spt"].includes(value);
 
-export function GenerateDialog({ datasetId, open, onClose }: { datasetId: string; open: boolean; onClose: () => void }) {
+export function GenerateDialog({ datasetId, schemaVersion, open, onClose }: { datasetId: string; schemaVersion?: number; open: boolean; onClose: () => void }) {
   const { t } = useI18n();
   const health = useQuery({ queryKey: ["health"], queryFn: getHealth });
   const queryClient = useQueryClient();
@@ -28,17 +28,19 @@ export function GenerateDialog({ datasetId, open, onClose }: { datasetId: string
   const [picked, setPicked] = useState<Algorithm[]>(DEFAULT);
   const [seeds, setSeeds] = useState(1);
   const [budget, setBudget] = useState<number | null>(null);
-  const supported = ALGORITHMS.filter((item) => !health.data || health.data.supported_algorithms.includes(item.value));
+  const supported = ALGORITHMS.filter((item) => (!health.data || health.data.supported_algorithms.includes(item.value)) && availableFor(item.value, schemaVersion));
+  // Only methods this production model has are run, whatever is ticked.
+  const runnable = picked.filter((value) => availableFor(value, schemaVersion));
   const maxBudget = health.data?.solver_max_budget_seconds ?? 900;
   const effectiveBudget = budget ?? health.data?.solver_default_budget_seconds ?? 30;
-  const runCount = picked.reduce((sum, value) => sum + (deterministic(value) ? 1 : seeds), 0);
-  const invalid = !picked.length || effectiveBudget < 1 || effectiveBudget > maxBudget;
+  const runCount = runnable.reduce((sum, value) => sum + (deterministic(value) ? 1 : seeds), 0);
+  const invalid = !runnable.length || effectiveBudget < 1 || effectiveBudget > maxBudget;
 
   const mutation = useMutation({
     mutationFn: async () => {
       const failures: string[] = [];
       let created = 0;
-      for (const algorithm of picked) {
+      for (const algorithm of runnable) {
         for (const seed of SEED_POOL.slice(0, deterministic(algorithm) ? 1 : seeds)) {
           try {
             await createScheduleRun({ dataset_id: datasetId, algorithm, seed, time_budget_seconds: effectiveBudget }, crypto.randomUUID());

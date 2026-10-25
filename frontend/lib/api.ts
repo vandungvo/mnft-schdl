@@ -4,9 +4,13 @@ import type {
   AuditEventList,
   HealthResponse,
   MasterDatasetDetail,
+  MasterDatasetDetailV4,
   MasterDatasetList,
   ProductionPlanDetail,
   ProductionPlanList,
+  ScheduleDecision,
+  ScheduleDecisionCreate,
+  ScheduleDecisionList,
   ScheduleRunDetail,
   ScheduleRunList,
   ScheduleRunSummary,
@@ -148,6 +152,18 @@ export function getProductionPlan(id: string): Promise<ProductionPlanDetail> {
   return apiRequest(`/production-plans/${encodeURIComponent(id)}`);
 }
 
+/** Committed schedules of a scenario, newest first. */
+export function listScheduleDecisions(datasetId: string, limit = 100): Promise<ScheduleDecisionList> {
+  return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/decisions?limit=${limit}`);
+}
+
+export function commitScheduleDecision(datasetId: string, payload: ScheduleDecisionCreate): Promise<ScheduleDecision> {
+  return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/decisions`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export function createProductionPlan(payload: {
   dataset_id: string;
   period_start: number;
@@ -188,7 +204,7 @@ export function updateMasterProduct(
   datasetId: string,
   productCode: string,
   payload: { expected_revision: number; color: string; line: string; initial_inventory: number; safety_stock: number },
-): Promise<MasterDatasetDetail> {
+): Promise<MasterDatasetDetailV4> {
   return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/products/${encodeURIComponent(productCode)}`, {
     method: "PATCH",
     body: JSON.stringify(payload),
@@ -198,21 +214,21 @@ export function updateMasterProduct(
 export function createMasterProduct(
   datasetId: string,
   payload: { expected_revision: number; code: string; color: string; line: string; initial_inventory: number; safety_stock: number },
-): Promise<MasterDatasetDetail> {
+): Promise<MasterDatasetDetailV4> {
   return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/products`, {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
-export function deleteMasterProduct(datasetId: string, productCode: string, expectedRevision: number): Promise<MasterDatasetDetail> {
+export function deleteMasterProduct(datasetId: string, productCode: string, expectedRevision: number): Promise<MasterDatasetDetailV4> {
   return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/products/${encodeURIComponent(productCode)}?expected_revision=${expectedRevision}`, { method: "DELETE" });
 }
 
 export function createBtpCode(
   datasetId: string,
   payload: { expected_revision: number; code: string },
-): Promise<MasterDatasetDetail> {
+): Promise<MasterDatasetDetailV4> {
   return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/btp-codes`, {
     method: "POST",
     body: JSON.stringify(payload),
@@ -223,14 +239,14 @@ export function renameBtpCode(
   datasetId: string,
   btpCode: string,
   payload: { expected_revision: number; code: string },
-): Promise<MasterDatasetDetail> {
+): Promise<MasterDatasetDetailV4> {
   return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/btp-codes/${encodeURIComponent(btpCode)}`, {
     method: "PATCH",
     body: JSON.stringify(payload),
   });
 }
 
-export function deleteBtpCode(datasetId: string, btpCode: string, expectedRevision: number): Promise<MasterDatasetDetail> {
+export function deleteBtpCode(datasetId: string, btpCode: string, expectedRevision: number): Promise<MasterDatasetDetailV4> {
   return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/btp-codes/${encodeURIComponent(btpCode)}?expected_revision=${expectedRevision}`, { method: "DELETE" });
 }
 
@@ -238,14 +254,14 @@ export function upsertBtpInventory(
   datasetId: string,
   btpCode: string,
   payload: { expected_revision: number; initial_qty: number; capacity: number | null },
-): Promise<MasterDatasetDetail> {
+): Promise<MasterDatasetDetailV4> {
   return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/btp-codes/${encodeURIComponent(btpCode)}/inventory`, {
     method: "PUT",
     body: JSON.stringify(payload),
   });
 }
 
-export function deleteBtpInventory(datasetId: string, btpCode: string, expectedRevision: number): Promise<MasterDatasetDetail> {
+export function deleteBtpInventory(datasetId: string, btpCode: string, expectedRevision: number): Promise<MasterDatasetDetailV4> {
   return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/btp-codes/${encodeURIComponent(btpCode)}/inventory?expected_revision=${expectedRevision}`, { method: "DELETE" });
 }
 
@@ -254,7 +270,7 @@ export function setBtpRouting(
   productCode: string,
   stage: string,
   payload: { expected_revision: number; btp_code: string },
-): Promise<MasterDatasetDetail> {
+): Promise<MasterDatasetDetailV4> {
   return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/products/${encodeURIComponent(productCode)}/routing/${encodeURIComponent(stage)}`, {
     method: "PUT",
     body: JSON.stringify(payload),
@@ -265,14 +281,14 @@ export function updateMasterOrder(
   datasetId: string,
   orderCode: string,
   payload: Record<string, unknown>,
-): Promise<MasterDatasetDetail> {
+): Promise<MasterDatasetDetailV4> {
   return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/orders/${encodeURIComponent(orderCode)}`, {
     method: "PATCH",
     body: JSON.stringify(payload),
   });
 }
 
-export function deleteMasterOrder(datasetId: string, orderCode: string, expectedRevision: number): Promise<MasterDatasetDetail> {
+export function deleteMasterOrder(datasetId: string, orderCode: string, expectedRevision: number): Promise<MasterDatasetDetailV4> {
   return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/orders/${encodeURIComponent(orderCode)}?expected_revision=${expectedRevision}`, { method: "DELETE" });
 }
 
@@ -281,14 +297,14 @@ export function replaceMasterMachine(
   machineCode: string,
   expectedRevision: number,
   machine: unknown,
-): Promise<MasterDatasetDetail> {
+): Promise<MasterDatasetDetailV4> {
   return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/machines/${encodeURIComponent(machineCode)}`, {
     method: "PUT",
     body: JSON.stringify({ expected_revision: expectedRevision, machine }),
   });
 }
 
-export function deleteMasterMachine(datasetId: string, machineCode: string, expectedRevision: number): Promise<MasterDatasetDetail> {
+export function deleteMasterMachine(datasetId: string, machineCode: string, expectedRevision: number): Promise<MasterDatasetDetailV4> {
   return apiRequest(`/master-data/datasets/${encodeURIComponent(datasetId)}/machines/${encodeURIComponent(machineCode)}?expected_revision=${expectedRevision}`, { method: "DELETE" });
 }
 

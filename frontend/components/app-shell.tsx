@@ -1,15 +1,17 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Factory, Menu, Search } from "lucide-react";
+import { BarChart3, CalendarClock, Compass, Factory, Menu, Plus, Search, Upload } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { getHealth } from "@/lib/api";
-import { formatDateTime } from "@/lib/format";
+import { getHealth, listMasterDatasets } from "@/lib/api";
+import { formatDateTime, formatInputName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { AppNavigation } from "./app-navigation";
 import { Breadcrumbs } from "./breadcrumbs";
@@ -21,7 +23,7 @@ import { ThemeToggle } from "./theme-toggle";
 function Brand() {
   return (
     <Link href="/" className="flex items-center gap-2.5 rounded-md px-1 text-[15px] font-bold tracking-tight text-sidebar-strong focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
-      <span className="grid size-7 place-items-center rounded-md bg-gradient-to-br from-[#2a78d6] to-[#eb6834] text-sm font-extrabold text-white" aria-hidden>P</span>
+      <span className="grid size-7 place-items-center rounded-md bg-sidebar-primary text-sm font-extrabold text-primary-foreground" aria-hidden>P</span>
       PlanWise
     </Link>
   );
@@ -37,6 +39,30 @@ function SearchButton({ onOpen }: { onOpen?: () => void }) {
       <span className="flex-1 text-left">{t("Tìm nhanh…", "Quick search…")}</span>
       <kbd className="rounded border border-sidebar-border px-1 text-[10px] font-medium">Ctrl K</kbd>
     </button>
+  );
+}
+
+/** One entry point for every "create" job (Databricks "+ New"): scenario import, options, single run, plan. */
+function NewMenu({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useI18n();
+  const router = useRouter();
+  const datasets = useQuery({ queryKey: ["master-datasets"], queryFn: () => listMasterDatasets() });
+  const ready = (datasets.data?.items ?? []).filter((dataset) => dataset.is_ready).slice(0, 3);
+  const go = (href: string) => { onNavigate?.(); router.push(href); };
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild><Button size="sm" className="w-full justify-start"><Plus />{t("Tạo mới", "New")}</Button></DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-64">
+        <DropdownMenuItem onSelect={() => go("/scenarios")}><Upload />{t("Kịch bản từ file JSON", "Scenario from JSON file")}</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => go("/planning")}><BarChart3 />{t("Kế hoạch tổng hợp", "Aggregate plan")}</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => go("/runs/new")}><CalendarClock />{t("Lần chạy đơn", "Single run")}</DropdownMenuItem>
+        {ready.length > 0 && <>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className="text-xs text-muted-foreground">{t("Sinh phương án cho", "Generate options for")}</DropdownMenuLabel>
+          {ready.map((dataset) => <DropdownMenuItem key={dataset.id} onSelect={() => go(`/scenarios/${dataset.id}?tab=options&generate=1`)}><Compass /><span className="truncate">{formatInputName(dataset.name)}</span></DropdownMenuItem>)}
+        </>}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -67,6 +93,7 @@ function SidebarBody({ onNavigate, health }: { onNavigate?: () => void; health: 
     <div className="flex h-full min-w-0 flex-col gap-5 overflow-y-auto border-r border-sidebar-border bg-sidebar px-3 py-4 text-sidebar-foreground">
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3">
         <Brand />
+        <NewMenu onNavigate={onNavigate} />
         <div className="flex items-center gap-2 rounded-md px-1 text-xs">
           <Factory className="size-3.5 shrink-0" aria-hidden />
           <span className="min-w-0 truncate"><span className="font-semibold text-sidebar-strong">{t("Nhà máy linh kiện mẫu", "Sample components plant")}</span> · Asia/Ho_Chi_Minh</span>
@@ -95,7 +122,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <CommandPaletteProvider>
       <div className="min-h-screen md:grid md:grid-cols-[232px_minmax(0,1fr)]">
         <a href="#main-content" className="fixed top-2 left-2 z-[100] -translate-y-24 rounded-md bg-primary px-3 py-2 text-primary-foreground focus:translate-y-0">{t("Bỏ qua điều hướng", "Skip to content")}</a>
-        <aside className="sticky top-0 hidden h-screen md:block"><SidebarBody health={health} /></aside>
+        <aside aria-label={t("Thanh điều hướng", "Sidebar")} className="sticky top-0 hidden h-screen md:block"><SidebarBody health={health} /></aside>
         <div className="min-w-0">
           <header className="sticky top-0 z-40 flex h-12 items-center justify-between gap-3 border-b bg-background/85 px-4 backdrop-blur md:px-6 lg:px-8">
             <div className="flex min-w-0 items-center gap-1.5">

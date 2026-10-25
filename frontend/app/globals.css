@@ -5,7 +5,8 @@
 
 /* Design tokens. shadcn/ui semantic names + factory-specific tokens (status, Gantt, products, charts). */
 :root {
-  --radius: 0.625rem;
+  /* Compact, data-dense scale (Databricks-style): 13px body, small radii. */
+  --radius: 0.5rem;
   /* Neutrals: cool grey, low-chroma so status colours carry the meaning. */
   --background: #f6f7f9;
   --foreground: #17202b;
@@ -28,7 +29,7 @@
 
   --brand: #c2410c;
   --brand-soft: #fdeee6;
-  --success: #15803d;
+  --success: #137339; /* ≥4.5:1 on --success-soft (badges) */
   --success-soft: #e6f4ea;
   --warning: #b45309;
   --warning-soft: #fdf3e3;
@@ -127,6 +128,16 @@
   --elev-float: 0 10px 30px -10px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
+/* Type scale: 13px for dense tables/forms, 15px base, 22px page titles. */
+@theme {
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: calc(1.25 / 0.8125);
+  --text-base: 0.9375rem;
+  --text-base--line-height: calc(1.5 / 0.9375);
+  --text-2xl: 1.375rem;
+  --text-2xl--line-height: calc(1.75 / 1.375);
+}
+
 @theme inline {
   --font-sans: var(--font-body), "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
@@ -182,10 +193,10 @@
 
 @layer base {
   * { @apply border-border outline-ring/50; }
-  html { overflow-x: clip; scroll-padding-top: 7.5rem; }
+  html { scroll-padding-top: 7.5rem; } /* no overflow here: body's clip must propagate to the viewport or sticky bars break under modals */
   :focus-visible { outline-color: var(--ring); }
   kbd { font-family: var(--font-sans); }
-  body { @apply bg-background text-foreground antialiased; overflow-x: clip; font-variant-numeric: tabular-nums; }
+  body { @apply bg-background text-sm text-foreground antialiased; overflow-x: clip; font-variant-numeric: tabular-nums; }
   h1, h2, h3, h4 { text-wrap: balance; }
 }
 

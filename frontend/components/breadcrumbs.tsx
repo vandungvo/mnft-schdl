@@ -9,7 +9,7 @@ import { NAV_ITEMS } from "@/lib/nav";
 import { useI18n } from "./i18n-provider";
 
 /* Pages name their own dynamic crumb (dataset name, run id…) through a tiny external store,
-   so the top bar can show "Bàn điều độ › Wheel Factory" without refetching anything. */
+   so the top bar can show "Kịch bản › Wheel Factory" without refetching anything. */
 let crumb: { path: string; label: string } | null = null;
 const listeners = new Set<() => void>();
 const subscribe = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, ArrowRight, BarChart3, CalendarClock, CheckCircle2, Compass, Database, Loader2, type LucideIcon } from "lucide-react";
+import { AlertTriangle, ArrowRight, BarChart3, CalendarClock, Compass, Database, Layers, Loader2, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -34,20 +34,6 @@ function AttentionTile({ href, icon: Icon, label, value, hint, tone }: { href: s
   );
 }
 
-function PipelineStep({ href, icon: Icon, index, title, text, count }: { href: string; icon: LucideIcon; index: number; title: string; text: string; count: ReactNode }) {
-  return (
-    <li className="min-w-0">
-      <Link href={href} className="group flex h-full items-start gap-3 rounded-lg p-3 transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
-        <span className="grid size-8 shrink-0 place-items-center rounded-md bg-accent text-primary"><Icon className="size-4" aria-hidden /></span>
-        <span className="min-w-0">
-          <span className="flex items-baseline gap-2"><span className="text-xs text-muted-foreground tabular-nums">{index}.</span><strong className="text-sm font-semibold">{title}</strong><span className="text-xs text-muted-foreground">{count}</span></span>
-          <span className="mt-0.5 block text-[13px] leading-snug text-muted-foreground">{text}</span>
-        </span>
-      </Link>
-    </li>
-  );
-}
-
 export default function DashboardPage() {
   const { t } = useI18n();
   const router = useRouter();
@@ -64,8 +50,8 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader title={t("Tổng quan", "Overview")}
-        description={t("Từ dữ liệu nhà máy đến một lịch được chốt có lý do: hệ thống sinh nhiều lịch khả thi, bạn chọn chính sách và quyết định.", "From factory data to a schedule committed with a reason: the system generates several feasible schedules, you pick the policy and decide.")}
-        actions={<Button asChild><Link href="/decide"><Compass />{t("Mở bàn điều độ", "Open scheduling desk")}</Link></Button>} />
+        description={t("Việc cần xử lý, kịch bản đang điều độ và các lần chạy gần nhất.", "What needs attention, scenarios in progress and the latest runs.")}
+        actions={<Button asChild><Link href="/scenarios"><Layers />{t("Mọi kịch bản", "All scenarios")}</Link></Button>} />
 
       {health.isError && <div className="mb-4"><ErrorState compact title={t("Backend không phản hồi", "Backend not responding")} message={t("Không thể xác nhận database và worker.", "Could not confirm the database and worker.")} onRetry={() => void health.refetch()} /></div>}
 
@@ -75,20 +61,12 @@ export default function DashboardPage() {
         <AttentionTile href="/planning?status=NEEDS_ATTENTION" icon={BarChart3} tone="warn" label={t("Kế hoạch cần chỉnh", "Plans to adjust")} value={attentionPlanCount} hint={attentionPlanCount ? t("thiếu hụt hoặc quá tải", "shortfall or overload") : t("công suất ổn", "capacity is fine")} />
       </div>
 
-      <SectionHeading title={t("Tiếp tục điều độ", "Continue scheduling")} aside={scenarios.length > 0 && <Link href="/decide" className="text-sm font-medium text-primary hover:underline">{t("Mọi kịch bản", "All scenarios")} →</Link>} />
+      <SectionHeading title={t("Tiếp tục điều độ", "Continue scheduling")} aside={scenarios.length > 0 && <Link href="/scenarios" className="text-sm font-medium text-primary hover:underline">{t("Mọi kịch bản", "All scenarios")} →</Link>} />
       {datasets.isLoading ? <SkeletonCards count={2} /> : datasets.isError ? <ErrorState compact message={t("Không tải được master data.", "Could not load master data.")} onRetry={() => void datasets.refetch()} /> : scenarios.length ? (
         <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(min(360px,100%),1fr))]">
           {scenarios.slice(0, 4).map((dataset) => <ScenarioCard key={dataset.id} dataset={dataset} runs={allRuns.data ?? []} />)}
         </div>
-      ) : <EmptyState icon={<Database />} title={t("Chưa có dữ liệu nhà máy", "No factory data yet")} description={t("Nhập một file scheduling input JSON để tạo kịch bản đầu tiên.", "Import a scheduling input JSON to create the first scenario.")} action={<Button asChild><Link href="/master-data">{t("Nhập dữ liệu", "Import data")}</Link></Button>} />}
-
-      <SectionHeading title={t("Quy trình điều độ", "Scheduling workflow")} />
-      <ol className="grid gap-1 rounded-lg border bg-card p-1.5 shadow-card md:grid-cols-2 xl:grid-cols-4" aria-label={t("Quy trình điều độ", "Scheduling workflow")}>
-        <PipelineStep index={1} href="/master-data" icon={Database} title={t("Chuẩn bị dữ liệu", "Prepare data")} count={datasets.data ? t(`${datasets.data.total} bộ`, `${datasets.data.total} sets`) : ""} text={t("Đơn hàng, tồn kho, máy, ca, khuôn — có phiên bản.", "Orders, inventory, machines, shifts, molds — versioned.")} />
-        <PipelineStep index={2} href="/planning" icon={BarChart3} title={t("Cân đối công suất", "Balance capacity")} count={health.data ? t(`${health.data.production_plan_count} kế hoạch`, `${health.data.production_plan_count} plans`) : ""} text={t("Kế hoạch tổng hợp theo ngày/tuần (tuỳ chọn).", "Daily/weekly aggregate plan (optional).")} />
-        <PipelineStep index={3} href="/decide" icon={Compass} title={t("Sinh & so sánh", "Generate & compare")} count={health.data ? t(`${health.data.schedule_run_count} lịch`, `${health.data.schedule_run_count} schedules`) : ""} text={t("Nhiều thuật toán, đường đánh đổi, Gantt cạnh nhau.", "Several algorithms, trade-off curve, side-by-side Gantt.")} />
-        <PipelineStep index={4} href="/decide" icon={CheckCircle2} title={t("Chốt có lý do", "Commit with a reason")} count="" text={t("Ghi lịch được chọn, chính sách và lý do.", "Record the chosen schedule, policy and reason.")} />
-      </ol>
+      ) : <EmptyState icon={<Database />} title={t("Chưa có dữ liệu nhà máy", "No factory data yet")} description={t("Nhập một file scheduling input JSON để tạo kịch bản đầu tiên.", "Import a scheduling input JSON to create the first scenario.")} action={<Button asChild><Link href="/scenarios">{t("Nhập dữ liệu", "Import data")}</Link></Button>} />}
 
       <SectionHeading title={t("Lần chạy mới nhất", "Latest runs")} aside={<Link href="/runs" className="text-sm font-medium text-primary hover:underline">{t("Xem tất cả", "View all")} →</Link>} />
       {runs.isError && <ErrorState compact message={t("Không tải được lịch sản xuất.", "Could not load production schedules.")} onRetry={() => void runs.refetch()} />}
@@ -107,7 +85,7 @@ export default function DashboardPage() {
             ))}</TableBody>
           </Table>
         </div>
-      ) : runs.data ? <EmptyState icon={<Compass />} title={t("Chưa có lịch sản xuất", "No production schedules yet")} description={t("Mở bàn điều độ để sinh các phương án đầu tiên.", "Open the scheduling desk to generate the first options.")} action={<Button asChild><Link href="/decide">{t("Mở bàn điều độ", "Open scheduling desk")}</Link></Button>} /> : null}
+      ) : runs.data ? <EmptyState icon={<Compass />} title={t("Chưa có lịch sản xuất", "No production schedules yet")} description={t("Mở một kịch bản để sinh các phương án đầu tiên.", "Open a scenario to generate the first options.")} action={<Button asChild><Link href="/scenarios">{t("Mở kịch bản", "Open a scenario")}</Link></Button>} /> : null}
     </>
   );
 }

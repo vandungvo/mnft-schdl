@@ -33,7 +33,10 @@ from .schemas import (
     MasterDatasetDetail,
     MasterDatasetSummary,
     SchedulingInput,
+    SchedulingInputV5,
 )
+
+AnyInput = SchedulingInput | SchedulingInputV5
 
 BTP_STAGES = ("cast", "cnc", "paint")
 
@@ -49,7 +52,7 @@ class MasterDataService:
     def __init__(self, session: Session) -> None:
         self.session = session
 
-    def import_input(self, scheduling_input: SchedulingInput) -> MasterDatasetDetail:
+    def import_input(self, scheduling_input: AnyInput) -> MasterDatasetDetail:
         raw = scheduling_input.to_engine_dict()
         source_hash = digest(raw)
         existing = self.session.scalar(
@@ -66,12 +69,7 @@ class MasterDataService:
         try:
             self.session.add(dataset)
             self.session.flush()
-            self._import_products(dataset.id, raw)
-            self._import_btp_codes(dataset.id, raw)
-            self._import_btp_routing(dataset.id, raw)
-            self._import_btp_inventory(dataset.id, raw)
-            self._import_machines(dataset.id, raw)
-            self._import_demand(dataset.id, raw)
+            self._import_tables(dataset.id, scheduling_input, raw)
             self.session.commit()
         except IntegrityError:
             self.session.rollback()
@@ -89,7 +87,7 @@ class MasterDataService:
     def replace(
         self,
         dataset_id: str,
-        scheduling_input: SchedulingInput,
+        scheduling_input: AnyInput,
         *,
         expected_revision: int,
     ) -> MasterDatasetDetail:
@@ -139,12 +137,7 @@ class MasterDataService:
             dataset.revision = expected_revision + 1
             dataset.updated_at = utc_now()
             self._apply_metadata(dataset, scheduling_input)
-            self._import_products(dataset.id, raw)
-            self._import_btp_codes(dataset.id, raw)
-            self._import_btp_routing(dataset.id, raw)
-            self._import_btp_inventory(dataset.id, raw)
-            self._import_machines(dataset.id, raw)
-            self._import_demand(dataset.id, raw)
+            self._import_tables(dataset.id, scheduling_input, raw)
             self.session.commit()
             self.session.expire_all()
         except Exception:
@@ -410,6 +403,13 @@ class MasterDataService:
         mutation,  # type: ignore[no-untyped-def]
     ) -> MasterDatasetDetail:
         detail = self.get_detail(dataset_id)
+        if isinstance(detail.input, SchedulingInputV5):
+            raise ApplicationError(
+                "SCHEMA5_EDIT_VIA_JSON",
+                "Record edits apply to schema-4 scenarios; edit a schema-5 scenario by "
+                "replacing its JSON document",
+                status_code=409,
+            )
         if detail.revision != expected_revision:
             self._raise_revision_conflict(detail.revision)
         raw = detail.input.to_engine_dict()
@@ -439,8 +439,40 @@ class MasterDataService:
             details={"current_revision": current_revision},
         )
 
+    def _import_tables(
+        self, dataset_id: str, scheduling_input: AnyInput, raw: dict[str, Any]
+    ) -> None:
+        if isinstance(scheduling_input, SchedulingInputV5):
+            return  # stored whole in MasterDataset.document
+        self._import_products(dataset_id, raw)
+        self._import_btp_codes(dataset_id, raw)
+        self._import_btp_routing(dataset_id, raw)
+        self._import_btp_inventory(dataset_id, raw)
+        self._import_machines(dataset_id, raw)
+        self._import_demand(dataset_id, raw)
+
     @staticmethod
-    def _apply_metadata(dataset: MasterDataset, scheduling_input: SchedulingInput) -> None:
+    def _apply_metadata(dataset: MasterDataset, scheduling_input: AnyInput) -> None:
+        if isinstance(scheduling_input, SchedulingInputV5):
+            # Columns shaped for schema 4 get neutral values; the document is the source.
+            dataset.name = scheduling_input.name
+            dataset.schema_version = 5
+            dataset.seed = 0
+            dataset.origin = scheduling_input.origin
+            dataset.time_unit = scheduling_input.time_unit
+            dataset.horizon = scheduling_input.horizon
+            dataset.working_days = list(range(scheduling_input.horizon // 1440))
+            dataset.stages = scheduling_input.stages
+            dataset.checkpoints = scheduling_input.checkpoints
+            dataset.minimum_lot = 0
+            dataset.max_surplus = 0
+            dataset.max_surplus_btp = 0
+            dataset.transfer_minutes = 0
+            dataset.weights = dict(scheduling_input.weights)
+            dataset.assumptions = []
+            dataset.document = scheduling_input.to_engine_dict()
+            return
+        dataset.document = None
         dataset.name = scheduling_input.name
         dataset.schema_version = scheduling_input.schema_version
         dataset.seed = scheduling_input.seed
@@ -654,8 +686,20 @@ class MasterDataService:
 
     def get_detail(self, dataset_id: str) -> MasterDatasetDetail:
         dataset = self._get(dataset_id)
-        raw = self._assemble(dataset)
         errors: list[str] = []
+        if dataset.document is not None:
+            try:
+                document = SchedulingInputV5.model_validate(dataset.document)
+            except ValidationError as exc:
+                raise ApplicationError(
+                    "DATASET_NOT_READY",
+                    "Stored schema-5 document no longer passes validation",
+                    status_code=409,
+                    details=[error["msg"] for error in exc.errors()],
+                ) from exc
+            summary = self._summary(dataset, is_ready=True, errors=errors)
+            return MasterDatasetDetail(**summary.model_dump(), input=document)
+        raw = self._assemble(dataset)
         try:
             scheduling_input = SchedulingInput.model_validate(raw)
         except ValidationError as exc:
@@ -671,7 +715,7 @@ class MasterDataService:
         summary = self._summary(dataset, is_ready=not errors, errors=errors)
         return MasterDatasetDetail(**summary.model_dump(), input=scheduling_input)
 
-    def get_scheduling_input(self, dataset_id: str) -> tuple[SchedulingInput, int]:
+    def get_scheduling_input(self, dataset_id: str) -> tuple[AnyInput, int]:
         detail = self.get_detail(dataset_id)
         return detail.input, detail.revision
 
@@ -721,14 +765,29 @@ class MasterDataService:
             horizon=dataset.horizon,
             is_ready=is_ready,
             readiness_errors=errors,
-            counts=MasterDatasetCounts(
-                products=len(dataset.products),
-                machines=len(dataset.machines),
-                orders=len(dataset.orders),
-                lots=len(dataset.lots),
-            ),
+            counts=MasterDataService._counts(dataset),
             created_at=dataset.created_at,
             updated_at=dataset.updated_at,
+        )
+
+    @staticmethod
+    def _counts(dataset: MasterDataset) -> MasterDatasetCounts:
+        document = dataset.document
+        if document is not None:
+            last = document["stages"][-1]
+            return MasterDatasetCounts(
+                products=len(document["products"]),
+                machines=len(document["machines"]),
+                orders=len(document["orders"]),
+                # The lots orders are allocated to are the runs of the last stage.
+                lots=sum(run["stage"] == last for run in document["runs"]),
+                runs=len(document["runs"]),
+            )
+        return MasterDatasetCounts(
+            products=len(dataset.products),
+            machines=len(dataset.machines),
+            orders=len(dataset.orders),
+            lots=len(dataset.lots),
         )
 
     @staticmethod

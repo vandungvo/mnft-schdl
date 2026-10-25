@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 
+from models.common.experiment import methods_for
 from models.common.instance import digest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -16,6 +17,17 @@ from .repository import ScheduleRunRepository
 from .schemas import ScheduleRunCreate, ScheduleRunRetry
 
 logger = logging.getLogger(__name__)
+
+
+def _require_algorithm_for(snapshot: dict, algorithm: str) -> None:
+    """Some methods exist for one production model only (cp_rolling: schema 5)."""
+    if algorithm not in methods_for(snapshot):
+        raise ApplicationError(
+            "ALGORITHM_NOT_AVAILABLE",
+            f"Algorithm '{algorithm}' is not available for schema_version "
+            f"{snapshot.get('schema_version')} inputs",
+            status_code=422,
+        )
 
 
 class ScheduleRunService:
@@ -59,6 +71,7 @@ class ScheduleRunService:
             assert request.input is not None
             scheduling_input = request.input
         input_snapshot = scheduling_input.to_engine_dict()
+        _require_algorithm_for(input_snapshot, request.algorithm)
         candidate = ScheduleRun(
             idempotency_key=idempotency_key,
             dataset_id=dataset_id,
@@ -116,6 +129,7 @@ class ScheduleRunService:
                 f"time_budget_seconds cannot exceed {self.settings.solver_max_budget_seconds}",
                 status_code=422,
             )
+        _require_algorithm_for(source.input_snapshot, request.algorithm or source.algorithm)
         candidate = ScheduleRun(
             idempotency_key=idempotency_key,
             dataset_id=source.dataset_id,

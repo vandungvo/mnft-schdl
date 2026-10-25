@@ -45,7 +45,7 @@ export function TradeoffChart({ alternatives, weights, list, current, displayNam
   });
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="viz block h-auto w-full max-w-[960px] min-w-[600px]" role="img" aria-label={t("Đồ thị đánh đổi giữa chi phí vận hành và thiếu tồn an toàn", "Trade-off between operating cost and safety-stock shortfall")}>
+    <svg viewBox={`0 0 ${W} ${H}`} className="viz block h-auto w-full max-w-[960px] min-w-[600px]" role="group" aria-label={t("Đồ thị đánh đổi giữa chi phí vận hành và thiếu tồn an toàn", "Trade-off between operating cost and safety-stock shortfall")}>
       {niceTicks(x0, x1, 6).map((v) => <g key={`x${v}`}><line x1={X(v)} x2={X(v)} y1={T} y2={H - B} className="grid-line" /><text x={X(v)} y={H - B + 16} textAnchor="middle" className="tick">{fmtN(v)}</text></g>)}
       {niceTicks(0, y1, 5).map((v) => <g key={`y${v}`}><line x1={L} x2={W - R} y1={Y(v)} y2={Y(v)} className="grid-line" /><text x={L - 8} y={Y(v) + 4} textAnchor="end" className="tick">{fmtN(v)}</text></g>)}
       <text x={(L + W - R) / 2} y={H - 8} textAnchor="middle" className="axis">{t("Chi phí vận hành", "Operating cost")} →</text>

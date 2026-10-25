@@ -6,7 +6,8 @@ import { useI18n } from "@/components/i18n-provider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { activeShifts, type Delivery } from "@/lib/decision";
 import { formatClock, formatDay, formatDuration, formatHour, productLabel, stageLabel } from "@/lib/format";
-import type { ScheduleOperation, SchedulingInputDocument } from "@/lib/types";
+import { plantOf } from "@/lib/plant";
+import type { AnySchedulingInput, ScheduleOperation } from "@/lib/types";
 
 const KNOWN_PRODUCT_COLORS: Record<string, [string, string]> = {
   F_SILVER: ["var(--p-f-silver)", "var(--on-light)"],
@@ -22,7 +23,7 @@ export function productColor(product: string, products: string[]): [string, stri
 
 interface Props {
   operations: ScheduleOperation[];
-  input?: SchedulingInputDocument;
+  input?: AnySchedulingInput;
   origin: string;
   horizon: number;
   deliveries?: Delivery[];
@@ -42,20 +43,31 @@ export function ScheduleGantt({ operations, input, origin, horizon, deliveries, 
   const [focusId, setFocusId] = useState<number | null>(null);
   const [tip, setTip] = useState<{ x: number; y: number; title: string; lines: string[] } | null>(null);
 
-  const lotIndex = useMemo(() => new Map((input?.lots ?? []).map((lot) => [lot.id, lot])), [input]);
-  const productOf = (lot: string) => lotIndex.get(lot)?.product ?? lot.replace(/-.*$/, "");
-  const products = useMemo(() => input?.products ?? [...new Set(operations.map((op) => productOf(op.lot)))], [input, operations]); // eslint-disable-line react-hooks/exhaustive-deps
-  const lineOf = (lot: string) => input?.product_line[productOf(lot)] ?? productOf(lot);
+  const plant = useMemo(() => (input ? plantOf(input) : null), [input]);
+  const fallbackProduct = (op: ScheduleOperation) => (op.item ?? op.lot).replace(/-.*$/, "");
+  const productsOf = (op: ScheduleOperation) => plant?.productsOf(op) ?? [fallbackProduct(op)];
+  const products = useMemo(() => plant?.products ?? [...new Set(operations.map(fallbackProduct))], [plant, operations]);
+  const lineOf = (op: ScheduleOperation) => plant?.lineOf(op) ?? fallbackProduct(op);
+  // A row for a semi-finished item shared by several products (schema 5, e.g. F_CAST) gets their colours as stripes.
+  const mixes = useMemo(() => {
+    const seen = new Map<string, string[]>();
+    for (const op of operations) {
+      const owners = plant?.productsOf(op) ?? [];
+      if (owners.length > 1) seen.set(owners.join("+"), owners);
+    }
+    return [...seen.entries()];
+  }, [plant, operations]);
+  const fillOf = (op: ScheduleOperation): [string, string] => {
+    const owners = productsOf(op);
+    if (owners.length > 1) return [`url(#mix-${owners.join("+")})`, "var(--on-dark)"];
+    return productColor(owners[0] ?? fallbackProduct(op), products);
+  };
 
   const machines = useMemo(() => {
     const present = new Set(operations.map((op) => op.machine));
-    if (!input) return [...present];
-    const stageOrder = input.stages;
-    return Object.entries(input.machines)
-      .filter(([id]) => present.has(id) || stageOrder.includes(input.machines[id].stage))
-      .sort((a, b) => stageOrder.indexOf(a[1].stage) - stageOrder.indexOf(b[1].stage) || a[0].localeCompare(b[0]))
-      .map(([id]) => id);
-  }, [input, operations]);
+    if (!plant) return [...present];
+    return plant.machines.filter((machine) => present.has(machine.id) || plant.stages.includes(machine.stage)).map((machine) => machine.id);
+  }, [plant, operations]);
 
   const end = Math.max(horizon, ...operations.map((op) => op.end), ...(deliveries ?? []).map((d) => (Number.isFinite(d.time) ? d.time : 0)));
   const days = Math.max(1, Math.ceil(end / 1440));
@@ -69,7 +81,7 @@ export function ScheduleGantt({ operations, input, origin, horizon, deliveries, 
 
   const shifts = useMemo(() => activeShifts(input, operations), [input, operations]);
   const compareShifts = useMemo(() => (compare ? activeShifts(input, compare.operations) : []), [compare, input]);
-  const shiftKey = (s: { machine: string; shift: string }) => `${s.machine}|${s.shift}`;
+  const shiftKey = (s: { machine: string; shift: string | null }) => `${s.machine}|${s.shift}`;
   const mine = new Set(shifts.map(shiftKey));
   const theirs = new Set(compareShifts.map(shiftKey));
 
@@ -77,13 +89,16 @@ export function ScheduleGantt({ operations, input, origin, horizon, deliveries, 
   const activeId = focusId ?? sorted[0]?.id;
 
   function describe(op: ScheduleOperation) {
-    const lot = lotIndex.get(op.lot);
     const lines = [
-      `${op.machine} · ${stageLabel(op.stage)} · ${t("ca", "shift")} ${op.shift}${op.mold ? ` · ${t("khuôn", "mold")} ${op.mold}` : ""}`,
+      `${op.machine} · ${stageLabel(op.stage)} · ${op.shift ? `${t("ca", "shift")} ${op.shift}` : t("chạy liên tục", "continuous")}${op.mold ? ` · ${t("khuôn", "mold")} ${op.mold}` : ""}`,
       `${formatClock(origin, op.block_start)} → ${formatClock(origin, op.end)}`,
       `${t("Chạy", "Run")} ${formatDuration(op.end - op.start)}${op.setup_minutes ? ` · setup ${op.setup_minutes}'` : ""}${op.maintenance_minutes ? ` · ${t("bảo trì khuôn", "mold maintenance")} ${op.maintenance_minutes}'` : ""}`,
     ];
-    if (lot) lines.push(`${productLabel(lot.product)} · ${lot.quantity} ${t("đơn vị", "units")} · ${t("đơn", "order")} ${lot.order}`);
+    const quantity = plant?.quantityOf(op);
+    const order = plant?.orderOfLot(op.lot);
+    const owners = productsOf(op);
+    const what = [op.item && op.item !== owners[0] ? op.item : null, owners.map(productLabel).join(" / ")].filter(Boolean).join(" → ");
+    lines.push([what, quantity != null ? `${quantity} ${t("đơn vị", "units")}` : null, order ? `${t("đơn", "order")} ${order}` : null].filter(Boolean).join(" · "));
     return { title: op.lot, lines };
   }
 
@@ -95,7 +110,7 @@ export function ScheduleGantt({ operations, input, origin, horizon, deliveries, 
   function onKey(event: KeyboardEvent, op: ScheduleOperation) {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      setHighlight((current) => (current === lineOf(op.lot) ? null : lineOf(op.lot)));
+      setHighlight((current) => (current === lineOf(op) ? null : lineOf(op)));
     }
     if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
       event.preventDefault();
@@ -115,7 +130,8 @@ export function ScheduleGantt({ operations, input, origin, horizon, deliveries, 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 px-4 pt-4 pb-3">
         <div className="flex flex-wrap gap-x-3.5 gap-y-1.5 text-[12.5px] text-muted-foreground" aria-label={t("Chú giải", "Legend")}>
           {products.map((product) => <span key={product} className="inline-flex items-center gap-1.5"><i className="inline-block h-2.5 w-3.5 rounded-xs" style={{ background: productColor(product, products)[0] }} />{productLabel(product)}</span>)}
-          <span className="inline-flex items-center gap-1.5"><i className="inline-block h-2.5 w-3.5 rounded-xs bg-setup" />Setup</span>
+          {mixes.length > 0 && <span className="inline-flex items-center gap-1.5"><i className="inline-block h-2.5 w-3.5 rounded-xs" style={{ background: `repeating-linear-gradient(135deg, ${productColor(mixes[0][1][0], products)[0]} 0 3px, ${productColor(mixes[0][1][1], products)[0]} 3px 6px)` }} />{t("BTP dùng chung nhiều sản phẩm", "Semi-finished shared by products")}</span>}
+          <span className="inline-flex items-center gap-1.5"><i className="inline-block h-2.5 w-3.5 rounded-xs bg-setup" />{t("Chuẩn bị máy", "Setup")}</span>
           <span className="inline-flex items-center gap-1.5"><i className="hatch-maint inline-block h-2.5 w-3.5 rounded-xs" />{t("Bảo trì khuôn", "Mold maintenance")}</span>
           <span className="inline-flex items-center gap-1.5"><i className="inline-block h-2.5 w-3.5 rounded-xs border bg-shift" />{t("Ca đang bật", "Open shift")}</span>
           {compare && <>
@@ -128,24 +144,30 @@ export function ScheduleGantt({ operations, input, origin, horizon, deliveries, 
         </ToggleGroup>
       </div>
       <div className="overflow-x-auto border-t bg-card" onMouseLeave={() => setTip(null)}>
-        <svg width={LEFT + plotWidth + 16} height={height} role="img" aria-label={t(`Biểu đồ Gantt: ${operations.length} lượt trên ${machines.length} máy`, `Gantt chart: ${operations.length} operations on ${machines.length} machines`)} className={highlight ? "viz block is-dimmed" : "viz block"}>
+        <svg width={LEFT + plotWidth + 16} height={height} role="group" aria-label={t(`Biểu đồ Gantt: ${operations.length} lượt trên ${machines.length} máy`, `Gantt chart: ${operations.length} operations on ${machines.length} machines`)} className={highlight ? "viz block is-dimmed" : "viz block"}>
           <defs>
             <pattern id="gantt-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
               <rect width="6" height="6" style={{ fill: "var(--setup)" }} />
               <line x1="0" y1="0" x2="0" y2="6" style={{ stroke: "var(--maint)" }} strokeWidth="3" />
             </pattern>
+            {mixes.map(([key, owners]) => (
+              <pattern key={key} id={`mix-${key}`} width={owners.length * 4} height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                {owners.map((owner, index) => <rect key={owner} x={index * 4} width="4" height="8" style={{ fill: productColor(owner, products)[0] }} />)}
+              </pattern>
+            ))}
           </defs>
           {machines.map((machine, index) => {
             const y = TOP + index * ROW;
-            const def = input?.machines[machine];
+            const def = plant?.machine(machine);
             return <g key={machine}>
               {index > 0 && <line x1={LEFT} x2={LEFT + plotWidth} y1={y} y2={y} className="g-row" />}
+              {def?.continuous && <rect x={x(0)} y={y + 3} width={Math.max(1, x(plant!.horizon) - x(0))} height={ROW - 6} rx={3} className="g-shift"><title>{t("Chạy liên tục 24/7 (không theo ca)", "Runs around the clock (no shifts)")}</title></rect>}
               {shifts.filter((s) => s.machine === machine).map((s) => <rect key={s.shift} x={x(s.start)} y={y + 3} width={Math.max(1, x(s.end) - x(s.start))} height={ROW - 6} rx={3} className="g-shift" />)}
               {(def?.downtime ?? []).map(([a, z]) => <rect key={`d${a}`} x={x(a)} y={y + 3} width={Math.max(1, x(z) - x(a))} height={ROW - 6} rx={3} className="g-down"><title>{`${t("Dừng máy", "Downtime")} ${formatClock(origin, a)} → ${formatClock(origin, z)}`}</title></rect>)}
               {compare && compareShifts.filter((s) => s.machine === machine && !mine.has(shiftKey(s))).map((s) => <rect key={`t${s.shift}`} x={x(s.start) + 1} y={y + 4} width={Math.max(1, x(s.end) - x(s.start) - 2)} height={ROW - 8} rx={3} className="g-only-theirs" />)}
               {compare && shifts.filter((s) => s.machine === machine && !theirs.has(shiftKey(s))).map((s) => <rect key={`m${s.shift}`} x={x(s.start) + 1} y={y + 4} width={Math.max(1, x(s.end) - x(s.start) - 2)} height={ROW - 8} rx={3} className="g-only-mine" />)}
               <text x={6} y={y + ROW / 2 - 1} className="g-machine">{machine}</text>
-              {def && <text x={6} y={y + ROW / 2 + 13} className="g-stage">{stageLabel(def.stage)}</text>}
+              {def && <text x={6} y={y + ROW / 2 + 13} className="g-stage">{stageLabel(def.stage)}{def.continuous ? ` · ${t("liên tục", "24/7")}` : ""}</text>}
             </g>;
           })}
           {ticks.map((t) => {
@@ -162,18 +184,17 @@ export function ScheduleGantt({ operations, input, origin, horizon, deliveries, 
               if (row < 0) return null;
               const y = TOP + row * ROW + 8;
               const h = ROW - 16;
-              const product = productOf(op.lot);
-              const [fill, ink] = productColor(product, products);
+              const [fill, ink] = fillOf(op);
               const prep = op.block_start;
               const maintEnd = prep + op.maintenance_minutes;
               const width = Math.max(2, x(op.end) - x(op.start) - 1);
-              const on = highlight && lineOf(op.lot) === highlight;
+              const on = highlight && lineOf(op) === highlight;
               return <g key={op.id} data-op={op.id} className={on ? "g-bar is-on" : "g-bar"} tabIndex={op.id === activeId ? 0 : -1} role="button"
                 aria-label={t(`${op.lot} trên ${op.machine}, ${formatClock(origin, op.start)} đến ${formatClock(origin, op.end)}`, `${op.lot} on ${op.machine}, ${formatClock(origin, op.start)} to ${formatClock(origin, op.end)}`)}
                 onMouseMove={(event) => showTip(event, op)} onMouseLeave={() => setTip(null)}
                 onFocus={(event) => { const r = event.currentTarget.getBoundingClientRect(); const { title, lines } = describe(op); setTip({ x: r.left, y: r.bottom, title, lines }); }}
                 onBlur={() => setTip(null)}
-                onClick={() => setHighlight((current) => (current === lineOf(op.lot) ? null : lineOf(op.lot)))}
+                onClick={() => setHighlight((current) => (current === lineOf(op) ? null : lineOf(op)))}
                 onKeyDown={(event) => onKey(event, op)}>
                 {op.maintenance_minutes > 0 && <rect x={x(prep)} y={y} width={Math.max(1, x(maintEnd) - x(prep))} height={h} fill="url(#gantt-hatch)" />}
                 {op.setup_minutes > 0 && <rect x={x(maintEnd)} y={y} width={Math.max(1, x(op.start) - x(maintEnd))} height={h} style={{ fill: "var(--setup)" }} />}

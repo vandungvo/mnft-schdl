@@ -16,7 +16,7 @@ import { AUDIT_LABELS, auditTab, type MdTab } from "@/lib/master-data";
 import type { AuditEvent, ScheduleRunSummary } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-import { useDataset } from "./shared";
+import { useScenarioMeta } from "./shared";
 
 type Kind = "all" | "products" | "btp" | "machines" | "orders" | "dataset";
 
@@ -27,7 +27,7 @@ function kindOf(action: string): Kind {
 /** GitHub-style activity feed: one line per change, the revision it produced and a link to the record. */
 export function HistorySection({ runs, go }: { runs: ScheduleRunSummary[] | undefined; go: (tab: MdTab, item?: string) => void }) {
   const { t } = useI18n();
-  const { dataset } = useDataset();
+  const dataset = useScenarioMeta();
   const [kind, setKind] = useState<Kind>("all");
   const audit = useQuery({ queryKey: ["audit-events", "master_dataset", dataset.id], queryFn: () => listAuditEvents({ resourceType: "master_dataset", resourceId: dataset.id, limit: 100 }) });
   const events = (audit.data?.items ?? []).filter((event) => kind === "all" || kindOf(event.action) === kind);
@@ -72,7 +72,7 @@ export function HistorySection({ runs, go }: { runs: ScheduleRunSummary[] | unde
             ))}
           </ul>
         )}
-        <Button asChild variant="outline" size="sm" className="mt-3 w-full"><Link href={`/decide/${dataset.id}`}><Compass />{t("Xem trên bàn điều độ", "View on the desk")}</Link></Button>
+        <Button asChild variant="outline" size="sm" className="mt-3 w-full"><Link href={`/scenarios/${dataset.id}?tab=options`}><Compass />{t("Xem các phương án", "View the options")}</Link></Button>
       </Panel>
     </div>
   );
@@ -89,6 +89,7 @@ function EventRow({ event, current, go }: { event: AuditEvent; current: number; 
   const label = AUDIT_LABELS[event.action] ? t(...AUDIT_LABELS[event.action]) : event.action;
   let summary = code ?? "";
   if (event.action === "btp_code.renamed") summary = `${code} → ${String(details.new_code)}`;
+  if (event.action === "schedule.committed" && typeof details.alternative === "string") summary = details.alternative;
   if (event.action === "btp_routing.updated") summary = `${code} · ${stageLabel(String(details.stage))} → ${String(details.btp_code)}`;
   return (
     <li className="relative pb-3 pl-5 last:pb-0">

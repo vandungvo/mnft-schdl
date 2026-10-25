@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from .errors import ApplicationError
 from .master_data import MasterDataService
 from .models import ProductionPlan
-from .schemas import ProductionPlanCreate, SchedulingInput
+from .schemas import ProductionPlanCreate, SchedulingInput, SchedulingInputV5
 
 
 class ProductionPlanningService:
@@ -24,6 +24,15 @@ class ProductionPlanningService:
         scheduling_input, revision = MasterDataService(self.session).get_scheduling_input(
             request.dataset_id
         )
+        if isinstance(scheduling_input, SchedulingInputV5):
+            # Aggregate planning balances schema-4 lots against shifts; schema 5 has fixed
+            # runs per stage and continuous furnaces, which this capacity model does not cover.
+            raise ApplicationError(
+                "PLANNING_NOT_AVAILABLE",
+                "Aggregate planning supports schema-4 scenarios only; schedule schema-5 "
+                "scenarios directly",
+                status_code=422,
+            )
         period_end = request.period_end or scheduling_input.horizon
         if request.period_start >= period_end or period_end > scheduling_input.horizon:
             raise ApplicationError(

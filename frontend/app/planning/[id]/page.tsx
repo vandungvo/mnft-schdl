@@ -56,7 +56,7 @@ export default function ProductionPlanDetailPage() {
         title={`${dateLabel(plan.time_origin, plan.period_start)} – ${dateLabel(plan.time_origin, plan.period_end)}`}
         description={`${formatInputName(plan.input_name)} · ${plan.result.order_count} ${t("đơn hàng", "orders")} · ${plan.result.lot_count} ${t("lô", "lots")} · ${plan.bucket_minutes === 1440 ? t("theo ngày", "daily") : t("theo tuần", "weekly")}`}
         actions={<>
-          {plan.dataset_id && <Button variant="outline" asChild><Link href={`/master-data/${plan.dataset_id}`}><Database />{t("Xem master data", "View master data")}</Link></Button>}
+          {plan.dataset_id && <Button variant="outline" asChild><Link href={`/scenarios/${plan.dataset_id}?tab=products`}><Database />{t("Xem dữ liệu kịch bản", "View scenario data")}</Link></Button>}
           <Button asChild><Link href={`/runs/new?planId=${plan.id}`}><CalendarClock />{t("Lập lịch chi tiết", "Detailed scheduling")}</Link></Button>
         </>} />
 

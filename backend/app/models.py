@@ -54,6 +54,9 @@ class MasterDataset(Base):
     transfer_minutes: Mapped[int] = mapped_column(Integer)
     weights: Mapped[dict] = mapped_column(JSON)
     assumptions: Mapped[list] = mapped_column(JSON)
+    # Schema 5 (fixed runs per stage) is stored whole, as the validated document; the
+    # normalised child tables below hold schema 4 only and stay empty for it.
+    document: Mapped[dict | None] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utc_now, onupdate=utc_now
@@ -438,6 +441,41 @@ class AuditEvent(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
 
+class ScheduleDecision(Base):
+    """A committed schedule: which run, under which policy, why. Append-only, like the audit log.
+
+    The figures shown when committing (late orders, shortfall, machine-shifts, score) are kept as
+    they were seen, so the decision stays explainable even if scoring changes later.
+    """
+
+    __tablename__ = "schedule_decisions"
+    __table_args__ = (Index("ix_schedule_decisions_dataset_decided", "dataset_id", "decided_at"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    dataset_id: Mapped[str | None] = mapped_column(
+        ForeignKey("master_datasets.id", ondelete="SET NULL"), index=True
+    )
+    run_id: Mapped[str | None] = mapped_column(
+        ForeignKey("schedule_runs.id", ondelete="SET NULL"), index=True
+    )
+    dataset_revision: Mapped[int | None] = mapped_column(Integer)
+    input_hash: Mapped[str] = mapped_column(String(64))
+    algorithm: Mapped[str] = mapped_column(String(40))
+    seed: Mapped[int] = mapped_column(Integer)
+    alternative: Mapped[str] = mapped_column(String(200))
+    policy: Mapped[str] = mapped_column(String(80))
+    score: Mapped[str] = mapped_column(String(80))
+    late: Mapped[int] = mapped_column(Integer)
+    shortfall: Mapped[float] = mapped_column(Float)
+    shifts: Mapped[int] = mapped_column(Integer)
+    reason: Mapped[str] = mapped_column(Text)
+    actor: Mapped[str] = mapped_column(String(100))
+    # Set only when importing decisions recorded in a browser before they were stored here.
+    legacy_key: Mapped[str | None] = mapped_column(String(200), unique=True)
+    decided_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+
 class ScheduleOperation(Base):
     __tablename__ = "schedule_operations"
     __table_args__ = (
@@ -449,7 +487,10 @@ class ScheduleOperation(Base):
     run_id: Mapped[str] = mapped_column(
         ForeignKey("schedule_runs.id", ondelete="CASCADE"), nullable=False
     )
+    # Schema 4: the lot. Schema 5: the run id (a lot is the run of the last stage).
     lot: Mapped[str] = mapped_column(String(100))
+    # Schema 5 only: what the run makes (a semi-finished code or the product).
+    item: Mapped[str | None] = mapped_column(String(100))
     stage: Mapped[str] = mapped_column(String(40))
     machine: Mapped[str] = mapped_column(String(100))
     block_start: Mapped[int] = mapped_column(Integer)
@@ -460,6 +501,7 @@ class ScheduleOperation(Base):
     cycles_after: Mapped[int] = mapped_column(Integer)
     mold: Mapped[str | None] = mapped_column(String(100))
     window: Mapped[int] = mapped_column(Integer)
-    shift: Mapped[str] = mapped_column(String(100))
+    # None on a machine running around the clock (schema 5 continuous calendar).
+    shift: Mapped[str | None] = mapped_column(String(100))
 
     run: Mapped[ScheduleRun] = relationship(back_populates="operations")

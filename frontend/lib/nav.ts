@@ -1,4 +1,4 @@
-import { BarChart3, CalendarClock, Compass, Database, LayoutGrid, type LucideIcon } from "lucide-react";
+import { BarChart3, CalendarClock, Layers, LayoutGrid, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   href: string;
@@ -13,13 +13,13 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-/* Grouped by the planner's job: decide first, then monitor, then prepare inputs. */
+/* Grouped by the planner's job. One object, one page: a scenario holds its data, options, schedule and decision. */
 export const NAV_GROUPS: NavGroup[] = [
   {
     label: ["Điều độ", "Schedule"],
     items: [
       { href: "/", label: ["Tổng quan", "Overview"], hint: ["Việc cần làm và tình trạng hệ thống", "What needs doing and system status"], icon: LayoutGrid },
-      { href: "/decide", label: ["Bàn điều độ", "Scheduling desk"], hint: ["Sinh, so sánh và chốt phương án lịch", "Generate, compare and commit schedule options"], icon: Compass },
+      { href: "/scenarios", label: ["Kịch bản", "Scenarios"], hint: ["Dữ liệu nhà máy, phương án lịch, so sánh và chốt", "Factory data, schedule options, comparison and commit"], icon: Layers },
       { href: "/runs", label: ["Lần chạy", "Runs"], hint: ["Hàng đợi solver, lỗi và chi tiết từng lịch", "Solver queue, failures and each schedule's details"], icon: CalendarClock },
     ],
   },
@@ -27,7 +27,6 @@ export const NAV_GROUPS: NavGroup[] = [
     label: ["Chuẩn bị", "Prepare"],
     items: [
       { href: "/planning", label: ["Kế hoạch tổng hợp", "Aggregate planning"], hint: ["Cân đối nhu cầu với công suất theo kỳ", "Balance demand against capacity per period"], icon: BarChart3 },
-      { href: "/master-data", label: ["Dữ liệu nhà máy", "Factory data"], hint: ["Sản phẩm, BTP, máy, đơn hàng theo revision", "Products, semi-finished codes, machines, orders by revision"], icon: Database },
     ],
   },
 ];
