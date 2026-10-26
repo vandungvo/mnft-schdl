@@ -10,8 +10,8 @@ Tài liệu gồm cơ sở mô hình hóa, nhóm ràng buộc, hướng giải, 
 
 Ba bản nháp dưới đây được giữ để truy vết, có thông tin đã được hiệu chỉnh trong bản mới:
 
-- [Nháp 1 — dữ liệu và đối sánh](lit_review_draft.md).
-- [Nháp 2 — tài liệu theo chủ đề](lit_review_draft_2.md).
-- [Nháp 3 — xu hướng thuật toán](lit_review_draft_3.md).
+- [Nháp 1 — dữ liệu và đối sánh](drafts/lit_review_draft.md).
+- [Nháp 2 — tài liệu theo chủ đề](drafts/lit_review_draft_2.md).
+- [Nháp 3 — xu hướng thuật toán](drafts/lit_review_draft_3.md).
 
 Mã LRxx của bản mới độc lập với số thứ tự cũ trong `references/`. Các đề xuất triển khai chưa phải kết quả thực nghiệm.

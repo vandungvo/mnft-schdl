@@ -4,7 +4,7 @@
 
 **Venue:** EJOR — **Q1** (Scimago, Computer Science/OR).
 
-**Truy cập PDF:** không có ở đây — trả phí (Elsevier ScienceDirect), không tìm được bản mở hợp pháp.
+**Truy cập PDF:** `pdfs/12_dauzere-peres_2024_fjsp_review.pdf` (bản đã tải trước đây, chuyển từ `report/literature-review/papers/`). Nguồn gốc là Elsevier ScienceDirect — **chưa xác nhận license mở**, cần kiểm trước khi để trong repo public.
 
 **Nội dung:** bài tổng quan (review) FJSP **toàn diện và mới nhất hiện có**, tổng hợp khoảng 30 năm nghiên cứu — phân loại đầy đủ các biến thể ràng buộc, cấu hình bài toán, và hướng giải (exact, heuristic, metaheuristic, học máy) cho FJSP, bao gồm các biến thể mục tiêu như cân bằng tải máy và tối thiểu hoá thời gian nhàn rỗi.
 

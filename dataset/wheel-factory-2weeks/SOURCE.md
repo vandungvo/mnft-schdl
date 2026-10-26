@@ -57,7 +57,7 @@ Chạy cả 8 phương pháp, 3 seed × 120 giây, 1 worker CP-SAT, tuần tự:
 
 ```powershell
 python -m models.run_all --input dataset/wheel-factory-2weeks/model_input.json --seconds 120 --seeds 11 29 47
-python experiment/plan_page_data.py models/runs/v2/comparison/<run_id> <out.json>   # dữ liệu cho trang lịch
+python research/experiment/plan_page_data.py models/runs/v2/comparison/<run_id> <out.json>   # dữ liệu cho trang lịch
 ```
 
 Kết quả lưu ở `models/runs/v2/comparison/20261003T122013902225Z/` (dữ liệu đã sửa: giao đúng giờ hẹn, 2 mã mở kỳ dưới tồn an toàn, WIP dòng R theo tỉ lệ; bộ dựng lịch có luật kho đầy thì chờ). Các thư mục cũ cùng ngày `20261003T103727176988Z`, `20261003T112807725978Z`, `20261003T113935114013Z` dùng dữ liệu trước khi sửa — không dùng.

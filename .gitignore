@@ -19,9 +19,6 @@ data/*.db
 data/*.db-*
 backend/data/
 
-# Token tracking runtime data (per-machine telemetry, not source)
-.claude/token-tracking/
-
 # Node / Next.js
 node_modules/
 .next/
@@ -38,10 +35,12 @@ out/
 .DS_Store
 Thumbs.db
 
-# AI4BA BA-Kit (third-party, licensed) — kept locally, not published
-.claude/
-_templates/
+# Claude Code per-user settings
+.claude/settings.local.json
 
 # Large media / runtime logs
 *.mp4
 *.log
+
+# Trial / abandoned model runs (kept locally, see models/runs/README.md)
+models/runs/archive/

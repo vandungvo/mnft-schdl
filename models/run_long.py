@@ -15,7 +15,7 @@
 Heuristic runs are saved by the usual run_one (runs/v2/<method>/results/<run_id>/);
 the CP-SAT run as method `cp_sat_long`. The comparison folder has the same layout as
 run_all (input.json, config.json, results.json, REPORT.md), so
-experiment/plan_page_data.py reads it unchanged.
+research/experiment/plan_page_data.py reads it unchanged.
 """
 import argparse
 import json

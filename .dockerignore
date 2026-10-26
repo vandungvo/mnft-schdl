@@ -1,6 +1,6 @@
 .git
+.github
 .claude
-_templates
 **/node_modules
 **/.next
 **/__pycache__
@@ -10,10 +10,16 @@ _templates
 **/.env
 data
 backend/data
+backend/tests
 dataset
 docs
-experiment
-legacy
 references
 report
+research
 *.mp4
+*.log
+
+# The backend image copies models/ for the engine only; run outputs and tests are not needed.
+models/runs
+models/tests
+models/optional_stock/results

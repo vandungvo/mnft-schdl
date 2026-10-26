@@ -47,6 +47,8 @@ Input `dataset/wheel-factory-small/model_input.json` (schema 5).
 
 Các đợt chạy thử của v1 có thay đổi decoder hoặc độ chặt hạn giao giữa chừng; không gộp thứ hạng với đợt chính.
 
+`archive/` chỉ giữ ở máy local (đã thêm vào `.gitignore` từ 26/10/2026); bảng trên là bản ghi duy nhất trong repo về các đợt này.
+
 ## Khi so sánh
 
 - Đối chiếu `input_sha256` và `code_sha256` trước khi so hai đợt. Khác một trong hai thì điểm không so trực tiếp được.

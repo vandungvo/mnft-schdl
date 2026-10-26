@@ -4,9 +4,9 @@
 
 ## 1. Tài liệu đã đối chiếu
 
-- [Bản nháp 1](lit_review_draft.md): nguồn dữ liệu, tài liệu bổ sung và bảng đối sánh.
-- [Bản nháp 2](lit_review_draft_2.md): tài liệu theo chủ đề.
-- [Bản nháp 3](lit_review_draft_3.md): xu hướng thuật toán và CP-SAT/RL.
+- [Bản nháp 1](drafts/lit_review_draft.md): nguồn dữ liệu, tài liệu bổ sung và bảng đối sánh.
+- [Bản nháp 2](drafts/lit_review_draft_2.md): tài liệu theo chủ đề.
+- [Bản nháp 3](drafts/lit_review_draft_3.md): xu hướng thuật toán và CP-SAT/RL.
 - [Yêu cầu bài toán](../problem-requirements/problem_requirements.md): phạm vi hiện hành, bao gồm 3 ca/ngày.
 - [Khảo sát phương pháp hiện hành](../scheduling-algorithms/scheduling_methods_and_recommendation.md): đối chiếu định hướng, định nghĩa và danh mục nguồn; không thẩm định lại toàn bộ tài liệu thuật toán.
 - Danh mục `references/README.md`, các ghi chú nguồn liên quan và mô tả dataset. Các mô tả kết quả cũ được xem là thông tin cần kiểm chứng, không tự động kế thừa.

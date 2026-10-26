@@ -6,19 +6,18 @@ links:
   - report/problem-requirements/problem_requirements.md
 ---
 
-# Project Profile‍‌‌​​‌‌​​‌‌‌​‌‌‌‌​​‌​‌​‌‌‌‌‌​‌​​‌​​​‌​​​​‌​​​​‌​​​​​​​‌‌‌​‌‌​​​‌​​‌​​​​‌​​‌‌‌‌‌​​‌‌‌‌​‌‌‌​​​​​‌‌‌​​‌​‌‌‌‌​‌‌​​‌​‌‌​​​​​‌​‌‌​​‌‌​‌‍
+# Project Profile
 
-> Kho thông tin cấp dự án tích lũy dần — skill thiếu thông tin sẽ hỏi rồi ghi vào đây, skill sau
-> đọc lại không hỏi nữa (xem `.claude/rules/project-profile.md`). Chỉ tạo section khi có nội dung
-> thật; mỗi mục kèm ngày ghi.
+> Bối cảnh cấp dự án (domain, người dùng & thuật ngữ). Chỉ tạo section khi có nội dung thật; mỗi
+> mục kèm ngày ghi.
 
-## Domain‍‌‌​​‌‌​​‌‌‌​‌‌‌‌​​‌​‌​‌‌‌‌‌​‌​​‌​​​‌​​​​‌​​​​‌​​​​​​​‌‌‌​‌‌​​​‌​​‌​​​​‌​​‌‌‌‌‌​​‌‌‌‌​‌‌‌​​​​​‌‌‌​​‌​‌‌‌‌​‌‌​​‌​‌‌​​​​​‌​‌‌​​‌‌​‌‍
+## Domain
 
 Tác nhân lập lịch sản xuất tạo ra lịch hợp lý cho nhà máy linh kiện bánh xe tại Việt Nam (đúc → CNC → sơn → QC, 2 dòng bánh trước/sau), giải dạng FJSP bằng CP-SAT. Đồ án cao học CO5103, dữ liệu tổng hợp — chưa có dữ liệu đo thật của nhà máy. (2026-09-30)
 
-## Người dùng & thuật ngữ‍‌‌​​‌‌​​‌‌‌​‌‌‌‌​​‌​‌​‌‌‌‌‌​‌​​‌​​​‌​​​​‌​​​​‌​​​​​​​‌‌‌​‌‌​​​‌​​‌​​​​‌​​‌‌‌‌‌​​‌‌‌‌​‌‌‌​​​​​‌‌‌​​‌​‌‌‌‌​‌‌​​‌​‌‌​​​​​‌​‌‌​​‌‌​‌‍
+## Người dùng & thuật ngữ
 
-| Nhóm user | Gọi là gì trong doc | Ghi chú | Ngày |‍‌‌​​‌‌​​‌‌‌​‌‌‌‌​​‌​‌​‌‌‌‌‌​‌​​‌​​​‌​​​​‌​​​​‌​​​​​​​‌‌‌​‌‌​​​‌​​‌​​​​‌​​‌‌‌‌‌​​‌‌‌‌​‌‌‌​​​​​‌‌‌​​‌​‌‌‌‌​‌‌​​‌​‌‌​​​​​‌​‌‌​​‌‌​‌‍
+| Nhóm user | Gọi là gì trong doc | Ghi chú | Ngày |
 |---|---|---|---|
 
 ## Mô hình kinh doanh
@@ -31,17 +30,13 @@ Tác nhân lập lịch sản xuất tạo ra lịch hợp lý cho nhà máy lin
 | Thanh toán | Theo **từng sản phẩm**. Máy rảnh, người đứng chờ là chi phí nhà máy tự chịu — ưu tiên hàng đầu là không để máy/người rảnh. | 2026-09-30 |
 | Hệ quả cho lịch | Sản xuất dự trữ = **làm trước cho đơn dài hạn**, giới hạn theo từng sản phẩm bằng nhu cầu đơn dài hạn còn lại; hàng làm trước lưu kho Việt Nam tới hạn đơn. | 2026-09-30 |
 
-## Đối thủ / benchmark‍‌‌​​‌‌​​‌‌‌​‌‌‌‌​​‌​‌​‌‌‌‌‌​‌​​‌​​​‌​​​​‌​​​​‌​​​​​​​‌‌‌​‌‌​​​‌​​‌​​​​‌​​‌‌‌‌‌​​‌‌‌‌​‌‌‌​​​​​‌‌‌​​‌​‌‌‌‌​‌‌​​‌​‌‌​​​​​‌​‌‌​​‌‌​‌‍
+## Đối thủ / benchmark
 
 | Tên | Mạnh về | Monetization | Nguồn / ngày |
 |---|---|---|---|
 
-## Ghi chú khác‍‌‌​​‌‌​​‌‌‌​‌‌‌‌​​‌​‌​‌‌‌‌‌​‌​​‌​​​‌​​​​‌​​​​‌​​​​​​​‌‌‌​‌‌​​​‌​​‌​​​​‌​​‌‌‌‌‌​​‌‌‌‌​‌‌‌​​​​​‌‌‌​​‌​‌‌‌‌​‌‌​​‌​‌‌​​​​​‌​‌‌​​‌‌​‌‍
+## Ghi chú khác
 
 | Câu hỏi | Trả lời | Ngày | Skill hỏi |
-|---|---|---|---|‍‌‌​​‌‌​​‌‌‌​‌‌‌‌​​‌​‌​‌‌‌‌‌​‌​​‌​​​‌​​​​‌​​​​‌​​​​​​​‌‌‌​‌‌​​​‌​​‌​​​​‌​​‌‌‌‌‌​​‌‌‌‌​‌‌‌​​​​​‌‌‌​​‌​‌‌‌‌​‌‌​​‌​‌‌​​​​​‌​‌‌​​‌‌​‌‍
+|---|---|---|---|
 | Bên Nhật có nhận giao sớm / giao dư so với đơn không? | Chưa rõ — mô hình giả định KHÔNG giao sớm, hàng làm trước nằm kho Việt Nam | 2026-09-30 | (hỏi trong phiên làm dataset) |
-
-
-<!-- wm:2b9af6c9b691879b1ddb7a04d29a1c88 -->
-<sub>Tài liệu thuộc bộ AI4BA BA-Kit — bản quyền hoangphan.blog</sub>

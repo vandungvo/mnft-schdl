@@ -23,6 +23,19 @@ Lát cắt đầu tiên đã hỗ trợ:
 
 Explanation và what-if/re-scheduling sẽ được bổ sung theo [implementation plan](docs/_product/implementation-plan.md).
 
+## Cấu trúc thư mục
+
+| Thư mục | Nội dung |
+|---|---|
+| `backend/` | FastAPI, engine OR-Tools, Alembic migrations |
+| `frontend/` | Giao diện Next.js |
+| `models/` | Tám phương pháp lập lịch dùng để đánh giá, input chuẩn (`models/input/`) và kết quả chạy (`models/runs/`) — xem [models/README.md](models/README.md) |
+| `research/` | Mã nghiên cứu ngoài sản phẩm: `experiment/` (mô hình tồn bán thành phẩm), `notebooks/` (Colab/Kaggle chạy CP-SAT ngân sách dài), `legacy/` (POC cũ) — xem [research/README.md](research/README.md) |
+| `dataset/` | Dữ liệu benchmark và bộ wheel-factory, mỗi nguồn có `SOURCE.md` |
+| `references/` | Ghi chú trích dẫn và PDF bài báo (`references/pdfs/`) |
+| `report/` | Báo cáo đồ án: bản nộp ở gốc, `progress/`, `demo/`, `figures/`, tài liệu phân tích theo chủ đề |
+| `docs/` | Tài liệu đặc tả sản phẩm (PRD, SRS, use case, kế hoạch triển khai) |
+
 ## Chạy bằng Docker Compose
 
 Yêu cầu Docker Engine có Compose v2:
@@ -64,6 +77,7 @@ Khi database chưa có master data, backend tự kiểm tra và import `models/i
 
 ```powershell
 python -m pytest backend/tests models/tests -q
+python -m unittest research.notebooks.test_cp_sat_cold_notebook
 cd frontend
 npm.cmd run lint
 npm.cmd run typecheck

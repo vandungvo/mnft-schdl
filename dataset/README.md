@@ -14,7 +14,7 @@ Thư mục ngang hàng với `report/` và `references/`, chứa **file dữ li�
 ## Chưa thu thập được (cần làm thủ công nếu muốn dùng)
 
 - **Best-known solutions cho Taillard** (để so optimality gap) — tham khảo http://optimizizer.com/TA.php, chưa tải.
-- **data.gov / data.gov.vn / Kaggle** — đã rà soát ở `report/literature-review/lit_review_draft.md` mục 1, kết luận không có dataset cấp máy/công đoạn/đơn hàng phù hợp — không thu thập.
+- **data.gov / data.gov.vn / Kaggle** — đã rà soát ở `report/literature-review/drafts/lit_review_draft.md` mục 1, kết luận không có dataset cấp máy/công đoạn/đơn hàng phù hợp — không thu thập.
 
 ## Quy ước
 

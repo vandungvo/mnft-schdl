@@ -2,7 +2,7 @@
 
 **Tạo ngày:** 2026-09-30 (schema 5 — 5 công đoạn chính theo quy trình thực tế; 2 tầng input) | **Trạng thái:** `prepare.py` sinh + tự kiểm (đủ lượng cho mọi tổ hợp dự trữ, tải máy không vượt công suất). Chạy được cả 8 phương pháp của `models/` qua engine `models/common/stage_runs/` (FIFO, EDD, SPT, SA, GA, CP-SAT, CP-SAT+hint, CP-LNS); lịch xếp tay ở `manual_schedule.json`.
 
-Dữ liệu tổng hợp **tự sinh cho đồ án**. Quy trình và phần lớn thông số lấy theo [báo cáo quy trình sản xuất vành hợp kim](../../report/Báo%20cáo%20quy%20trình%20sản%20xuất%20vành%20(mâm)%20xe%20máy%20hợp%20kim.md) (quan sát video + ước tính theo thực hành ngành); chỉ thời gian nhiệt luyện có trích dẫn (Lu và cộng sự, 2018). Mọi số còn lại là **ước tính**, cột "Nguồn" ghi rõ.
+Dữ liệu tổng hợp **tự sinh cho đồ án**. Quy trình và phần lớn thông số lấy theo [báo cáo quy trình sản xuất vành hợp kim](../../report/problem-requirements/quy_trinh_san_xuat_vanh_xe_may.md) (quan sát video + ước tính theo thực hành ngành); chỉ thời gian nhiệt luyện có trích dẫn (Lu và cộng sự, 2018). Mọi số còn lại là **ước tính**, cột "Nguồn" ghi rõ.
 
 ## Hai tầng input
 

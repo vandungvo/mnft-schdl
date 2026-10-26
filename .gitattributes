@@ -1,0 +1,15 @@
+# Normalize text to LF in the repository; Windows checkouts still get CRLF via core.autocrlf.
+* text=auto
+
+# Files executed inside Linux containers must keep LF even on Windows checkouts.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.Dockerfile text eol=lf
+
+# Binary assets
+*.pdf binary
+*.docx binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.db binary
