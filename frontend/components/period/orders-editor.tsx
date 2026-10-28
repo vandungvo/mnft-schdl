@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { addDays, fmtLocal, pickupLabel, priorityLabel, priorityTone, productName } from "@/lib/factory";
 import type { FactoryConfig, Issue, PeriodOrder } from "@/lib/factory-types";
 import { cn } from "@/lib/utils";
@@ -53,7 +54,10 @@ export function OrdersEditor({ orders, onChange, config, endDate, issues, readOn
           <TableHead className="text-right">{t("Số lượng", "Qty")}</TableHead>
           <TableHead>{t("Hạn giao", "Due")}</TableHead>
           {!longTerm && <TableHead>{t("Ưu tiên", "Priority")}</TableHead>}
-          {!longTerm && <TableHead className="text-right">{t("Lấy từ kho", "From stock")}</TableHead>}
+          {!longTerm && <TableHead className="text-right">
+            <Tooltip><TooltipTrigger className="cursor-help underline decoration-dotted underline-offset-4">{t("Lấy từ kho", "From stock")}</TooltipTrigger>
+              <TooltipContent className="max-w-64">{t("Số lượng giao thẳng từ tồn kho. “tự động” = hệ thống tự phân bổ tồn trên mức an toàn cho đơn sớm nhất.", "Quantity shipped straight from stock. “auto” = stock above the safety level goes to the earliest orders.")}</TooltipContent></Tooltip>
+          </TableHead>}
           <TableHead>{t("Khách hàng", "Customer")}</TableHead>
           {!readOnly && <TableHead className="w-0 pr-3"><span className="sr-only">{t("Thao tác", "Actions")}</span></TableHead>}
         </TableRow></TableHeader>
@@ -68,7 +72,7 @@ export function OrdersEditor({ orders, onChange, config, endDate, issues, readOn
                 </TableCell>
                 <TableCell><span className="inline-flex items-center gap-1.5"><ProductDot product={order.product} products={products} />{productName(config, order.product)}</span></TableCell>
                 <TableCell className="text-right tabular-nums">{order.quantity}</TableCell>
-                <TableCell className="whitespace-nowrap">{fmtLocal(order.due, { weekday: true })}<span className="block text-xs text-muted-foreground">{pickupLabel(order.pickup)}</span></TableCell>
+                <TableCell className="whitespace-nowrap">{fmtLocal(order.due, { weekday: true })}{order.pickup !== "at_due" && <span className="block text-xs text-muted-foreground">{pickupLabel(order.pickup)}</span>}</TableCell>
                 {!longTerm && <TableCell><Badge variant={priorityTone(order.priority)}>{priorityLabel(order.priority)}</Badge></TableCell>}
                 {!longTerm && <TableCell className="text-right tabular-nums">{order.from_stock == null ? <span className="text-muted-foreground">{t("tự động", "auto")}</span> : order.from_stock}</TableCell>}
                 <TableCell className="max-w-40 truncate text-muted-foreground">{order.customer ?? "—"}</TableCell>
@@ -76,7 +80,7 @@ export function OrdersEditor({ orders, onChange, config, endDate, issues, readOn
                   <TableCell className="pr-3">
                     <div className="flex justify-end gap-1">
                       <Button variant="ghost" size="icon" className="size-8" aria-label={t(`Sửa ${order.code}`, `Edit ${order.code}`)} onClick={() => setEditing({ index, order })}><Pencil /></Button>
-                      <Button variant="ghost" size="icon" className="size-8 text-destructive" aria-label={t(`Bỏ ${order.code} khỏi kỳ`, `Remove ${order.code} from the period`)} onClick={() => remove(index)}><Trash2 /></Button>
+                      <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:bg-danger-soft hover:text-destructive focus-visible:text-destructive" aria-label={t(`Bỏ ${order.code} khỏi kỳ`, `Remove ${order.code} from the period`)} onClick={() => remove(index)}><Trash2 /></Button>
                     </div>
                   </TableCell>
                 )}
@@ -95,7 +99,7 @@ export function OrdersEditor({ orders, onChange, config, endDate, issues, readOn
         description={Object.entries(totals).map(([p, q]) => `${productName(config, p)} ${q}`).join(" · ") || undefined}
         actions={!readOnly && <Button size="sm" variant="outline" onClick={() => setEditing({ index: null, order: { ...EMPTY, product: products[0], due: `${endDate}T${config.default_due_time}` } })}><Plus />{t("Thêm đơn riêng kỳ", "Add a period-only order")}</Button>}>
         {table(inPeriod, false)}
-        <Hint>{t("Đơn lấy từ Sổ đơn hàng. Sửa ở đây chỉ áp dụng cho kỳ này (ví dụ đổi ưu tiên); muốn sửa đơn gốc hoặc nhập thêm từ Excel, dùng ", "Orders come from the Order book. Edits here only apply to this period (e.g. a priority change); to change the original or import more from Excel, use the ")}<Link href="/orders" className="font-medium text-primary hover:underline">{t("Sổ đơn hàng", "Order book")}</Link>. {t("“Lấy từ kho” để trống = hệ thống tự phân bổ tồn trên mức an toàn cho đơn sớm nhất.", "“From stock” left blank = stock above the safety level is allocated automatically, earliest due first.")}</Hint>
+        <Hint>{t("Đơn lấy từ Sổ đơn hàng. Sửa ở đây chỉ áp dụng cho kỳ này (ví dụ đổi ưu tiên); muốn sửa đơn gốc hoặc nhập thêm từ Excel, dùng ", "Orders come from the Order book. Edits here only apply to this period (e.g. a priority change); to change the original or import more from Excel, use the ")}<Link href="/orders" className="font-medium text-primary hover:underline">{t("Sổ đơn hàng", "Order book")}</Link>.</Hint>
       </Panel>
       <Panel title={t(`Đơn sau kỳ · ${later.length}`, `Orders after the period · ${later.length}`)}
         description={t(`Hạn trong ${config.lookahead_days} ngày sau kỳ: không phải giao trong kỳ, chỉ dùng để quyết định có làm trước hay không.`, `Due within ${config.lookahead_days} days after the period: not delivered in it, only used to decide on pulling work ahead.`)}>

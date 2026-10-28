@@ -34,7 +34,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { ErrorState, SkeletonCards, SkeletonTable } from "@/components/ui-states";
 import { algorithmInfo } from "@/lib/algorithms";
 import { ApiError, apiErrorMessage, deleteMasterDataset, getMasterDataset, getScheduleRun, listAllScheduleRuns, replaceMasterDataset } from "@/lib/api";
-import { deliveriesOf, fmtN, fmtScore, policyOf, score, shortlist, toAlternative, type Alternative } from "@/lib/decision";
+import { deliveriesOf, fmtN, fmtScore, hours, lateMinutes, opsCost, policyOf, score, shortlist, toAlternative, type Alternative } from "@/lib/decision";
 import { useDecisionLog } from "@/lib/decision-log";
 import { readScheduleInputFile } from "@/lib/files";
 import { formatDateTime, formatDay, formatInputName } from "@/lib/format";
@@ -85,6 +85,20 @@ function useScenarioUrl(embedded = false) {
   return { params, set };
 }
 
+export type StepState = "done" | "current" | "todo" | "blocked";
+
+/** Numbered dot in front of a tab label: done ✓, blocked !, current filled, to-do muted. */
+function StepMark({ n, state }: { n: number; state: StepState }) {
+  const { t } = useI18n();
+  const text = { done: t("xong", "done"), blocked: t("cần sửa", "needs fixing"), current: t("bước hiện tại", "current step"), todo: t("chưa làm", "to do") }[state];
+  return (
+    <span className={cn("mr-1.5 grid size-[18px] shrink-0 place-items-center rounded-full text-[10px] font-semibold",
+      state === "done" ? "bg-success text-white" : state === "blocked" ? "bg-destructive text-white" : state === "current" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
+      {state === "done" ? <CheckCircle2 className="size-3" /> : state === "blocked" ? "!" : n}<span className="sr-only">{` (${text})`}</span>
+    </span>
+  );
+}
+
 /** Extra tabs a host page (a planning period) puts around the desk; the JSON actions and raw data tabs go away. */
 export interface WorkspaceEmbed {
   /** Replaces the page header; gets the actions the desk owns. */
@@ -92,6 +106,10 @@ export interface WorkspaceEmbed {
   before: { value: string; label: ReactNode; content: ReactNode };
   after: { value: string; label: ReactNode; content: ReactNode };
   defaultView: string;
+  /** Progress of the host's workflow, shown on the tabs as step markers (one navigation level instead of a stepper + tabs). */
+  steps?: Partial<Record<string, StepState>>;
+  /** What committing means for the host (e.g. work orders and the next period's opening stock). */
+  commitNote?: ReactNode;
   /** Called after a schedule is committed (the host refreshes its status). */
   onCommitted?: () => void;
   /** Banner content shown above the tabs (e.g. stale inputs). */
@@ -260,6 +278,7 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
     (next as { schema_version?: number }).schema_version !== input.schema_version ? t(`mô hình ${input.schema_version} → ${(next as { schema_version?: number }).schema_version}`, `model ${input.schema_version} → ${(next as { schema_version?: number }).schema_version}`) : null,
   ].filter(Boolean).join(" · ") : "";
 
+  const step = (n: number, tab: string) => { const state = embed?.steps?.[tab]; return state ? <StepMark n={n} state={state} /> : null; };
   const tabCount = (value: ReactNode, tone: "muted" | "danger" = "muted") => (
     <span className={cn("ml-1 rounded-full px-1.5 text-[11px] tabular-nums", tone === "danger" ? "bg-destructive text-white" : "bg-muted text-muted-foreground")}>{value}</span>
   );
@@ -267,7 +286,7 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
   const body = (
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4">
         {embed ? embed.header({ openGenerate: () => setGenerateOpen(true), canGenerate: data.is_ready, pending: pending.length,
-          snapshot: <SnapshotPill snapshots={snapshots} hash={snapshot?.hash ?? null} revision={data.revision} stale={staleSnapshot} onChange={(hash) => set({ snap: hash.slice(0, 12), run: null, cmp: null })} /> }) : (
+          snapshot: snapshots.length <= 1 && !staleSnapshot ? null : <SnapshotPill snapshots={snapshots} hash={snapshot?.hash ?? null} revision={data.revision} stale={staleSnapshot} onChange={(hash) => set({ snap: hash.slice(0, 12), run: null, cmp: null })} /> }) : (
         <PageHeader back={{ href: "/scenarios", label: t("Kịch bản", "Scenarios") }} crumb={formatInputName(data.name)} title={formatInputName(data.name)}
           meta={<>
             <Badge variant={data.is_ready ? "success" : "danger"}>{data.is_ready ? t("Sẵn sàng", "Ready") : t("Chưa sẵn sàng", "Not ready")}</Badge>
@@ -293,22 +312,34 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
 
         {(replaceFileError || replace.isError) && <Alert variant="destructive"><AlertCircle /><AlertDescription>{replaceFileError || apiErrorMessage(replace.error, t("Không thể cập nhật. Dữ liệu cũ chưa bị thay đổi.", "Could not update. The existing data was not changed."))}</AlertDescription></Alert>}
         {pending.length > 0 && <Alert className="border-primary/30 bg-info-soft text-primary"><Loader2 className="animate-spin" /><AlertDescription className="text-primary">{t(`Đang giải ${pending.length} phương án`, `Solving ${pending.length} options`)} ({[...new Set(pending.map((run) => algorithmInfo(run.algorithm).short))].join(", ")}). {t("Trang tự cập nhật khi xong.", "The page updates when they finish.")}</AlertDescription></Alert>}
-        {staleSnapshot && <Alert className="border-warning/40 bg-warning-soft text-warning"><AlertTriangle /><AlertDescription className="text-warning">{t(`Các lịch đang xem chạy trên revision ${snapshot!.revision}; dữ liệu hiện tại là revision ${data.revision}.`, `The schedules shown ran on revision ${snapshot!.revision}; the current data is revision ${data.revision}.`)} <button type="button" className="font-semibold underline" onClick={() => setGenerateOpen(true)}>{embed ? t("Sinh phương án cho đầu vào mới", "Generate options for the new inputs") : t("Sinh phương án cho revision mới", "Generate options for the new revision")}</button></AlertDescription></Alert>}
+        {staleSnapshot && <Alert className="border-warning/40 bg-warning-soft text-warning"><AlertTriangle /><AlertDescription className="text-warning">{embed ? t("Các phương án đang xem được sinh từ đầu vào cũ (trước lần lưu gần nhất ở bước Chuẩn bị).", "The options shown were generated from older inputs (before the last save under Prepare).") : t(`Các lịch đang xem chạy trên revision ${snapshot!.revision}; dữ liệu hiện tại là revision ${data.revision}.`, `The schedules shown ran on revision ${snapshot!.revision}; the current data is revision ${data.revision}.`)} <button type="button" className="font-semibold underline" onClick={() => setGenerateOpen(true)}>{embed ? t("Sinh phương án cho đầu vào mới", "Generate options for the new inputs") : t("Sinh phương án cho revision mới", "Generate options for the new revision")}</button></AlertDescription></Alert>}
 
         <Tabs value={view} onValueChange={(value) => goView(value)} className="min-w-0 gap-4">
           <div className="sticky top-12 z-30 -mx-4 border-b bg-background/90 px-4 backdrop-blur md:-mx-6 md:px-6 lg:-mx-8 lg:px-8">
             {/* Fade on the right on narrow screens: tells the user the tab row scrolls. */}
             <div className="overflow-x-auto [mask-image:linear-gradient(to_right,black_85%,transparent)] [scrollbar-width:none] lg:[mask-image:none]">
               <TabsList variant="line" className="h-10">
-                {embed ? <TabsTrigger value={embed.before.value} className="px-2.5">{embed.before.label}</TabsTrigger> : <TabsTrigger value="overview" className="px-2.5">{t("Tổng quan", "Overview")}</TabsTrigger>}
-                <TabsTrigger value="options" className="px-2.5">{t("Phương án", "Options")}{pending.length ? <Loader2 className="ml-1 size-3.5 animate-spin text-primary" /> : alts.length > 0 && tabCount(alts.length)}</TabsTrigger>
-                <TabsTrigger value="schedule" className="px-2.5">{t("Lịch & so sánh", "Schedule & compare")}</TabsTrigger>
-                <TabsTrigger value="decide" className="px-2.5">{t("Chốt", "Commit")}{decided && <CheckCircle2 className="ml-1 size-3.5 text-success" />}</TabsTrigger>
-                <TabsTrigger value="analysis" className="px-2.5">{t("Phân tích", "Analysis")}</TabsTrigger>
-                {embed && <TabsTrigger value={embed.after.value} className="px-2.5">{embed.after.label}</TabsTrigger>}
-                <span className="mx-1 h-5 w-px bg-border" aria-hidden />
-                {!embed && <TabsTrigger value="data" className="px-2.5">{t("Dữ liệu", "Data")}{dataErrors > 0 && tabCount(dataErrors, "danger")}</TabsTrigger>}
-                <TabsTrigger value="history" className="px-2.5">{t("Lịch sử", "History")}</TabsTrigger>
+                {embed ? <>
+                  {/* Host workflow first, numbered like steps (GitHub PR / Linear object page: one tab row, no separate stepper);
+                      reference views after the divider. */}
+                  <TabsTrigger value={embed.before.value} className="px-2.5">{step(1, embed.before.value)}{embed.before.label}</TabsTrigger>
+                  <TabsTrigger value="options" className="px-2.5">{step(2, "options")}{t("Phương án", "Options")}{pending.length ? <Loader2 className="ml-1 size-3.5 animate-spin text-primary" /> : alts.length > 0 && tabCount(alts.length)}</TabsTrigger>
+                  <TabsTrigger value="schedule" className="px-2.5">{t("Xem lịch & so sánh", "Schedule & compare")}</TabsTrigger>
+                  <TabsTrigger value="decide" className="px-2.5">{step(3, "decide")}{t("Chốt", "Commit")}</TabsTrigger>
+                  <TabsTrigger value={embed.after.value} className="px-2.5">{step(4, embed.after.value)}{embed.after.label}</TabsTrigger>
+                  <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+                  <TabsTrigger value="analysis" className="px-2.5 text-muted-foreground">{t("Phân tích", "Analysis")}</TabsTrigger>
+                  <TabsTrigger value="history" className="px-2.5 text-muted-foreground">{t("Lịch sử", "History")}</TabsTrigger>
+                </> : <>
+                  <TabsTrigger value="overview" className="px-2.5">{t("Tổng quan", "Overview")}</TabsTrigger>
+                  <TabsTrigger value="options" className="px-2.5">{t("Phương án", "Options")}{pending.length ? <Loader2 className="ml-1 size-3.5 animate-spin text-primary" /> : alts.length > 0 && tabCount(alts.length)}</TabsTrigger>
+                  <TabsTrigger value="schedule" className="px-2.5">{t("Lịch & so sánh", "Schedule & compare")}</TabsTrigger>
+                  <TabsTrigger value="decide" className="px-2.5">{t("Chốt", "Commit")}{decided && <CheckCircle2 className="ml-1 size-3.5 text-success" />}</TabsTrigger>
+                  <TabsTrigger value="analysis" className="px-2.5">{t("Phân tích", "Analysis")}</TabsTrigger>
+                  <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+                  <TabsTrigger value="data" className="px-2.5">{t("Dữ liệu", "Data")}{dataErrors > 0 && tabCount(dataErrors, "danger")}</TabsTrigger>
+                  <TabsTrigger value="history" className="px-2.5">{t("Lịch sử", "History")}</TabsTrigger>
+                </>}
               </TabsList>
             </div>
           </div>
@@ -345,7 +376,7 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
 
           <TabsContent value="decide" forceMount className="min-w-0 data-[state=inactive]:hidden"><h2 className="sr-only">{t("Chốt", "Commit")}</h2>
             {current ? (
-              <DecisionPanel ctx={ctx} alt={current} entries={entries} onChangeOption={() => goView("options")} onSave={async (reason) => {
+              <DecisionPanel ctx={ctx} alt={current} entries={entries} note={embed?.commitNote} onChangeOption={() => goView("options")} onSave={async (reason) => {
                 const ok = await append({
                   run_id: current.id, alternative: displayName(current.id), policy: policyOf(policy).name,
                   score: fmtScore(score(current, weights, policy), policy), late: current.late, shortfall: current.metrics.safety_shortfall ?? 0, shifts: current.shifts.size, reason,
@@ -399,9 +430,9 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
             onView={() => goView("schedule")} onCommit={() => commitFlow()}
             metrics={[
               [t("Đúng hạn", "On time"), `${ctx.nOrders - current.late}/${ctx.nOrders}`, current.late > 0],
+              [t("Tổng trễ", "Lateness"), hours(lateMinutes(current, input)), current.late > 0],
               [t("Thiếu tồn", "Shortfall"), fmtN(current.metrics.safety_shortfall ?? 0), (current.metrics.safety_shortfall ?? 0) > 0],
-              [t("Ca-máy", "Machine-shifts"), String(current.shifts.size)],
-              [t("Điểm", "Score"), fmtScore(score(current, weights, policy), policy)],
+              [t("Chi phí", "Cost"), fmtN(opsCost(current, weights))],
             ]} />
         )}
 

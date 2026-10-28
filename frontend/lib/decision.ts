@@ -111,6 +111,34 @@ export function compareScore(a: Alternative, b: Alternative, weights: Record<str
 
 const vector = (alt: Alternative, weights: Record<string, number>) => [alt.metrics.weighted_tardiness ?? 0, alt.metrics.safety_shortfall ?? 0, Math.round(opsCost(alt, weights))];
 
+/** What an option on the front is best at, by `vector` axis. */
+// Axis 0 is priority-weighted lateness, so the name says so: such an option can still have more raw hours late (on low-priority orders).
+const STRENGTHS: Array<[string, string]> = [["Ít trễ đơn ưu tiên", "Protects priority orders"], ["Ít thiếu tồn nhất", "Least shortfall"], ["Chi phí thấp nhất", "Lowest cost"]];
+
+/** Minutes late summed over orders (solver metric when present, else recomputed from the deliveries). */
+export function lateMinutes(alt: Alternative, input: AnySchedulingInput | undefined): number {
+  if (typeof alt.metrics.total_tardiness === "number") return alt.metrics.total_tardiness;
+  return input ? deliveriesOf(input, alt.run.operations).reduce((sum, d) => sum + (Number.isFinite(d.tardiness) ? d.tardiness : 0), 0) : 0;
+}
+
+/** Where `alt` is better / worse than `ref`, as short phrases, on the axes the ranking uses (lateness, shortfall, cost). */
+export function tradesVs(alt: Alternative, ref: Alternative, weights: Record<string, number>): { gains: string[]; losses: string[] } {
+  const gains: string[] = [], losses: string[] = [];
+  const pct = (a: number, b: number) => { const r = (Math.abs(a - b) / Math.max(Math.abs(b), 1)) * 100; return `${decimal(r, r < 10 ? 1 : 0)}%`; };
+  const units = (a: number, b: number) => fmtN(Math.abs(a - b));
+  const axes: Array<[number, number, (a: number, b: number) => [string, string]]> = [
+    [alt.metrics.weighted_tardiness ?? 0, ref.metrics.weighted_tardiness ?? 0, (a, b) => [tr(`trễ theo ưu tiên đơn ít hơn ${pct(a, b)}`, `${pct(a, b)} less priority-weighted lateness`), tr(`trễ theo ưu tiên đơn nhiều hơn ${pct(a, b)}`, `${pct(a, b)} more priority-weighted lateness`)]],
+    [alt.metrics.safety_shortfall ?? 0, ref.metrics.safety_shortfall ?? 0, (a, b) => [tr(`thiếu tồn ít hơn ${units(a, b)} sp`, `${units(a, b)} fewer units short`), tr(`thiếu tồn nhiều hơn ${units(a, b)} sp`, `${units(a, b)} more units short`)]],
+    [opsCost(alt, weights), opsCost(ref, weights), (a, b) => [tr(`rẻ hơn ${pct(a, b)}`, `${pct(a, b)} cheaper`), tr(`đắt hơn ${pct(a, b)}`, `${pct(a, b)} costlier`)]],
+  ];
+  for (const [a, b, phrase] of axes) {
+    if (Math.round(a) === Math.round(b)) continue;
+    const [better, worse] = phrase(a, b);
+    if (a < b) gains.push(better); else losses.push(worse);
+  }
+  return { gains, losses };
+}
+
 /** b is at least as good as a on every axis and strictly better on one. */
 export function dominates(b: Alternative, a: Alternative, weights: Record<string, number>): boolean {
   const x = vector(a, weights);
@@ -142,12 +170,18 @@ export function shortlist(alts: Alternative[], weights: Record<string, number>, 
   }
   const frontAlts = unique.filter((alt) => !unique.some((other) => other !== alt && dominates(other, alt, weights)));
   const byCost = [...frontAlts].sort((a, b) => opsCost(a, weights) - opsCost(b, weights));
+  // Named after what each option is actually best at (Google Flights' "Cheapest / Best" tags), not its position on the
+  // cost axis: the most expensive option is not necessarily the one with the best service.
+  const best = [0, 1, 2].map((i) => Math.min(...byCost.map((alt) => vector(alt, weights)[i])));
   const name: Record<string, string> = {};
-  byCost.forEach((alt, index) => {
-    name[alt.id] = byCost.length === 1 ? tr("Tốt nhất mọi mặt", "Best on every axis")
-      : index === 0 ? tr("Tiết kiệm nhất", "Lowest cost")
-        : index === byCost.length - 1 ? tr("Giữ dịch vụ tốt nhất", "Best service")
-          : byCost.length === 3 ? tr("Trung gian", "Middle ground") : tr(`Trung gian ${index}`, `Middle ground ${index}`);
+  const used = new Map<string, number>();
+  byCost.forEach((alt) => {
+    const wins = [0, 1, 2].filter((i) => vector(alt, weights)[i] === best[i]);
+    const base = byCost.length === 1 ? tr("Tốt nhất mọi mặt", "Best on every axis")
+      : wins.length ? wins.map((i) => tr(...STRENGTHS[i])).join(" · ") : tr("Trung gian", "Middle ground");
+    const seen = (used.get(base) ?? 0) + 1;
+    used.set(base, seen);
+    name[alt.id] = seen > 1 ? `${base} ${seen}` : base;
   });
   const dominatedBy: Record<string, string> = {};
   for (const alt of unique) {

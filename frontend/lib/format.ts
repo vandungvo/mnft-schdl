@@ -17,6 +17,18 @@ export function formatDateTime(value: string | Date): string {
   }).format(new Date(value));
 }
 
+/** "5 phút trước" / "hôm qua" for recent times (lists scan faster than with full timestamps); the full date after a week. */
+export function formatRelative(value: string | Date, now = new Date()): string {
+  const seconds = (new Date(value).getTime() - now.getTime()) / 1000;
+  const abs = Math.abs(seconds);
+  if (abs >= 7 * 86400) return formatDateTime(value);
+  const rtf = new Intl.RelativeTimeFormat(intlLocale(), { numeric: "auto" });
+  if (abs < 60) return rtf.format(0, "second");
+  if (abs < 3600) return rtf.format(Math.round(seconds / 60), "minute");
+  if (abs < 86400) return rtf.format(Math.round(seconds / 3600), "hour");
+  return rtf.format(Math.round(seconds / 86400), "day");
+}
+
 export function formatInputName(value: string): string {
   return value
     .replace(/_/g, " ")

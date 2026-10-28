@@ -14,11 +14,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { algorithmInfo, familyWhy } from "@/lib/algorithms";
 import {
-  compareScore, fmtN, fmtScore, fmtSeconds, historyOf, hours, median, movedOperations, opsCost, policyOf, runSeconds, score, signed,
-  termsOf, tierKeys, type Alternative, type Delivery, type PolicyKey, type Shortlist,
+  compareScore, fmtN, fmtScore, fmtSeconds, historyOf, hours, lateMinutes, median, movedOperations, opsCost, policyOf, runSeconds, score, signed,
+  termsOf, tierKeys, tradesVs, type Alternative, type Delivery, type PolicyKey, type Shortlist,
 } from "@/lib/decision";
 import type { DecisionEntry } from "@/lib/decision-log";
 import { formatClock, formatDateTime, formatDuration, productLabel, solverStatusLabel } from "@/lib/format";
+import { tr } from "@/lib/locale";
 import { plantOf } from "@/lib/plant";
 import type { AnySchedulingInput, ScheduleRunDetail } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -71,26 +72,52 @@ export function FormulaDetails({ ctx }: { ctx: WorkspaceCtx }) {
 
 /* ---------- alternatives ---------- */
 
-function Metric({ label, children, warn }: { label: string; children: ReactNode; warn?: boolean }) {
-  return <span className="grid gap-0.5 bg-card px-2.5 py-2"><span className="text-[11px] text-muted-foreground">{label}</span><b className={cn("font-semibold tabular-nums", warn && "text-warning")}>{children}</b></span>;
+function Metric({ label, children, best }: { label: string; children: ReactNode; best?: boolean }) {
+  return (
+    <span className="grid gap-0.5 bg-card px-2.5 py-2">
+      <span className="text-[11px] text-muted-foreground">{label}</span>
+      <b className={cn("inline-flex items-center gap-1 font-semibold tabular-nums", best && "text-success")}>{children}{best && <span className="sr-only"> ({tr("tốt nhất", "best")})</span>}</b>
+    </span>
+  );
+}
+
+/** One sentence on why an option sits where it does: what it wins and gives up against its neighbour in the ranking. */
+export function rankReason(ctx: WorkspaceCtx, id: string): string {
+  const index = ctx.list.keys.indexOf(id);
+  const alt = ctx.byId.get(id);
+  if (!alt || index < 0) return "";
+  if (ctx.list.keys.length === 1) return tr("Không lịch nào khác tốt hơn ở bất kỳ mặt nào.", "No other schedule is better on any axis.");
+  const join = (items: string[]) => items.join(", ");
+  const ref = ctx.byId.get(ctx.list.keys[index === 0 ? 1 : 0])!;
+  const { gains, losses } = tradesVs(alt, ref, ctx.weights);
+  const lead = index === 0
+    ? tr(`Đứng đầu khi ưu tiên “${policyOf(ctx.policy).name}”. So với #2: ${join(gains) || "bằng nhau"}${losses.length ? `; đổi lại ${join(losses)}` : ""}.`,
+      `First under “${policyOf(ctx.policy).name}”. Versus #2: ${join(gains) || "equal"}${losses.length ? `; in exchange ${join(losses)}` : ""}.`)
+    : tr(`So với #1: ${join(gains) || "không hơn mặt nào"}${losses.length ? `; đổi lại ${join(losses)}` : ""}.`,
+      `Versus #1: ${join(gains) || "better on nothing"}${losses.length ? `; in exchange ${join(losses)}` : ""}.`);
+  // The ranking weighs lateness by order priority; when raw hours point the other way, say where the lateness falls.
+  const weighted = (alt.metrics.weighted_tardiness ?? 0) - (ref.metrics.weighted_tardiness ?? 0);
+  const raw = lateMinutes(alt, ctx.input) - lateMinutes(ref, ctx.input);
+  if (Math.sign(weighted) * Math.sign(raw) >= 0) return lead;
+  return `${lead} ${raw > 0
+    ? tr(`Tổng giờ trễ nhiều hơn ${hours(raw)} nhưng dồn vào đơn ưu tiên thấp.`, `${hours(raw)} more late in total, but on low-priority orders.`)
+    : tr(`Tổng giờ trễ ít hơn ${hours(-raw)} nhưng rơi vào đơn ưu tiên cao hơn.`, `${hours(-raw)} less late in total, but on higher-priority orders.`)}`;
 }
 
 export function AlternativeCards({ ctx, current, decided, onPick }: { ctx: WorkspaceCtx; current: string | null; decided: string | null; onPick: (id: string) => void }) {
   const { t } = useI18n();
-  const base = ctx.byId.get(ctx.list.front[0]);
+  const shown = ctx.list.keys.map((id) => ctx.byId.get(id)!);
+  // Best value of each figure across the cards, highlighted like a product comparison table.
+  const figures = (alt: Alternative) => [alt.late, lateMinutes(alt, ctx.input), alt.metrics.safety_shortfall ?? 0, opsCost(alt, ctx.weights)].map(Math.round);
+  const best = shown.length > 1 ? [0, 1, 2, 3].map((i) => Math.min(...shown.map((alt) => figures(alt)[i]))) : null;
   return (
-    <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(min(280px,100%),1fr))]" role="group" aria-label={t("Phương án đề xuất", "Recommended options")}>
-      {ctx.list.keys.map((id, index) => {
-        const alt = ctx.byId.get(id)!;
+    <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr))]" role="group" aria-label={t("Phương án đề xuất", "Recommended options")}>
+      {shown.map((alt, index) => {
+        const id = alt.id;
         const twins = ctx.list.twins[id] ?? [];
         const active = id === current;
-        let trade = t("Rẻ nhất trong các phương án đề xuất.", "Cheapest of the recommended options.");
-        if (base && id !== base.id) {
-          const shiftDelta = signed(alt.shifts.size - base.shifts.size);
-          const shortfallDelta = signed((alt.metrics.safety_shortfall ?? 0) - (base.metrics.safety_shortfall ?? 0));
-          const costDelta = signed(opsCost(alt, ctx.weights) - opsCost(base, ctx.weights));
-          trade = t(`So với “${ctx.displayName(base.id)}”: ${shiftDelta} ca-máy, ${shortfallDelta} thiếu tồn, ${costDelta} chi phí.`, `Versus “${ctx.displayName(base.id)}”: ${shiftDelta} machine-shifts, ${shortfallDelta} shortfall, ${costDelta} cost.`);
-        }
+        const values = figures(alt);
+        const isBest = (i: number) => best != null && values[i] === best[i];
         return (
           <button type="button" key={id} aria-pressed={active} onClick={() => onPick(id)}
             className={cn("group relative flex min-w-0 flex-col gap-3 rounded-lg border bg-card p-4 text-left shadow-card transition-[border-color,box-shadow] hover:border-primary/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
@@ -99,25 +126,25 @@ export function AlternativeCards({ ctx, current, decided, onPick }: { ctx: Works
               <span className={cn("grid size-7 shrink-0 place-items-center rounded-md text-xs font-bold tabular-nums", index ? "bg-muted text-muted-foreground" : "bg-success-soft text-success")} aria-label={`${t("Hạng", "Rank")} ${index + 1}`}>#{index + 1}</span>
               <span className="grid min-w-0 flex-1">
                 <span className="text-[15px] leading-tight font-semibold">{ctx.list.name[id]}</span>
-                <span className="truncate text-xs text-muted-foreground">{algorithmInfo(alt.algorithm).label} · seed {alt.run.seed}</span>
+                <span className="truncate text-xs text-muted-foreground">{t("Thuật toán", "Algorithm")}: {alt.label}</span>
               </span>
               {id === decided && <Badge variant="info"><CheckCircle2 />{t("Đã chốt", "Committed")}</Badge>}
             </span>
             <span className="grid grid-cols-2 gap-px overflow-hidden rounded-md border bg-border text-[13px]">
-              <Metric label={t("Giao đúng hạn", "On-time")} warn={alt.late > 0}>{ctx.nOrders - alt.late}/{ctx.nOrders}</Metric>
-              <Metric label={t("Thiếu tồn an toàn", "Safety shortfall")} warn={(alt.metrics.safety_shortfall ?? 0) > 0}>{fmtN(alt.metrics.safety_shortfall ?? 0)}</Metric>
-              <Metric label={t("Ca-máy bật", "Machine-shifts")}>{alt.shifts.size}</Metric>
-              <Metric label={t("Chi phí vận hành", "Operating cost")}>{fmtN(opsCost(alt, ctx.weights))}</Metric>
+              <Metric label={t("Đúng hạn", "On time")} best={isBest(0)}>{ctx.nOrders - alt.late}/{ctx.nOrders}</Metric>
+              <Metric label={t("Tổng trễ", "Total lateness")} best={isBest(1)}>{hours(values[1])}</Metric>
+              <Metric label={t("Thiếu tồn an toàn", "Safety shortfall")} best={isBest(2)}>{fmtN(values[2])} {t("sp", "units")}</Metric>
+              <Metric label={t("Chi phí vận hành", "Operating cost")} best={isBest(3)}>{fmtN(values[3])}</Metric>
             </span>
-            <span className="text-[13px] leading-snug text-muted-foreground">{trade}</span>
-            <span className="mt-auto flex items-center justify-between gap-2 border-t pt-2.5 text-xs">
-              <span className="text-muted-foreground">{t("Điểm", "Score")} <b className="font-semibold text-foreground tabular-nums">{fmtScore(score(alt, ctx.weights, ctx.policy), ctx.policy)}</b></span>
+            <span className="text-[13px] leading-snug text-muted-foreground">{rankReason(ctx, id)}</span>
+            <span className="mt-auto flex items-center justify-end gap-2 border-t pt-2.5 text-xs">
               {active ? <span className="font-semibold text-primary">{t("Đang xem", "Viewing")}</span> : <span className="font-medium text-muted-foreground group-hover:text-primary">{t("Xem nhanh", "Quick look")} →</span>}
             </span>
             {twins.length > 0 && <span className="text-xs text-muted-foreground">{t("Trùng kết quả với", "Same result as")} {twins.map(ctx.displayName).join(", ")}</span>}
           </button>
         );
       })}
+      {best && <p className="col-span-full text-xs text-muted-foreground"><span className="font-semibold text-success">{t("Số màu xanh", "Green figures")}</span> {t("= tốt nhất trong các phương án đề xuất.", "= best among the recommended options.")}</p>}
     </div>
   );
 }
@@ -128,15 +155,21 @@ export function StatTiles({ ctx, alt }: { ctx: WorkspaceCtx; alt: Alternative })
   const { t } = useI18n();
   const m = alt.metrics;
   const items: Array<[string, string, Tone]> = [
-    [t("Đơn trễ", "Late orders"), `${alt.late} / ${ctx.nOrders}`, alt.late ? "warn" : "ok"],
+    [t("Đúng hạn", "On time"), `${ctx.nOrders - alt.late} / ${ctx.nOrders}`, alt.late ? "warn" : "ok"],
+    [t("Tổng trễ", "Total lateness"), hours(lateMinutes(alt, ctx.input)), alt.late ? "warn" : "ok"],
     [t("Ca-máy bật", "Machine-shifts open"), String(alt.shifts.size), "default"],
     [t("Thời gian rảnh", "Idle time"), formatDuration(m.idle_minutes ?? 0), "default"],
     [t("Chuẩn bị máy", "Setup"), formatDuration(m.setup_minutes ?? 0), "default"],
     [t("Lô bắt buộc cuối xong", "Last required lot done"), formatClock(ctx.origin, m.makespan ?? 0), "default"],
     [t("Thiếu tồn an toàn", "Safety-stock shortfall"), fmtN(m.safety_shortfall ?? 0), m.safety_shortfall ? "warn" : "ok"],
-    [`${t("Điểm", "Score")} (${policyOf(ctx.policy).name.toLowerCase()})`, fmtScore(score(alt, ctx.weights, ctx.policy), ctx.policy), "default"],
+    [t("Chi phí vận hành", "Operating cost"), fmtN(opsCost(alt, ctx.weights)), "default"],
   ];
   return <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-7">{items.map(([label, value, tone]) => <StatTile key={label} label={label} value={value} tone={tone} className="[&>div:nth-child(2)]:text-lg" />)}</div>;
+}
+
+function rankLabel(ctx: WorkspaceCtx, id: string): string {
+  const index = ctx.list.keys.indexOf(id);
+  return index >= 0 ? `#${index + 1}` : tr("ngoài đề xuất", "not recommended");
 }
 
 export function DiffCard({ ctx, a, b }: { ctx: WorkspaceCtx; a: Alternative; b: Alternative }) {
@@ -144,7 +177,8 @@ export function DiffCard({ ctx, a, b }: { ctx: WorkspaceCtx; a: Alternative; b: 
   const nA = ctx.displayName(a.id), nB = ctx.displayName(b.id);
   const rows: Array<[string, (x: Alternative) => number, ((v: number) => string)?]> = [
     [t("Đơn trễ", "Late orders"), (x) => x.late],
-    [t("Trễ có trọng số", "Weighted tardiness"), (x) => x.metrics.weighted_tardiness ?? 0],
+    [t("Tổng trễ (phút)", "Total lateness (min)"), (x) => lateMinutes(x, ctx.input)],
+    [t("Trễ theo ưu tiên đơn", "Priority-weighted lateness"), (x) => x.metrics.weighted_tardiness ?? 0],
     [t("Thiếu tồn an toàn", "Safety-stock shortfall"), (x) => x.metrics.safety_shortfall ?? 0],
     [t("Chi phí vận hành", "Operating cost"), (x) => opsCost(x, ctx.weights)],
     [t("Ca-máy bật", "Machine-shifts open"), (x) => x.shifts.size],
@@ -162,7 +196,7 @@ export function DiffCard({ ctx, a, b }: { ctx: WorkspaceCtx; a: Alternative; b: 
       <Table>
         <TableHeader><TableRow><TableHead>{t("Chỉ số", "Metric")}</TableHead><TableHead className={N}>{t("Đang xem", "Viewing")}: {nA}</TableHead><TableHead className={N}>{nB}</TableHead><TableHead className={N}>{t("Nếu đổi sang", "If switched to")} {nB}</TableHead></TableRow></TableHeader>
         <TableBody>
-          <TableRow><TableCell>{t("Điểm", "Score")} ({policyOf(ctx.policy).name.toLowerCase()})</TableCell><TableCell className={N}>{fmtScore(score(a, ctx.weights, ctx.policy), ctx.policy)}</TableCell><TableCell className={N}>{fmtScore(score(b, ctx.weights, ctx.policy), ctx.policy)}</TableCell>
+          <TableRow><TableCell>{t("Xếp hạng", "Ranking")} · {policyOf(ctx.policy).name.toLowerCase()}</TableCell><TableCell className={N}>{rankLabel(ctx, a.id)}</TableCell><TableCell className={N}>{rankLabel(ctx, b.id)}</TableCell>
             <TableCell className={N}>{better < 0 ? <span className="font-semibold text-success">{t("tốt hơn", "better")}</span> : better > 0 ? <span className="font-semibold text-warning">{t("kém hơn", "worse")}</span> : t("bằng", "equal")}</TableCell></TableRow>
           {rows.map(([label, f, fmt]) => {
             const va = f(a), vb = f(b), diff = vb - va;
@@ -263,28 +297,28 @@ export function SpeedSection({ ctx, runs }: { ctx: WorkspaceCtx; runs: ScheduleR
         <StatTile label={t("Lần chạy thất bại", "Failed runs")} tone={failed ? "warn" : "default"} value={`${failed} / ${runs.length}`} />
         <StatTile label={t("Ngân sách trung vị", "Median budget")} value={budget != null ? `${budget} s` : "—"} />
       </div>
-      <Panel title={t("Điểm tốt nhất tìm được theo thời gian", "Best score found over time")}>
+      {series.length > 0 && <Panel title={t("Điểm tốt nhất tìm được theo thời gian", "Best score found over time")}>
         <div className="overflow-x-auto"><ConvergenceChart series={series} budget={budget} /></div>
         <Hint>{t("Mỗi đường là lần chạy tốt nhất của một thuật toán: điểm tốt nhất tìm được tới thời điểm đó (bậc thang, chỉ đi xuống). Luật điều độ dựng lịch một lần nên không có đường.", "Each line is an algorithm's best run: the best score found up to that time (a step line that only goes down). Dispatching rules build once, so they have no line.")}</Hint>
-      </Panel>
+      </Panel>}
       <Panel title={t("Thời gian và chất lượng theo thuật toán", "Time and quality by algorithm")}>
         <Table>
           <TableHeader><TableRow><TableHead>{t("Thuật toán", "Algorithm")}</TableHead><TableHead className={N}>{t("Có lịch / lần chạy", "Schedules / runs")}</TableHead><TableHead className={N}>{t("Thời gian / lần", "Time / run")}</TableHead><TableHead className={N}>{t("Đạt lịch tốt nhất sau", "Best found after")}</TableHead><TableHead className={N}>{t("Điểm tốt nhất", "Best score")}</TableHead><TableHead className={N}>{t("Điểm trung vị", "Median score")}</TableHead><TableHead className={N}>{t("Đơn trễ", "Late orders")}</TableHead><TableHead>{t("Trạng thái", "Status")}</TableHead></TableRow></TableHeader>
           <TableBody>{groups.map((g) => {
-            const objectives = g.ok.map((run) => ctx.byId.get(run.id)?.metrics.objective).filter((v): v is number => typeof v === "number");
+            const scores = g.ok.map((run) => ctx.byId.get(run.id)).filter((alt): alt is Alternative => Boolean(alt)).map((alt) => score(alt, ctx.weights, ctx.policy));
             return <TableRow key={g.algorithm}>
               <TableCell className="font-semibold">{algorithmInfo(g.algorithm).label}</TableCell>
               <TableCell className={cn(N, g.ok.length < g.list.length && "font-semibold text-warning")}>{g.ok.length} / {g.list.length}</TableCell>
               <TableCell className={N}>{fmtSeconds(g.seconds)}</TableCell>
               <TableCell className={N}>{g.best ? <>{fmtSeconds(g.bestAt)}<span className="block text-xs text-muted-foreground">seed {g.best.run.seed}</span></> : "—"}</TableCell>
               <TableCell className={N}>{g.best ? fmtScore(score(g.best, ctx.weights, ctx.policy), ctx.policy) : "—"}</TableCell>
-              <TableCell className={N}>{objectives.length ? fmtN(median(objectives)!) : "—"}</TableCell>
+              <TableCell className={N}>{scores.length ? fmtScore([median(scores.map((pair) => pair[0]))!, median(scores.map((pair) => pair[1]))!], ctx.policy) : "—"}</TableCell>
               <TableCell className={N}>{g.best ? `${g.best.late} / ${ctx.nOrders}` : "—"}</TableCell>
               <TableCell className="text-xs text-muted-foreground">{g.statuses.join(", ")}</TableCell>
             </TableRow>;
           })}</TableBody>
         </Table>
-        <Hint>{t("Thời gian là thời gian thuật toán chạy trên worker (tính cả dựng mô hình). “Điểm trung vị” là tổng mục tiêu có trọng số qua các seed có lịch.", "Time is the algorithm's run time on the worker (including model building). “Median score” is the weighted objective across seeds that produced a schedule.")}</Hint>
+        <Hint>{t("Thời gian là thời gian thuật toán chạy trên worker (tính cả dựng mô hình). “Điểm trung vị” là trung vị điểm (tầng 1 · tầng 2) qua các seed có lịch; càng thấp càng tốt.", "Time is the algorithm's run time on the worker (including model building). “Median score” is the median score (tier 1 · tier 2) across seeds that produced a schedule; lower is better.")}</Hint>
       </Panel>
     </div>
   );
@@ -292,17 +326,25 @@ export function SpeedSection({ ctx, runs }: { ctx: WorkspaceCtx; runs: ScheduleR
 
 /* ---------- decision ---------- */
 
-export function DecisionPanel({ ctx, alt, entries, onSave, onChangeOption }: { ctx: WorkspaceCtx; alt: Alternative; entries: DecisionEntry[]; onSave: (reason: string) => Promise<boolean>; onChangeOption: () => void }) {
+export function DecisionPanel({ ctx, alt, entries, onSave, onChangeOption, note }: { ctx: WorkspaceCtx; alt: Alternative; entries: DecisionEntry[]; onSave: (reason: string) => Promise<boolean>; onChangeOption: () => void; note?: ReactNode }) {
   const { t } = useI18n();
   const [reason, setReason] = useState("");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   return (
     <Panel>
-      <p className="mb-4 text-sm leading-relaxed">{t("Bạn đang chốt", "You are committing")}: <b>{ctx.displayName(alt.id)}</b> <span className="text-muted-foreground">({algorithmInfo(alt.algorithm).label}, seed {alt.run.seed})</span> · {t("chính sách", "policy")} <b>{policyOf(ctx.policy).name}</b> · {t("giao đúng hạn", "on time")} {ctx.nOrders - alt.late}/{ctx.nOrders} · {t("thiếu tồn", "shortfall")} {fmtN(alt.metrics.safety_shortfall ?? 0)} · {alt.shifts.size} {t("ca-máy", "machine-shifts")}. <button type="button" onClick={onChangeOption} className="inline-block min-h-6 font-semibold text-primary hover:underline">{t("Đổi phương án", "Change option")}</button></p>
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3 rounded-lg bg-surface-2 p-3">
+        <div className="min-w-0">
+          <p className="text-xs text-muted-foreground">{t("Bạn đang chốt", "You are committing")}</p>
+          <p className="font-semibold">{ctx.displayName(alt.id)} <span className="text-sm font-normal text-muted-foreground">· {alt.label}</span></p>
+          <p className="mt-1 text-sm text-muted-foreground">{t("Đúng hạn", "On time")} <b className="text-foreground tabular-nums">{ctx.nOrders - alt.late}/{ctx.nOrders}</b> · {t("tổng trễ", "lateness")} <b className="text-foreground tabular-nums">{hours(lateMinutes(alt, ctx.input))}</b> · {t("thiếu tồn", "shortfall")} <b className="text-foreground tabular-nums">{fmtN(alt.metrics.safety_shortfall ?? 0)}</b> · {t("chính sách", "policy")} <b className="text-foreground">{policyOf(ctx.policy).name}</b></p>
+        </div>
+        <Button size="sm" variant="outline" onClick={onChangeOption}>{t("Đổi phương án", "Change option")}</Button>
+      </div>
+      {note && <div className="mb-4 text-sm text-muted-foreground">{note}</div>}
       <label className="grid gap-1.5">
-        <span className="text-xs font-semibold text-muted-foreground">{t("Lý do chọn", "Reason")}</span>
-        <Textarea id="decision-reason" rows={3} value={reason} onChange={(event) => { setReason(event.target.value); setMessage(""); }} placeholder={t("Ví dụ: chấp nhận bật thêm 3 ca để giữ đủ tồn an toàn F bạc cho đơn dài hạn.", "Example: accept 3 extra shifts to keep enough F silver safety stock for long-dated orders.")} />
+        <span className="text-xs font-semibold text-muted-foreground">{t("Lý do chọn", "Reason")} <span className="text-destructive" aria-hidden>*</span><span className="sr-only">({t("bắt buộc", "required")})</span></span>
+        <Textarea id="decision-reason" rows={3} required aria-required value={reason} onChange={(event) => { setReason(event.target.value); setMessage(""); }} placeholder={t("Ví dụ: chấp nhận bật thêm 3 ca để giữ đủ tồn an toàn F bạc cho đơn dài hạn.", "Example: accept 3 extra shifts to keep enough F silver safety stock for long-dated orders.")} />
       </label>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <Button disabled={saving} onClick={async () => {
@@ -314,7 +356,7 @@ export function DecisionPanel({ ctx, alt, entries, onSave, onChangeOption }: { c
           setMessage(ok ? t("Đã chốt phương án.", "Option committed.") : t("Không lưu được lên máy chủ; quyết định chưa được ghi. Lý do vẫn còn trong ô, thử lại sau.", "Could not save to the server; the decision was not recorded. Your reason is still in the box — try again."));
           if (ok) setReason("");
         }}>{saving ? <Loader2 className="animate-spin" /> : <CheckCircle2 />}{saving ? t("Đang lưu…", "Saving…") : t("Chốt phương án này", "Commit this option")}</Button>
-        <Button variant="outline" asChild><Link href={`/runs/${alt.id}`}>{t("Mở chi tiết lần chạy", "Open run details")}</Link></Button>
+        <Link href={`/runs/${alt.id}`} className="px-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:underline">{t("Chi tiết kỹ thuật lần chạy", "Technical run details")}</Link>
         <span className="text-sm text-muted-foreground" role="status">{message}</span>
       </div>
       {entries.length ? (
@@ -333,7 +375,7 @@ export function DecisionPanel({ ctx, alt, entries, onSave, onChangeOption }: { c
             ))}</TableBody>
           </Table>
         </div>
-      ) : <Hint>{t("Chưa chốt phương án nào cho bộ dữ liệu này.", "No option has been committed for this dataset yet.")}</Hint>}
+      ) : <Hint>{t("Chưa chốt phương án nào.", "Nothing has been committed yet.")}</Hint>}
       <Hint>{t("Nhật ký lưu trên máy chủ, chỉ ghi thêm (không sửa, không xóa): mỗi lần chốt giữ lần chạy, snapshot dữ liệu, chính sách, số liệu lúc chốt và người chốt. Chốt lại sẽ tạo dòng mới thay cho quyết định trước.", "The log is stored on the server and is append-only (never edited or deleted): each commit keeps the run, data snapshot, policy, the figures at that moment and who committed. Committing again adds a new row that supersedes the previous one.")}</Hint>
     </Panel>
   );

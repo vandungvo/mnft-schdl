@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 import { EmptyState, Hint, Panel } from "@/components/blocks";
 import { TradeoffChart } from "@/components/decision/charts";
 import {
-  AlternativeCards, DeliveriesTable, DiffCard, FormulaDetails, PartsTable, RankingTable, SpeedSection, StatTiles, StockCard, WhyCards,
+  AlternativeCards, DeliveriesTable, DiffCard, FormulaDetails, PartsTable, RankingTable, rankReason, SpeedSection, StatTiles, StockCard, WhyCards,
   type WorkspaceCtx,
 } from "@/components/decision/sections";
 import { useI18n } from "@/components/i18n-provider";
@@ -19,7 +19,7 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { SkeletonCards } from "@/components/ui-states";
 import { algorithmInfo } from "@/lib/algorithms";
-import { fmtN, fmtScore, opsCost, POLICIES, policyOf, score, type Alternative, type Delivery, type PolicyKey } from "@/lib/decision";
+import { fmtN, hours, lateMinutes, opsCost, POLICIES, policyOf, type Alternative, type Delivery, type PolicyKey } from "@/lib/decision";
 import type { DecisionEntry } from "@/lib/decision-log";
 import { formatDateTime, formatDuration, solverStatusLabel } from "@/lib/format";
 import type { ScheduleRunDetail } from "@/lib/types";
@@ -81,8 +81,8 @@ export function OptionsView({ ctx, policy, onPolicy, current, decided, loading, 
   const { t } = useI18n();
   if (loading && !ctx.alts.length) return <SkeletonCards count={3} />;
   if (!ctx.alts.length) {
-    return <EmptyState icon={<Plus />} title={t("Chưa có lịch nào cho kịch bản này", "No schedules for this scenario yet")}
-      description={t("Sinh vài phương án bằng các thuật toán khác nhau (luật điều độ, metaheuristic, CP-SAT) để hệ thống đề xuất và bạn so sánh.", "Generate a few options with different algorithms (dispatching rules, metaheuristics, CP-SAT) so the system can recommend and you can compare.")}
+    return <EmptyState icon={<Plus />} title={t("Chưa có phương án lịch nào", "No schedule options yet")}
+      description={t("Hệ thống chạy vài thuật toán trên cùng dữ liệu rồi đề xuất các lịch đáng cân nhắc để bạn so sánh và chốt. Mức “Nhanh” cho kết quả trong khoảng 1 phút.", "The system runs a few algorithms on the same data and recommends the schedules worth considering, for you to compare and commit. “Quick” returns results in about a minute.")}
       action={<Button onClick={onGenerate} disabled={!canGenerate}>{t("Sinh phương án đầu tiên", "Generate the first options")}</Button>} />;
   }
   return (
@@ -98,11 +98,11 @@ export function OptionsView({ ctx, policy, onPolicy, current, decided, loading, 
         <FormulaDetails ctx={ctx} />
       </Panel>
       <AlternativeCards ctx={ctx} current={current} decided={decided} onPick={onPick} />
-      <Hint className="mt-0">{t(`Đề xuất ${ctx.list.keys.length} trong ${ctx.alts.length} lịch: chỉ giữ lịch không bị lịch nào khác hơn ở cả ba mặt (trễ hạn, thiếu tồn an toàn, chi phí vận hành). Bấm một thẻ để xem nhanh.`, `Recommending ${ctx.list.keys.length} of ${ctx.alts.length} schedules: only those no other schedule beats on all three axes (lateness, safety-stock shortfall, operating cost). Click a card for a quick look.`)}</Hint>
-      <Panel title={t("Đường đánh đổi: chi phí vận hành ↔ thiếu tồn an toàn", "Trade-off: operating cost ↔ safety-stock shortfall")}>
-        <div className="overflow-x-auto"><TradeoffChart alternatives={ctx.alts} weights={ctx.weights} list={ctx.list} current={current} displayName={ctx.displayName} onPick={onPick} /></div>
-        <Hint>{t("Chấm xanh lá có tên là phương án đề xuất; chấm xám là các lịch khác (xem tab Phân tích). Đường nét đứt nối các phương án không bị lịch nào khác hơn.", "Named green dots are recommended options; grey dots are other schedules (see the Analysis tab). The dashed line joins options no other schedule beats.")}</Hint>
-      </Panel>
+      <Hint className="mt-0">{t(`Đề xuất ${ctx.list.keys.length} trong ${ctx.alts.length} lịch: các lịch còn lại đều thua ít nhất một lịch đề xuất ở cả ba mặt (trễ hạn, thiếu tồn an toàn, chi phí vận hành). Bấm một thẻ để xem nhanh.`, `Recommending ${ctx.list.keys.length} of ${ctx.alts.length} schedules: every other schedule is beaten by a recommended one on all three axes (lateness, safety-stock shortfall, operating cost). Click a card for a quick look.`)}</Hint>
+      {ctx.alts.length > 1 && <Panel title={t("Đánh đổi: chi phí vận hành ↔ thiếu tồn an toàn", "Trade-off: operating cost ↔ safety-stock shortfall")}>
+        <TradeoffChart alternatives={ctx.alts} weights={ctx.weights} list={ctx.list} current={current} displayName={ctx.displayName} onPick={onPick} />
+        <Hint>{t("Càng gần góc dưới bên trái càng tốt. Chấm xanh có tên là phương án đề xuất, chấm xám là các lịch khác (xem tab Phân tích); đường nét đứt nối các phương án đề xuất.", "Closer to the bottom-left corner is better. Named green dots are recommended options, grey dots are other schedules (see the Analysis tab); the dashed line joins the recommended options.")}</Hint>
+      </Panel>}
     </div>
   );
 }
@@ -145,8 +145,10 @@ export function ScheduleView({ ctx, current, compare, deliveries, onPick, onComp
         <div className="min-w-0 xl:col-span-7"><DeliveriesTable ctx={ctx} deliveries={deliveries} /></div>
         <div className="min-w-0 xl:col-span-5"><StockCard ctx={ctx} alt={current} /></div>
       </div>
-      <h3 className="mt-1 text-sm font-semibold text-muted-foreground">{t("Vì sao xếp như vậy", "Why it is scheduled this way")}</h3>
-      <WhyCards ctx={ctx} alt={current} />
+      <details className="group rounded-lg border bg-card px-4 py-3 shadow-card">
+        <summary className="cursor-pointer text-sm font-semibold">{t("Thuật toán đã dựng lịch này thế nào", "How the algorithm built this schedule")}</summary>
+        <div className="mt-3"><WhyCards ctx={ctx} alt={current} /></div>
+      </details>
     </div>
   );
 }
@@ -196,13 +198,14 @@ export function OptionSheet({ ctx, alt, rank, committed, viewingId, onClose, onS
           </SheetHeader>
           <div className="grid gap-4 overflow-y-auto p-4">
             <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-md border bg-border">
-              <Fact label={t("Giao đúng hạn", "On time")} warn={alt.late > 0}>{ctx.nOrders - alt.late}/{ctx.nOrders}</Fact>
+              <Fact label={t("Đúng hạn", "On time")} warn={alt.late > 0}>{ctx.nOrders - alt.late}/{ctx.nOrders}</Fact>
+              <Fact label={t("Tổng trễ", "Total lateness")} warn={alt.late > 0}>{hours(lateMinutes(alt, ctx.input))}</Fact>
               <Fact label={t("Thiếu tồn an toàn", "Safety shortfall")} warn={(alt.metrics.safety_shortfall ?? 0) > 0}>{fmtN(alt.metrics.safety_shortfall ?? 0)}</Fact>
-              <Fact label={t("Ca-máy bật", "Machine-shifts")}>{alt.shifts.size}</Fact>
               <Fact label={t("Chi phí vận hành", "Operating cost")}>{fmtN(opsCost(alt, ctx.weights))}</Fact>
+              <Fact label={t("Ca-máy bật", "Machine-shifts")}>{alt.shifts.size}</Fact>
               <Fact label={t("Chuẩn bị máy", "Setup")}>{formatDuration(alt.metrics.setup_minutes ?? 0)}</Fact>
-              <Fact label={`${t("Điểm", "Score")} · ${policyOf(ctx.policy).name.toLowerCase()}`}>{fmtScore(score(alt, ctx.weights, ctx.policy), ctx.policy)}</Fact>
             </dl>
+            {rank != null && <p className="text-sm text-muted-foreground">{rankReason(ctx, alt.id)}</p>}
             <section className="grid gap-1">
               <h4 className="text-xs font-semibold text-muted-foreground">{t("Thuật toán", "Algorithm")}</h4>
               <p className="text-sm text-muted-foreground">{algorithmInfo(alt.algorithm).note}</p>

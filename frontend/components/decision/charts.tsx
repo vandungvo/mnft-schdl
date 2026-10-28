@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+
 import { useI18n } from "@/components/i18n-provider";
 import { fmtN, fmtSeconds, opsCost, type Alternative, type HistoryPoint, type Shortlist } from "@/lib/decision";
 
@@ -22,9 +24,25 @@ interface TradeoffProps {
   onPick: (id: string) => void;
 }
 
+/** Width of the element in CSS pixels, so an SVG can be drawn 1:1 and keep legible text on a phone. */
+function useWidth(fallback: number) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(fallback);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => setWidth(Math.round(entry.contentRect.width)));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  return { ref, width };
+}
+
 export function TradeoffChart({ alternatives, weights, list, current, displayName, onPick }: TradeoffProps) {
   const { t } = useI18n();
-  const W = 780, H = 320, L = 64, R = 24, T = 18, B = 46;
+  const { ref, width } = useWidth(780);
+  const W = Math.max(300, Math.min(width, 960)), narrow = W < 520;
+  const H = narrow ? 260 : 320, L = narrow ? 48 : 64, R = narrow ? 12 : 24, T = 18, B = 46;
   if (!alternatives.length) return null;
   const xs = alternatives.map((alt) => opsCost(alt, weights));
   const ys = alternatives.map((alt) => alt.metrics.safety_shortfall ?? 0);
@@ -45,10 +63,12 @@ export function TradeoffChart({ alternatives, weights, list, current, displayNam
   });
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="viz block h-auto w-full max-w-[960px] min-w-[600px]" role="group" aria-label={t("Đồ thị đánh đổi giữa chi phí vận hành và thiếu tồn an toàn", "Trade-off between operating cost and safety-stock shortfall")}>
-      {niceTicks(x0, x1, 6).map((v) => <g key={`x${v}`}><line x1={X(v)} x2={X(v)} y1={T} y2={H - B} className="grid-line" /><text x={X(v)} y={H - B + 16} textAnchor="middle" className="tick">{fmtN(v)}</text></g>)}
+    <div ref={ref} className="w-full max-w-[960px]">
+    <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} className="viz block h-auto w-full" role="group" aria-label={t("Đồ thị đánh đổi giữa chi phí vận hành và thiếu tồn an toàn", "Trade-off between operating cost and safety-stock shortfall")}>
+      {niceTicks(x0, x1, narrow ? 3 : 6).map((v) => <g key={`x${v}`}><line x1={X(v)} x2={X(v)} y1={T} y2={H - B} className="grid-line" /><text x={X(v)} y={H - B + 16} textAnchor="middle" className="tick">{fmtN(v)}</text></g>)}
       {niceTicks(0, y1, 5).map((v) => <g key={`y${v}`}><line x1={L} x2={W - R} y1={Y(v)} y2={Y(v)} className="grid-line" /><text x={L - 8} y={Y(v) + 4} textAnchor="end" className="tick">{fmtN(v)}</text></g>)}
       <text x={(L + W - R) / 2} y={H - 8} textAnchor="middle" className="axis">{t("Chi phí vận hành", "Operating cost")} →</text>
+      <text x={L + 8} y={H - B - 8} className="tick">↙ {t("tốt hơn", "better")}</text>
       <text x={14} y={(T + H - B) / 2} textAnchor="middle" className="axis" transform={`rotate(-90 14 ${(T + H - B) / 2})`}>{t("Thiếu tồn an toàn", "Safety-stock shortfall")} →</text>
       {list.front.length > 1 && <path d={path} className="front" />}
       {ordered.map((alt) => {
@@ -60,7 +80,7 @@ export function TradeoffChart({ alternatives, weights, list, current, displayNam
           let ly = py - 12;
           while (placed.some(([a, b]) => Math.abs(a - px) < 130 && Math.abs(b - ly) < 14)) ly -= 14;
           placed.push([px, ly]);
-          label = { y: ly, right: px > W - 200 };
+          label = { y: ly, right: px > W - (narrow ? 130 : 200) };
         }
         const pick = () => onPick(alt.id);
         return <g key={alt.id} className="point" tabIndex={0} role="button" aria-label={`${displayName(alt.id)}: ${t("chi phí", "cost")} ${fmtN(opsCost(alt, weights))}, ${t("thiếu tồn", "shortfall")} ${alt.metrics.safety_shortfall ?? 0}`}
@@ -71,6 +91,7 @@ export function TradeoffChart({ alternatives, weights, list, current, displayNam
         </g>;
       })}
     </svg>
+    </div>
   );
 }
 

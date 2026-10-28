@@ -1,21 +1,23 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, GitBranch, Loader2, MoreHorizontal, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowRight, Check, CheckCircle2, GitBranch, Loader2, MoreHorizontal, Pencil, RefreshCw, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
 import { Field, PageHeader } from "@/components/blocks";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useI18n } from "@/components/i18n-provider";
 import { MutationNotice } from "@/components/master-data/shared";
+import type { StepState } from "@/components/scenario/workspace";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { createPeriodVariant, deletePeriod, renamePeriod, upgradePeriodFactory } from "@/lib/api";
-import { fmtLocal, fmtRange, kindLabel, PERIOD_STATUS } from "@/lib/factory";
+import { fmtLocal, fmtRange, isOverdue, kindLabel, PERIOD_STATUS } from "@/lib/factory";
 import type { ConfigChange, PeriodDetail, PeriodSummary } from "@/lib/factory-types";
 import { cn } from "@/lib/utils";
 import { KindBadge, PeriodStatusBadge } from "./shared";
@@ -30,13 +32,60 @@ export function useTabLink() {
   };
 }
 
-type StepState = "done" | "current" | "todo" | "blocked";
+/** Where the period stands, per workflow tab — drawn as step marks on the desk's tabs. */
+export function periodSteps(period: PeriodDetail): Record<string, StepState> {
+  const s = period.status;
+  return {
+    prepare: period.counts.errors > 0 ? "blocked" : period.compiled_revision ? "done" : "current",
+    options: period.runs.succeeded ? "done" : s === "ready" || s === "solving" ? "current" : "todo",
+    decide: period.decision?.current ? "done" : s === "options" ? "current" : "todo",
+    execute: s === "closed" ? "done" : period.decision ? "current" : "todo",
+  };
+}
+
+/** The one thing to do next, with its button (GitHub's merge box): replaces reading four step cards. */
+function NextStep({ period, goTab }: { period: PeriodDetail; goTab: (tab: string) => void }) {
+  const { t } = useI18n();
+  const s = period.status;
+  if (s === "closed") return null;
+  let tone: "info" | "warning" | "danger" | "success" = "info";
+  let text: ReactNode;
+  let action: [string, string] | null = null;
+  if (isOverdue(period)) {
+    tone = "warning";
+    text = <><b>{t(`Kỳ đã kết thúc ngày ${fmtLocal(period.end_date)} nhưng chưa đóng.`, `The period ended on ${fmtLocal(period.end_date)} but is still open.`)}</b> {period.decision
+      ? t("Đóng kỳ để ghi nhận đơn đã giao và chuyển đơn còn lại sang kỳ sau.", "Close it to record what was delivered and carry the rest to the next period.")
+      : t("Chốt một phương án rồi đóng kỳ, để đơn chưa giao được chuyển sang kỳ sau.", "Commit an option, then close it so undelivered orders move to the next period.")}</>;
+    action = period.decision ? ["execute", t("Đóng kỳ", "Close the period")] : period.runs.succeeded ? ["decide", t("Chốt phương án", "Commit an option")] : ["options", t("Sinh phương án", "Generate options")];
+  } else if (s === "needs_fix") {
+    tone = "danger";
+    text = <><b>{t(`${period.counts.errors} lỗi đầu vào`, `${period.counts.errors} input errors`)}</b> {t("cần sửa trước khi sinh lịch.", "to fix before schedules can be generated.")}</>;
+    action = ["prepare", t("Sửa ở bước Chuẩn bị", "Fix under Prepare")];
+  } else if (s === "draft") {
+    text = t("Kiểm tra đơn hàng và tồn đầu kỳ, rồi lưu để hệ thống kiểm tra đầu vào.", "Review the orders and opening stock, then save so the inputs get checked.");
+    action = ["prepare", t("Tới bước Chuẩn bị", "Go to Prepare")];
+  } else if (s === "options" && !period.decision?.current) {
+    text = <>{t(`Đã có ${period.runs.succeeded} phương án.`, `${period.runs.succeeded} options are ready.`)} <b>{t("Bước tiếp: so sánh và chốt một lịch.", "Next: compare them and commit one.")}</b></>;
+    action = ["options", t("Xem phương án", "Review options")];
+  } else if (period.decision) {
+    tone = "success";
+    text = <>{t("Đã chốt", "Committed")} <b>“{period.decision.alternative}”</b>. {t("Bước tiếp: phát lệnh sản xuất, theo dõi sự cố, cuối kỳ thì đóng kỳ.", "Next: issue work orders, track incidents, and close the period at the end.")}</>;
+    action = ["execute", t("Tới bước Thực hiện", "Go to Execute")];
+  } else return null;
+  const tones = { info: "border-primary/30 bg-info-soft text-primary", warning: "border-warning/40 bg-warning-soft text-warning", danger: "border-destructive/30 bg-danger-soft text-destructive", success: "border-success/30 bg-success-soft text-success" };
+  const Icon = tone === "warning" || tone === "danger" ? AlertTriangle : tone === "success" ? CheckCircle2 : ArrowRight;
+  return (
+    <div role="status" className={cn("flex flex-col items-start gap-x-3 gap-y-2 rounded-lg border px-4 py-2.5 text-sm sm:flex-row sm:items-center", tones[tone])}>
+      <span className="flex min-w-0 flex-1 items-start gap-3"><Icon className="mt-0.5 size-4 shrink-0" /><span className="min-w-0">{text}</span></span>
+      {action && <Button size="sm" variant={tone === "info" ? "default" : "outline"} className="bg-card/60" onClick={() => goTab(action[0])}>{action[1]}<ArrowRight /></Button>}
+    </div>
+  );
+}
 
 export function PeriodHeader({ period, actions, snapshot, onChanged }: { period: PeriodDetail; actions?: ReactNode; snapshot?: ReactNode; onChanged: (period: PeriodDetail) => void }) {
   const { t } = useI18n();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const params = useSearchParams();
   const goTab = useTabLink();
   const [variantOpen, setVariantOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
@@ -52,25 +101,12 @@ export function PeriodHeader({ period, actions, snapshot, onChanged }: { period:
     },
   });
 
-  const s = period.status;
-  const hasErrors = period.counts.errors > 0;
-  const steps: Array<{ tab: string; label: string; state: StepState; detail: string }> = [
-    { tab: "prepare", label: t("Chuẩn bị", "Prepare"), state: hasErrors ? "blocked" : period.compiled_revision ? "done" : "current",
-      detail: hasErrors ? t(`${period.counts.errors} lỗi`, `${period.counts.errors} errors`) : t(`${period.counts.scheduled} đơn trong kỳ`, `${period.counts.scheduled} orders in period`) },
-    { tab: "options", label: t("Sinh & so sánh", "Generate & compare"), state: period.runs.succeeded ? "done" : s === "ready" || s === "solving" ? "current" : "todo",
-      detail: period.runs.active ? t(`Đang giải ${period.runs.active}…`, `Solving ${period.runs.active}…`) : t(`${period.runs.succeeded} phương án`, `${period.runs.succeeded} options`) },
-    { tab: "decide", label: t("Chốt", "Commit"), state: period.decision?.current ? "done" : s === "options" ? "current" : "todo",
-      detail: period.decision ? `${period.decision.alternative}${period.decision.current ? "" : t(" (đầu vào cũ)", " (old inputs)")}` : t("chưa chốt", "not committed") },
-    { tab: "execute", label: t("Thực hiện", "Execute"), state: closed ? "done" : period.decision ? "current" : "todo",
-      detail: closed ? t("đã đóng kỳ", "closed") : t("lệnh SX · sự cố · chuyển kỳ", "orders · incidents · roll over") },
-  ];
-  const activeTab = params.get("tab");
 
   return (
     <div className="grid min-w-0 gap-3">
       <PageHeader back={{ href: "/periods", label: t("Kỳ lập lịch", "Planning periods") }} crumb={period.variant_label ? `${period.name} · ${period.variant_label}` : period.name}
         title={<>{period.name}{period.variant_label && <span className="font-normal text-muted-foreground"> · {period.variant_label}</span>}</>}
-        meta={<><PeriodStatusBadge status={period.status} /><KindBadge kind={period.kind} />{snapshot}</>}
+        meta={<><PeriodStatusBadge status={period.status} />{isOverdue(period) && <Badge variant="warning">{t("Quá hạn đóng", "Overdue to close")}</Badge>}<KindBadge kind={period.kind} />{snapshot}</>}
         description={<>
           {fmtRange(period.start_date, period.end_date)} · {t(`${period.days} ngày`, `${period.days} days`)} · {t(`${period.counts.scheduled} đơn trong kỳ, ${period.counts.long_term} đơn sau kỳ`, `${period.counts.scheduled} orders in, ${period.counts.long_term} after`)} · {t("cấu hình nhà máy", "factory set-up")} <Link href="/factory" className="font-medium hover:underline">v{period.factory.pinned_version}</Link>
           {period.inputs.frozen_until != null && <> · {t(`giữ nguyên trước ${fmtLocal(period.inputs.opening.as_of)}`, `fixed before ${fmtLocal(period.inputs.opening.as_of)}`)}</>}
@@ -96,25 +132,9 @@ export function PeriodHeader({ period, actions, snapshot, onChanged }: { period:
       )}
       <MutationNotice error={upgrade.error ?? remove.error} fallback={t("Thao tác không thành công.", "The action failed.")} />
 
-      <FamilyBar period={period} onVariant={closed ? undefined : () => setVariantOpen(true)} />
+      <FamilyBar period={period} />
+      <NextStep period={period} goTab={goTab} />
 
-      <ol className="grid grid-cols-2 gap-2 md:grid-cols-4" aria-label={t("Các bước của kỳ", "Period steps")}>
-        {steps.map((step, index) => {
-          const here = activeTab === step.tab;
-          return (
-            <li key={step.tab}>
-              <button type="button" onClick={() => goTab(step.tab)} aria-current={here ? "step" : undefined}
-                className={cn("flex w-full items-start gap-2.5 rounded-lg border bg-card px-3 py-2 text-left shadow-card transition-colors hover:border-primary/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none", here && "border-primary ring-1 ring-primary/30")}>
-                <span className={cn("mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[11px] font-semibold",
-                  step.state === "done" ? "bg-success text-white" : step.state === "blocked" ? "bg-destructive text-white" : step.state === "current" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
-                  {step.state === "done" ? <Check className="size-3" /> : step.state === "blocked" ? "!" : index + 1}
-                </span>
-                <span className="min-w-0"><span className="block text-sm font-semibold">{step.label}</span><span className="block truncate text-xs text-muted-foreground">{step.detail}</span></span>
-              </button>
-            </li>
-          );
-        })}
-      </ol>
 
       {period.kind !== "regular" && period.changes_vs_parent.length > 0 && <ChangesPanel changes={period.changes_vs_parent} />}
 
@@ -127,10 +147,11 @@ export function PeriodHeader({ period, actions, snapshot, onChanged }: { period:
   );
 }
 
-/** The main period, its what-if variants and its reschedules, side by side: pick one to work on. */
-function FamilyBar({ period, onVariant }: { period: PeriodDetail; onVariant?: () => void }) {
+/** The main period, its what-if variants and its reschedules, side by side: pick one to work on.
+    Hidden while there is only the main period — creating a variant lives in the "More" menu. */
+function FamilyBar({ period }: { period: PeriodDetail }) {
   const { t } = useI18n();
-  if (period.family.length <= 1 && !onVariant) return null;
+  if (period.family.length <= 1) return null;
   const label = (p: PeriodSummary) => p.kind === "regular" ? t("Kỳ chính", "Main") : p.variant_label ?? kindLabel(p.kind);
   return (
     <nav aria-label={t("Các phiên bản của kỳ", "Versions of the period")} className="flex flex-wrap items-center gap-1.5">
@@ -147,7 +168,6 @@ function FamilyBar({ period, onVariant }: { period: PeriodDetail; onVariant?: ()
           </Link>
         );
       })}
-      {onVariant && <Button size="sm" variant="ghost" className="h-7 rounded-full text-xs" onClick={onVariant}><Plus />{t("Biến thể", "Variant")}</Button>}
     </nav>
   );
 }

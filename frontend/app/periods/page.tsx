@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { CalendarRange, Check, Factory, GitBranch, Plus, RefreshCw } from "lucide-react";
+import { ArrowRight, CalendarRange, Check, Factory, GitBranch, Plus, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -11,12 +11,22 @@ import { DataTable, type Column } from "@/components/data-table";
 import { useI18n } from "@/components/i18n-provider";
 import { NewPeriodDialog } from "@/components/period/new-period-dialog";
 import { PeriodStatusBadge } from "@/components/period/shared";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ErrorState, SkeletonTable } from "@/components/ui-states";
 import { listPeriods } from "@/lib/api";
-import { fmtRange, PERIOD_STATUS, useCurrentFactory } from "@/lib/factory";
+import { fmtRange, isOverdue, PERIOD_STATUS, useCurrentFactory } from "@/lib/factory";
 import type { PeriodSummary } from "@/lib/factory-types";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, formatRelative } from "@/lib/format";
+import { tr } from "@/lib/locale";
+
+/** The next step of a period as a link straight to the tab where it is done (not just a hint to read). */
+function nextAction(p: PeriodSummary): { tab: string; label: string } | null {
+  if (p.status === "closed") return null;
+  if (isOverdue(p)) return p.decision ? { tab: "execute", label: tr("Đóng kỳ", "Close the period") } : { tab: p.runs.succeeded ? "decide" : "options", label: tr("Chốt rồi đóng kỳ", "Commit, then close") };
+  const tab = { draft: "prepare", needs_fix: "prepare", ready: "options", solving: "options", options: "options", committed: "execute" }[p.status];
+  return { tab, label: tr(...PERIOD_STATUS[p.status].next) };
+}
 
 function Periods() {
   const { t } = useI18n();
@@ -48,11 +58,17 @@ function Periods() {
         ))}</span>}
       </>;
     } },
-    { id: "status", header: t("Trạng thái", "Status"), sortValue: (p) => Object.keys(PERIOD_STATUS).indexOf(p.status), cell: (p) => <><PeriodStatusBadge status={p.status} /><span className="mt-1 block text-xs text-muted-foreground">{t(...PERIOD_STATUS[p.status].next)}</span></> },
+    { id: "status", header: t("Trạng thái", "Status"), sortValue: (p) => Object.keys(PERIOD_STATUS).indexOf(p.status), cell: (p) => {
+      const next = nextAction(p);
+      return <>
+        <span className="flex flex-wrap items-center gap-1"><PeriodStatusBadge status={p.status} />{isOverdue(p) && <Badge variant="warning">{t("Quá hạn đóng", "Overdue to close")}</Badge>}</span>
+        {next && <Link href={`/periods/${p.id}?tab=${next.tab}`} onClick={(event) => event.stopPropagation()} className="mt-1 inline-flex items-center gap-0.5 text-xs font-medium text-primary hover:underline">{next.label}<ArrowRight className="size-3" /></Link>}
+      </>;
+    } },
     { id: "orders", header: t("Đơn", "Orders"), align: "right", sortValue: (p) => p.counts.scheduled, cell: (p) => <>{p.counts.scheduled}{p.counts.long_term > 0 && <span className="block text-xs text-muted-foreground">+{p.counts.long_term} {t("sau kỳ", "after")}</span>}</> },
-    { id: "options", header: t("Phương án", "Options"), align: "right", sortValue: (p) => p.runs.succeeded, cell: (p) => p.runs.active ? <span className="text-warning">{t(`đang giải ${p.runs.active}`, `solving ${p.runs.active}`)}</span> : p.runs.succeeded || "—" },
+    { id: "options", header: t("Phương án", "Options"), align: "right", sortValue: (p) => p.runs.succeeded, cell: (p) => p.runs.active ? <span className="text-warning">{t(`đang giải ${p.runs.active}`, `solving ${p.runs.active}`)}</span> : p.runs.succeeded || <span className="text-muted-foreground">—</span> },
     { id: "decision", header: t("Lịch đã chốt", "Committed"), cell: (p) => p.decision ? <span className="inline-flex max-w-56 flex-col"><span className="truncate font-medium">{p.decision.alternative}</span><span className="text-xs text-muted-foreground">{formatDateTime(p.decision.decided_at)}</span></span> : <span className="text-muted-foreground">—</span> },
-    { id: "updated", header: t("Cập nhật", "Updated"), sortValue: (p) => p.updated_at, cell: (p) => <span className="text-muted-foreground">{formatDateTime(p.updated_at)}</span> },
+    { id: "updated", header: t("Cập nhật", "Updated"), sortValue: (p) => p.updated_at, cell: (p) => <time dateTime={p.updated_at} title={formatDateTime(p.updated_at)} className="whitespace-nowrap text-muted-foreground">{formatRelative(p.updated_at)}</time> },
   ];
 
   if (!factoryLoading && !factory) {

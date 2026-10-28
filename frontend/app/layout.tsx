@@ -51,7 +51,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <QueryProvider>
               <TooltipProvider delayDuration={200}>
                 <AppShell>{children}</AppShell>
-                <Toaster position="bottom-right" richColors />
+                {/* Offset clears the sticky "viewing / commit" and "unsaved changes" bars so a toast never covers their action. */}
+                <Toaster position="bottom-right" richColors offset={{ bottom: 84, right: 24 }} mobileOffset={{ bottom: 84 }} />
               </TooltipProvider>
             </QueryProvider>
           </I18nProvider>

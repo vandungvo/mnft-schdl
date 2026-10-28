@@ -9,7 +9,7 @@ import { Suspense, useCallback } from "react";
 import { EmptyState } from "@/components/blocks";
 import { useI18n } from "@/components/i18n-provider";
 import { ExecuteView } from "@/components/period/execute-view";
-import { PeriodHeader } from "@/components/period/period-header";
+import { PeriodHeader, periodSteps } from "@/components/period/period-header";
 import { PrepareView } from "@/components/period/prepare-view";
 import { usePeriodConfig } from "@/components/period/shared";
 import { ScenarioWorkspace } from "@/components/scenario/workspace";
@@ -60,7 +60,8 @@ function Period() {
   const blocked = period.counts.errors > 0 && period.compiled_revision !== period.revision;
   const generate = (open: () => void, canGenerate: boolean) => {
     const disabled = !canGenerate || period.status === "closed" || blocked;
-    const button = <Button onClick={open} disabled={disabled}><Plus />{t("Sinh phương án", "Generate options")}</Button>;
+    // Primary only while generating is the next step; once options exist the next-step banner carries the primary action.
+    const button = <Button variant={period.runs.succeeded ? "outline" : "default"} onClick={open} disabled={disabled}><Plus />{period.runs.succeeded ? t("Sinh thêm", "Generate more") : t("Sinh phương án", "Generate options")}</Button>;
     return disabled ? <Tooltip><TooltipTrigger asChild><span tabIndex={0}>{button}</span></TooltipTrigger><TooltipContent>{period.status === "closed" ? t("Kỳ đã đóng", "The period is closed") : t("Sửa lỗi ở bước Chuẩn bị trước", "Fix the errors under Prepare first")}</TooltipContent></Tooltip> : button;
   };
 
@@ -78,6 +79,12 @@ function Period() {
       before: { value: "prepare", label: <>{t("Chuẩn bị", "Prepare")}{period.counts.errors > 0 && <span className="ml-1 size-2 rounded-full bg-destructive" aria-label={t("có lỗi", "has errors")} />}</>, content: prepare },
       after: { value: "execute", label: t("Thực hiện", "Execute"), content: <ExecuteView period={period} config={config.data} /> },
       defaultView: DEFAULT_TAB[period.status],
+      steps: periodSteps(period),
+      commitNote: <ul className="grid gap-1 rounded-lg border border-dashed px-3 py-2.5">
+        <li>• {t("Lịch được chốt dùng để phát lệnh sản xuất ở bước Thực hiện.", "The committed schedule is the one work orders are issued from under Execute.")}</li>
+        <li>• {t("Tồn cuối kỳ dự kiến của lịch này thành tồn đầu kỳ của kỳ sau.", "Its projected closing stock becomes the next period's opening stock.")}</li>
+        <li>• {t("Có thể chốt lại phương án khác trước khi đóng kỳ; mỗi lần chốt đều được ghi nhật ký.", "You can commit another option until the period is closed; every commit is logged.")}</li>
+      </ul>,
       onCommitted: refresh,
     }} />
   );

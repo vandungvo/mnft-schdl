@@ -3,31 +3,38 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-/** WCAG 2.1.1: a table that scrolls sideways must be reachable by keyboard; only then is it a tab stop. */
+/** WCAG 2.1.1: a table that scrolls sideways must be reachable by keyboard; only then is it a tab stop.
+    `more` says columns are still hidden on the right, so the edge can fade out as a "scrolls" cue. */
 function useOverflowFocusable() {
   const ref = React.useRef<HTMLDivElement>(null)
   const [overflowing, setOverflowing] = React.useState(false)
+  const [more, setMore] = React.useState(false)
   React.useEffect(() => {
     const el = ref.current
     if (!el) return
-    const check = () => setOverflowing(el.scrollWidth > el.clientWidth + 1)
+    const check = () => {
+      setOverflowing(el.scrollWidth > el.clientWidth + 1)
+      setMore(el.scrollLeft + el.clientWidth < el.scrollWidth - 1)
+    }
     check()
     const observer = new ResizeObserver(check)
     observer.observe(el)
     if (el.firstElementChild) observer.observe(el.firstElementChild)
-    return () => observer.disconnect()
+    el.addEventListener("scroll", check, { passive: true })
+    return () => { observer.disconnect(); el.removeEventListener("scroll", check) }
   }, [])
-  return { ref, overflowing }
+  return { ref, overflowing, more }
 }
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
-  const { ref, overflowing } = useOverflowFocusable()
+  const { ref, overflowing, more } = useOverflowFocusable()
   return (
     <div
       ref={ref}
       data-slot="table-container"
       tabIndex={overflowing ? 0 : undefined}
-      className="relative w-full overflow-x-auto rounded-[inherit] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      className={cn("relative w-full overflow-x-auto rounded-[inherit] focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+        more && "[mask-image:linear-gradient(to_right,black_calc(100%-48px),transparent)]")}
     >
       <table
         data-slot="table"

@@ -42,7 +42,7 @@ export function HistorySection({ runs, go }: { runs: ScheduleRunSummary[] | unde
 
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-      <Panel title={t("Nhật ký thay đổi", "Change log")} description={t("Mỗi thay đổi hợp lệ tạo một revision. Nhật ký ghi đối tượng và revision; API chưa lưu giá trị trước/sau nên chưa hiển thị diff từng trường.", "Every valid change creates a revision. The log records the object and revision; the API does not store before/after values, so field-level diffs are not shown yet.")}>
+      <Panel title={t("Nhật ký thay đổi", "Change log")} description={t("Mỗi lần lưu thay đổi hợp lệ tạo một phiên bản mới; nhật ký ghi lại đã đổi gì và lúc nào.", "Every valid save creates a new version; the log records what changed and when.")}>
         <div className="mb-3 flex flex-wrap gap-1.5" role="group" aria-label={t("Lọc theo loại", "Filter by kind")}>
           {kinds.map(([value, label]) => <Button key={value} size="xs" variant={kind === value ? "default" : "outline"} aria-pressed={kind === value} onClick={() => setKind(value)}>{label}</Button>)}
         </div>
@@ -50,7 +50,7 @@ export function HistorySection({ runs, go }: { runs: ScheduleRunSummary[] | unde
         {audit.isError && <ErrorState compact message={t("Không thể tải lịch sử thay đổi.", "Could not load the change history.")} onRetry={() => void audit.refetch()} />}
         {audit.data && events.length === 0 && (
           <EmptyState className="border-0 py-8" icon={<History />} title={kind === "all" ? t("Chưa có thay đổi nào được ghi", "No changes recorded yet") : t("Không có thay đổi loại này", "No changes of this kind")}
-            description={kind === "all" ? t(`Revision ${dataset.revision} là bản gốc của bộ dữ liệu (nạp sẵn hoặc import trước khi có nhật ký).`, `Revision ${dataset.revision} is the dataset's original version (bootstrapped or imported before logging existed).`) : undefined} />
+            description={kind === "all" ? t(`Phiên bản ${dataset.revision} là bản gốc (tạo trước khi có nhật ký).`, `Version ${dataset.revision} is the original (created before logging started).`) : undefined} />
         )}
         {[...groups.entries()].map(([day, list]) => (
           <section key={day} className="mb-4 last:mb-0">
@@ -61,8 +61,8 @@ export function HistorySection({ runs, go }: { runs: ScheduleRunSummary[] | unde
           </section>
         ))}
       </Panel>
-      <Panel title={t("Lần chạy theo revision", "Runs by revision")} description={t("Mỗi lần chạy giữ snapshot riêng của revision đã dùng.", "Every run keeps its own snapshot of the revision it used.")}>
-        {runs === undefined ? <SkeletonTable rows={2} /> : byRevision.size === 0 ? <p className="text-sm text-muted-foreground">{t("Chưa có lần chạy nào từ bộ dữ liệu này.", "No runs from this dataset yet.")}</p> : (
+      <Panel title={t("Lần chạy theo phiên bản dữ liệu", "Runs by data version")} description={t("Mỗi lần chạy giữ nguyên bản sao dữ liệu nó đã dùng.", "Every run keeps its own copy of the data it used.")}>
+        {runs === undefined ? <SkeletonTable rows={2} /> : byRevision.size === 0 ? <p className="text-sm text-muted-foreground">{t("Chưa có lần chạy nào.", "No runs yet.")}</p> : (
           <ul className="grid gap-2">
             {[...byRevision.entries()].sort((a, b) => b[0] - a[0]).map(([revision, list]) => (
               <li key={revision} className="flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm">

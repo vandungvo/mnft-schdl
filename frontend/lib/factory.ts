@@ -64,6 +64,11 @@ export function todayIso(): string {
   return toIsoDate(new Date());
 }
 
+/** The period's last day is behind us but it was never closed (its undelivered orders are stuck in it). */
+export function isOverdue(period: { status: string; end_date: string }): boolean {
+  return period.status !== "closed" && period.end_date < todayIso();
+}
+
 export function nowLocal(): string {
   return toLocal(new Date());
 }

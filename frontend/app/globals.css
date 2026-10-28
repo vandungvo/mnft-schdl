@@ -212,7 +212,8 @@
   .viz .point { cursor: pointer; }
   .viz .point:focus { outline: none; }
   .viz .point:focus-visible .dot { stroke: var(--primary); stroke-width: 3; }
-  .viz .dot { fill: var(--setup); stroke: var(--card); stroke-width: 1.2; }
+  .viz .dot { fill: var(--muted-foreground); fill-opacity: 0.6; stroke: var(--card); stroke-width: 1.2; }
+  .viz .dot-main, .viz .dot-current { fill-opacity: 1; }
   .viz .dot-main { fill: var(--success); }
   .viz .dot-current { stroke: var(--foreground); stroke-width: 2.4; }
   .viz .series { fill: none; stroke-width: 2; stroke-linejoin: round; }
