@@ -203,3 +203,75 @@ def issues_of(errors):
         else:
             out.append({"code": "OTHER", "subject": None, "minute": None, "raw": raw})
     return out
+
+
+def repair(data, rows, fixed, seconds=30.0, seed=11, workers=1):
+    """Re-optimise around the planner (large neighbourhood search, as cp_lns): start from
+    `rows` (an edited, valid schedule); each round CP-SAT may re-sequence one neighbourhood
+    -- a time window, two machines, a stage or a random set -- of the runs *not* in
+    `fixed`, everything else held where it is. Pinned runs keep machine, mold and times
+    exactly; the solver may still add build-ahead (reserve) runs in free capacity. The
+    edit is the starting incumbent, so the result is never worse than what the planner had.
+    A shift-consolidation pass over the unpinned runs (compact) comes first: it is cheap
+    and often all a hand edit needs.
+
+    Twins (interchangeable runs) are relabelled by block start, as the solver's symmetry
+    breaking expects; pins therefore follow their *blocks* (stage, item, machine, start),
+    not run ids, through every relabel."""
+    import random
+    import time
+
+    from .compact import compact
+    from .cp_engine import solve
+    from .evaluate import evaluate, validate
+    from .experiment import _neighbourhood
+    from .instance import canonical
+
+    started = time.perf_counter()
+    block = lambda r: (r["stage"], r["item"], r["machine"], r["block_start"])  # noqa: E731
+    pinned_blocks = {block(r) for r in rows if r["run"] in set(fixed)}
+    incumbent = canonical(data, rows)
+    initial = best = evaluate(data, incumbent)[0]["objective"]
+    rng = random.Random(seed)
+    kinds = ["time", "machine", "stage", "random"]
+    history = [{"seconds": time.perf_counter() - started, "objective": initial, "source": "manual edit"}]
+    # Cheap first: let unpinned runs wait for an already-open shift (same machine order), then LNS.
+    frozen = {r["run"] for r in incumbent if block(r) in pinned_blocks}
+    packed = compact(data, incumbent, seconds=min(10.0, seconds / 4), frozen=frozen)
+    value = evaluate(data, packed)[0]["objective"]
+    if value < best and validate(data, packed)["valid"]:
+        incumbent, best = canonical(data, packed), value
+        history.append({"seconds": time.perf_counter() - started, "objective": value, "source": "shift consolidation"})
+    iterations = []
+    while not iterations or seconds - (time.perf_counter() - started) > 2:
+        pinned = {r["run"] for r in incumbent if block(r) in pinned_blocks}
+        kind = kinds[len(iterations) % len(kinds)]
+        released = _neighbourhood(data, incumbent, rng, kind) - pinned
+        if not released:
+            iterations.append({"neighbourhood": kind, "released_runs": [], "status": "NOTHING_FREE"})
+            if len(iterations) > 20 and all(it["status"] == "NOTHING_FREE" for it in iterations):
+                break  # everything is pinned: nothing to optimise
+            continue
+        hold = {r["run"] for r in incumbent} - released
+        remaining = max(0.5, seconds - (time.perf_counter() - started))
+        out, meta = solve(data, seconds=min(10.0, remaining), seed=seed + len(iterations), hint=incumbent, fixed_runs=hold, workers=workers)
+        iterations.append({"neighbourhood": kind, "released_runs": len(released), "status": meta["status"],
+                           "solve_seconds": meta.get("solve_seconds")})
+        if not out:
+            continue
+        check = validate(data, out)
+        if not check["valid"]:
+            raise ValueError(check)
+        value = evaluate(data, out)[0]["objective"]
+        if abs(value - meta["solver_objective"]) > .01:
+            raise ValueError("repair objective disagrees with the independent evaluator")
+        if value < best:
+            incumbent, best = canonical(data, out), value
+            history.append({"seconds": time.perf_counter() - started, "objective": value, "iteration": len(iterations), "neighbourhood": kind})
+    return incumbent, {
+        "status": "REPAIR_IMPROVED" if best < initial else "REPAIR_KEPT_EDIT",
+        "history": history, "iterations": iterations, "bound": None,
+        "bound_scope": "none; neighbourhood bounds are not global",
+        "initial_hint_objective": initial, "hint_source": "manual edit",
+        "fixed_runs": len(pinned_blocks), "workers": workers,
+    }

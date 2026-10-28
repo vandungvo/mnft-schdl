@@ -41,6 +41,7 @@ from ..schemas import (
     ScheduleDecisionResponse,
     ScheduleEditPreview,
     ScheduleEditRequest,
+    ScheduleOptimizeRequest,
     ScheduleRunCreate,
     ScheduleRunDetail,
     ScheduleRunList,
@@ -706,6 +707,26 @@ def save_schedule_edit(
 ) -> ScheduleRunSummary:
     """Store a valid edit as a new run (algorithm `manual`) next to the solver's options."""
     return ScheduleRunSummary.model_validate(ManualEditService(session).save(run_id, payload, idempotency_key))
+
+
+@router.post(
+    "/schedule-runs/{run_id}/edits/optimize",
+    response_model=ScheduleRunSummary,
+    status_code=status.HTTP_202_ACCEPTED,
+    tags=["scheduling"],
+)
+def optimize_schedule_edit(
+    run_id: str,
+    payload: ScheduleOptimizeRequest,
+    request: Request,
+    session: DbSession,
+    idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key", max_length=200)] = None,
+) -> ScheduleRunSummary:
+    """Queue a CP-SAT re-optimisation of everything the planner did not pin (algorithm `cp_repair`)."""
+    run = ManualEditService(session).optimize(
+        run_id, payload, idempotency_key, request.app.state.settings, request.app.state.dispatcher
+    )
+    return ScheduleRunSummary.model_validate(run)
 
 
 @router.get("/schedule-runs", response_model=ScheduleRunList, tags=["scheduling"])

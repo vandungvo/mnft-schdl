@@ -946,3 +946,43 @@ def test_manual_edit_rejects_bad_plans_with_stable_codes(client, scheduling_inpu
     v4 = client.post("/api/v1/schedule-runs", json={"input": scheduling_input, "algorithm": "edd", "seed": 11}).json()
     refused = client.post(f"/api/v1/schedule-runs/{v4['id']}/edits/preview", json={"sequence": {"M": []}})
     assert refused.status_code == 422 and refused.json()["error"]["code"] == "EDIT_NOT_SUPPORTED"
+
+
+def test_optimize_around_an_edit_keeps_pins_and_is_ranked_with_the_options(client) -> None:
+    base = _schema5_run(client)
+    sequence, run_id, _ = _move(base)
+    first_stage = _schema5_input()["stages"][0]
+    pins = [op["lot"] for op in base["operations"] if op["stage"] == first_stage][:3]
+    queued = client.post(
+        f"/api/v1/schedule-runs/{base['id']}/edits/optimize",
+        json={"sequence": sequence, "moved": [run_id], "pinned": pins, "time_budget_seconds": 3, "label": "Tối ưu quanh bản sửa"},
+        headers={"Idempotency-Key": "repair-1"},
+    )
+    assert queued.status_code == 202, queued.text
+    run = client.get(f"/api/v1/schedule-runs/{queued.json()['id']}").json()
+    assert run["algorithm"] == "cp_repair" and run["status"] == "SUCCEEDED", run.get("error_message")
+    assert run["input_hash"] == base["input_hash"] and run["validation"]["valid"] is True
+    meta = run["solver_metadata"]
+    assert meta["edited_from"] == base["id"] and "rows" not in meta, "lineage kept, edited rows not stored twice"
+    assert set(meta["fixed"]) >= set(pins) | {run_id}
+    preview = client.post(f"/api/v1/schedule-runs/{base['id']}/edits/preview", json={"sequence": sequence, "moved": [run_id]}).json()
+    assert run["metrics"]["objective"] <= preview["metrics"]["objective"], "never worse than the edit it started from"
+    edited = {op["lot"]: op for op in preview["operations"]}
+    blocks = {(op["machine"], op["block_start"]) for op in run["operations"]}
+    assert all((edited[p]["machine"], edited[p]["block_start"]) in blocks for p in [*pins, run_id])
+    again = client.post(f"/api/v1/schedule-runs/{base['id']}/edits/optimize", json={"sequence": sequence, "time_budget_seconds": 3}, headers={"Idempotency-Key": "repair-1"})
+    assert again.json()["id"] == run["id"]
+    assert client.post(f"/api/v1/schedule-runs/{run['id']}/retry", json={}).status_code == 422
+
+
+def test_optimize_rejects_what_it_cannot_do(client) -> None:
+    base = _schema5_run(client)
+    sequence = _sequence(base["operations"])
+    everything = [op["lot"] for op in base["operations"]]
+    url = f"/api/v1/schedule-runs/{base['id']}/edits/optimize"
+    assert client.post(url, json={"sequence": sequence, "pinned": everything, "time_budget_seconds": 3}).json()["error"]["code"] == "NOTHING_TO_OPTIMIZE"
+    assert client.post(url, json={"sequence": sequence, "pinned": ["NOPE"], "time_budget_seconds": 3}).json()["error"]["code"] == "UNKNOWN_RUN"
+    assert client.post(url, json={"sequence": sequence, "time_budget_seconds": 99999}).json()["error"]["code"] == "TIME_BUDGET_EXCEEDED"
+    horizon = _schema5_input()["horizon"]
+    outside = client.post(f"/api/v1/schedule-runs/{base['id']}/edits/preview", json={"sequence": sequence, "not_before": {everything[0]: horizon}})
+    assert outside.status_code == 422 and outside.json()["error"]["code"] == "NOT_BEFORE_OUTSIDE_HORIZON"

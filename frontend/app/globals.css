@@ -219,6 +219,8 @@
   .viz .g-bar.is-changed .g-run { stroke: var(--foreground); stroke-width: 1.5; stroke-dasharray: 4 2; }
   .viz .g-bar.is-selected.is-changed .g-run { stroke: var(--primary); stroke-width: 2.5; stroke-dasharray: 4 2; }
   .viz .g-bar.is-lifted { opacity: 0.35; }
+  .viz .g-lock rect { fill: var(--foreground); }
+  .viz .g-lock path { fill: none; stroke: var(--foreground); stroke-width: 1.4; }
   .viz .g-drop-row { fill: var(--primary); fill-opacity: 0.06; }
   .viz .g-ghost { fill: var(--primary); fill-opacity: 0.35; stroke: var(--primary); stroke-width: 1.5; stroke-dasharray: 4 3; }
   .viz .g-ghost-label { fill: var(--primary); font-size: 11px; font-weight: 600; }

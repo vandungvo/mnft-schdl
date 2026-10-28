@@ -19,8 +19,10 @@ def _score(data, rows):
     return evaluate(data, rows)[0]["objective"] if validate(data, rows)["valid"] else float("inf")
 
 
-def compact(data, rows, seconds=10.0, max_passes=6):
+def compact(data, rows, seconds=10.0, max_passes=6, frozen=()):
+    """frozen: run ids that must not move (a planner's pinned runs)."""
     started = time.perf_counter()
+    frozen = set(frozen)
     windows = {m: calendar(data, m)[0] for m in data["machines"]}
     best = [dict(r) for r in rows]
     best_score = _score(data, best)
@@ -30,6 +32,8 @@ def compact(data, rows, seconds=10.0, max_passes=6):
             if time.perf_counter() - started > seconds:
                 return best
             r = best[idx]
+            if r["run"] in frozen:
+                continue
             length = r["end"] - r["block_start"]
             same_m = sorted((x for x in best if x["machine"] == r["machine"]), key=lambda x: x["block_start"])
             k = same_m.index(r)

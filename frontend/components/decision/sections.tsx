@@ -141,7 +141,7 @@ export function AlternativeCards({ ctx, current, decided, onPick, ids, label }: 
                 : <span className="grid h-7 shrink-0 place-items-center rounded-md border border-dashed px-1.5 text-[11px] font-semibold text-muted-foreground">{t("ngoài", "other")}</span>}
               <span className="grid min-w-0 flex-1">
                 <span className="text-[15px] leading-tight font-semibold">{ctx.list.name[id] ?? alt.label}</span>
-                <span className="truncate text-xs text-muted-foreground">{alt.algorithm === "manual" ? t("Bản sửa tay", "Manual edit") : `${t("Thuật toán", "Algorithm")}: ${alt.label}`}</span>
+                <span className="truncate text-xs text-muted-foreground">{alt.algorithm === "manual" ? t("Bản sửa tay", "Manual edit") : alt.algorithm === "cp_repair" ? t("Tối ưu quanh bản sửa", "Optimised around an edit") : `${t("Thuật toán", "Algorithm")}: ${alt.label}`}</span>
               </span>
               {id === decided && <Badge variant="info"><CheckCircle2 />{t("Đã chốt", "Committed")}</Badge>}
             </span>

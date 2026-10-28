@@ -362,6 +362,19 @@ class ScheduleEditRequest(StrictModel):
     note: str | None = Field(default=None, max_length=1000)
 
 
+class ScheduleOptimizeRequest(ScheduleEditRequest):
+    """Re-optimise around an edit: the planner's pins (and, with keep_edited, every run
+    they moved or gave an earliest start) keep machine and time; so does every run
+    starting before freeze_until (a frozen zone, in horizon minutes). The rest is
+    re-sequenced by CP-SAT neighbourhood search within time_budget_seconds."""
+
+    pinned: list[str] = Field(default_factory=list, max_length=5000)
+    keep_edited: bool = True
+    freeze_until: NonNegativeInt | None = None
+    time_budget_seconds: float = Field(default=60, gt=0)
+    seed: int = Field(default=11, ge=0, le=2_147_483_647)
+
+
 class ScheduleEditIssue(StrictModel):
     code: str
     subject: str | None = None

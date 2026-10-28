@@ -27,8 +27,9 @@ export interface ScheduleRunSummary {
   plan_id: string | null;
   retry_of_id: string | null;
   status: RunStatus;
-  /** "manual": a planner's edit of another run (stored by the edit endpoint, never solved). */
-  algorithm: Algorithm | "manual";
+  /** "manual": a planner's edit of another run (stored by the edit endpoint, never solved);
+      "cp_repair": CP-SAT re-optimisation around such an edit. */
+  algorithm: Algorithm | "manual" | "cp_repair";
   seed: number;
   time_budget_seconds: number;
   input_name: string;
@@ -82,6 +83,17 @@ export interface ScheduleEditRequest {
   compact: boolean;
   label?: string | null;
   note?: string | null;
+}
+
+/** Re-optimise around an edit (backend ScheduleOptimizeRequest). */
+export interface ScheduleOptimizeRequest extends ScheduleEditRequest {
+  /** Runs the planner locked: machine, mold and times stay exactly. */
+  pinned: string[];
+  /** Also keep every run the planner moved or gave an earliest start. */
+  keep_edited: boolean;
+  /** Keep every run starting before this horizon minute (frozen zone). */
+  freeze_until: number | null;
+  time_budget_seconds: number;
 }
 
 export interface ScheduleEditIssue { code: string; subject: string | null; minute: number | null; raw: string; runs: string[] }
@@ -267,7 +279,7 @@ export interface ScheduleDecision {
   run_id: string | null;
   dataset_revision: number | null;
   input_hash: string;
-  algorithm: Algorithm | "manual";
+  algorithm: Algorithm | "manual" | "cp_repair";
   seed: number;
   alternative: string;
   policy: string;

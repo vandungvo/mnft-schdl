@@ -12,6 +12,12 @@ from models.common import evaluate as evaluate_v4
 from models.common.experiment import execute
 from models.common.instance import upgrade_input
 from models.common.stage_runs import evaluate as evaluate_v5
+from models.common.stage_runs.manual import repair
+
+# Re-optimisation around a planner's edit (see backend/app/manual_edits.py): not a
+# method a user can pick, it needs the edit and its pins, carried in the run's
+# solver_metadata["repair"] from creation until the run completes.
+REPAIR_ALGORITHM = "cp_repair"
 
 # Columns of schedule_operations; anything else an engine returns stays out of the row.
 OPERATION_FIELDS = (
@@ -70,14 +76,23 @@ class SchedulingEngine:
         algorithm: str,
         time_budget_seconds: float,
         seed: int,
+        options: dict[str, Any] | None = None,
     ) -> EngineResult:
         # Runs created before schema_version 4 keep their stored v3 snapshot
         # untouched (reproducibility); it is relabelled explicitly here.
         input_data = upgrade_input(input_data)
         started = time.perf_counter()
-        operations, metadata = execute(
-            copy.deepcopy(input_data), algorithm, time_budget_seconds, seed
-        )
+        if algorithm == REPAIR_ALGORITHM:
+            if not options or not options.get("rows"):
+                raise ValueError("cp_repair needs the edited schedule and its pins (solver_metadata.repair)")
+            operations, metadata = repair(
+                copy.deepcopy(input_data), copy.deepcopy(options["rows"]), set(options.get("fixed", [])),
+                seconds=time_budget_seconds, seed=seed,
+            )
+        else:
+            operations, metadata = execute(
+                copy.deepcopy(input_data), algorithm, time_budget_seconds, seed
+            )
         elapsed = time.perf_counter() - started
         solver_status = str(metadata.get("status", "UNKNOWN"))
         metadata = {

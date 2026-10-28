@@ -20,11 +20,13 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from .audit import AuditService
-from .engine.adapter import _stored_rows
+from .config import Settings
+from .engine.adapter import REPAIR_ALGORITHM, _stored_rows
 from .errors import ApplicationError, RunNotFoundError
-from .models import RunStatus, ScheduleOperation, ScheduleRun, utc_now
+from .models import MasterDataset, PlanningPeriod, RunStatus, ScheduleOperation, ScheduleRun, utc_now
 from .repository import ScheduleRunRepository
-from .schemas import ScheduleEditRequest
+from .jobs import ScheduleJobDispatcher
+from .schemas import ScheduleEditRequest, ScheduleOptimizeRequest
 
 MANUAL_ALGORITHM = "manual"
 
@@ -64,6 +66,13 @@ class ManualEditService:
             )
         return run, data, _engine_rows(run)
 
+    def _require_open_period(self, run: ScheduleRun) -> None:
+        """A closed period's schedule is history: no new options are stored for it."""
+        dataset = self.session.get(MasterDataset, run.dataset_id) if run.dataset_id else None
+        period = self.session.get(PlanningPeriod, dataset.owner_period_id) if dataset and dataset.owner_period_id else None
+        if period is not None and period.closed_at is not None:
+            raise ApplicationError("PERIOD_CLOSED", "A closed period cannot be changed", status_code=409)
+
     def preview(self, run_id: str, request: ScheduleEditRequest) -> dict[str, Any]:
         base, data, base_rows = self._base(run_id)
         outcome = self._evaluate(base, data, base_rows, request)
@@ -72,6 +81,11 @@ class ManualEditService:
     def _evaluate(self, base: ScheduleRun, data: dict[str, Any], base_rows: list[dict[str, Any]],
                   request: ScheduleEditRequest) -> dict[str, Any]:
         started = time.perf_counter()
+        late = sorted(rid for rid, minute in request.not_before.items() if minute >= data["horizon"])
+        if late:
+            raise ApplicationError(
+                "NOT_BEFORE_OUTSIDE_HORIZON", f"earliest starts at or after the end of the horizon: {late[:10]}", status_code=422,
+            )
         result: dict[str, Any] = {"base_metrics": base.metrics or {}, "metrics": None, "operations": [], "changes": []}
         try:
             rows = apply_edits(data, base_rows, request.sequence, moved=request.moved,
@@ -100,12 +114,94 @@ class ManualEditService:
             result["metrics"] = evaluate(data, rows)[0]
         return result
 
+    def optimize(self, run_id: str, request: ScheduleOptimizeRequest, idempotency_key: str | None,
+                 settings: Settings, dispatcher: ScheduleJobDispatcher) -> ScheduleRun:
+        """Queue a CP-SAT re-optimisation around the (valid) edit; returns the queued run."""
+        if idempotency_key:
+            existing = self.repository.get_by_idempotency_key(idempotency_key)
+            if existing is not None:
+                return existing
+        if request.time_budget_seconds > settings.solver_max_budget_seconds:
+            raise ApplicationError(
+                "TIME_BUDGET_EXCEEDED",
+                f"time_budget_seconds cannot exceed {settings.solver_max_budget_seconds}", status_code=422,
+            )
+        base, data, base_rows = self._base(run_id)
+        self._require_open_period(base)
+        outcome = self._evaluate(base, data, base_rows, request)
+        if not outcome["valid"]:
+            raise ApplicationError(
+                "EDIT_INVALID", "Only a valid edit can be optimised", status_code=422, details={"issues": outcome["issues"]},
+            )
+        rows = outcome["rows"]
+        known = {row["run"] for row in rows}
+        unknown = sorted(set(request.pinned) - known)
+        if unknown:
+            raise ApplicationError("UNKNOWN_RUN", f"pinned runs not in the schedule: {unknown[:10]}", status_code=422)
+        fixed = set(request.pinned)
+        if request.keep_edited:
+            fixed |= set(request.moved) | set(request.not_before)
+        if request.freeze_until is not None:
+            fixed |= {row["run"] for row in rows if row["block_start"] < request.freeze_until}
+        if fixed >= known:
+            raise ApplicationError("NOTHING_TO_OPTIMIZE", "Every run is pinned or frozen; nothing is left to optimise", status_code=422)
+        run = ScheduleRun(
+            idempotency_key=idempotency_key,
+            dataset_id=base.dataset_id,
+            dataset_revision=base.dataset_revision,
+            plan_id=base.plan_id,
+            status=RunStatus.QUEUED.value,
+            algorithm=REPAIR_ALGORITHM,
+            seed=request.seed,
+            time_budget_seconds=request.time_budget_seconds,
+            input_name=base.input_name,
+            time_origin=base.time_origin,
+            horizon_minutes=base.horizon_minutes,
+            input_hash=base.input_hash,
+            input_snapshot=base.input_snapshot,
+            solver_metadata={
+                "repair": {
+                    "rows": rows,
+                    "fixed": sorted(fixed),
+                    "edited_from": base.id,
+                    "edited_from_algorithm": base.algorithm,
+                    "label": request.label,
+                    "note": request.note,
+                    "changed_runs": len(outcome["changes"]),
+                    "pinned": len(request.pinned),
+                    "freeze_until": request.freeze_until,
+                    "keep_edited": request.keep_edited,
+                }
+            },
+        )
+        try:
+            run = self.repository.add(run)
+        except IntegrityError:
+            self.session.rollback()
+            if not idempotency_key:
+                raise
+            existing = self.repository.get_by_idempotency_key(idempotency_key)
+            if existing is None:
+                raise
+            return existing
+        AuditService(self.session).record(
+            "schedule_run.repair_queued", "schedule_run", run.id,
+            details={"edited_from": base.id, "fixed_runs": len(fixed), "budget": request.time_budget_seconds},
+        )
+        try:
+            dispatcher.submit(run.id)
+        except Exception:
+            self.repository.fail(run, code="JOB_DISPATCH_FAILED", message="The scheduling job could not be submitted to a worker")
+        self.session.expire_all()
+        return self.repository.get(run.id) or run
+
     def save(self, run_id: str, request: ScheduleEditRequest, idempotency_key: str | None) -> ScheduleRun:
         if idempotency_key:
             existing = self.repository.get_by_idempotency_key(idempotency_key)
             if existing is not None:
                 return existing
         base, data, base_rows = self._base(run_id)
+        self._require_open_period(base)
         outcome = self._evaluate(base, data, base_rows, request)
         if not outcome["valid"]:
             raise ApplicationError(

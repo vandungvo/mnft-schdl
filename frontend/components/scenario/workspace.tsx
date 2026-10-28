@@ -111,6 +111,8 @@ export interface WorkspaceEmbed {
   steps?: Partial<Record<string, StepState>>;
   /** What committing means for the host (e.g. work orders and the next period's opening stock). */
   commitNote?: ReactNode;
+  /** No new options may be stored (a closed period): hand editing is not offered. */
+  readOnly?: boolean;
   /** Called after a schedule is committed (the host refreshes its status). */
   onCommitted?: () => void;
   /** Banner content shown above the tabs (e.g. stale inputs). */
@@ -190,6 +192,23 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
   const lastDecision = entries.length ? entries[entries.length - 1] : null;
   const decided = lastDecision?.runId ?? null;
 
+  // A re-optimisation around an edit can take minutes: say when it is done, wherever the planner is.
+  const watching = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    const list = runs.data;
+    if (!list) return;
+    const open = new Set(list.filter((run) => run.algorithm === "cp_repair" && (run.status === "QUEUED" || run.status === "RUNNING")).map((run) => run.id));
+    if (watching.current) {
+      for (const id of watching.current) {
+        if (open.has(id)) continue;
+        const run = list.find((item) => item.id === id);
+        if (run?.status === "SUCCEEDED") showToast(run.solver_status === "REPAIR_IMPROVED" ? t("Tối ưu xong: đã tìm được lịch tốt hơn bản sửa.", "Optimisation done: a better schedule than the edit was found.") : t("Tối ưu xong: không tìm được lịch tốt hơn, giữ nguyên bản sửa.", "Optimisation done: nothing better found, the edit is kept."), "success");
+        else if (run?.status === "FAILED") showToast(run.error_message ?? t("Tối ưu không thành công.", "The optimisation failed."), "error");
+      }
+    }
+    watching.current = open;
+  }, [runs.data, showToast, t]);
+
   // "+ New → Generate options for …" lands here with ?generate=1.
   const wantsGenerate = params.get("generate") === "1";
   const ready = dataset.data?.is_ready ?? false;
@@ -243,7 +262,8 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
   // ?edit=<run> opens the manual editor on that option (5-stage model only), inside the schedule tab.
   // The tab stays mounted while editing, so looking at another tab never loses unsaved edits.
   const editParam = params.get("edit");
-  const editing = editParam && isV5(input) ? byId.get(editParam) ?? null : null;
+  const canEdit = isV5(input) && !embed?.readOnly;
+  const editing = editParam && canEdit ? byId.get(editParam) ?? null : null;
   const editRun = (runId: string) => { set({ tab: "schedule", edit: runId, run: runId }, "push"); toTabTop(); };
 
   const errorCount = (tab: MdTab) => issues.filter((issue) => issue.tab === tab && issue.severity === "error").length;
@@ -378,8 +398,9 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
           <TabsContent value="schedule" forceMount={editing ? true : undefined} className="min-w-0 data-[state=inactive]:hidden"><h2 className="sr-only">{t("Lịch & so sánh", "Schedule & compare")}</h2>
             {editing ? (
               <ScheduleEditor key={editing.id} ctx={ctx} base={editing} onCancel={() => set({ edit: null })}
-                onSaved={(runId) => { set({ edit: null, run: runId, cmp: editing.id }); showToast(t("Đã lưu bản sửa thành phương án mới; đang so với bản gốc.", "The edit is saved as a new option, compared with the original."), "success"); }} />
-            ) : <ScheduleView ctx={ctx} current={current} compare={compare} deliveries={deliveries} onEdit={v5 ? editRun : undefined}
+                onSaved={(runId) => { set({ edit: null, run: runId, cmp: editing.id }); showToast(t("Đã lưu bản sửa thành phương án mới; đang so với bản gốc.", "The edit is saved as a new option, compared with the original."), "success"); }}
+                onQueued={(runId) => { set({ edit: null, tab: "options", run: runId, cmp: null }, "push"); toTabTop(); showToast(t("Đang tối ưu phần còn lại. Kết quả hiện trong tab Phương án khi xong; bạn vẫn làm việc tiếp được.", "Optimising the rest. The result appears under Options when done; you can keep working."), "info"); }} />
+            ) : <ScheduleView ctx={ctx} current={current} compare={compare} deliveries={deliveries} onEdit={canEdit ? editRun : undefined}
               onPick={(runId) => set({ run: runId, cmp: compareId === runId ? null : params.get("cmp") })} onCompare={(runId) => set({ cmp: runId ?? "none" })} />}
           </TabsContent>
 
@@ -448,7 +469,7 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
         <OptionSheet ctx={ctx} alt={peek} rank={peek ? rankOf(peek.id) : null} committed={peek?.id === decided} viewingId={current?.id ?? null} onClose={() => setPeekId(null)}
           onSchedule={(runId) => { setPeekId(null); set({ tab: "schedule", run: runId, cmp: compareId === runId ? null : params.get("cmp") }, "push"); toTabTop(); }}
           onCompare={(runId) => { setPeekId(null); set({ tab: "schedule", cmp: runId }, "push"); toTabTop(); }}
-          onCommit={(runId) => commitFlow(runId)} onEdit={v5 ? (runId) => { setPeekId(null); editRun(runId); } : undefined} />
+          onCommit={(runId) => commitFlow(runId)} onEdit={canEdit && !editing ? (runId) => { setPeekId(null); editRun(runId); } : undefined} />
         <GenerateDialog datasetId={id} schemaVersion={input.schema_version} open={generateOpen} onClose={() => setGenerateOpen(false)} />
         <ConfirmDialog open={pendingReplace !== null} title={t("Thay toàn bộ dữ liệu bằng file này?", "Replace all data with this file?")}
           description={t(`File “${pendingReplace?.file}”: ${replaceSummary}. Dữ liệu được kiểm tra trước khi ghi; nếu hợp lệ sẽ tạo revision ${data.revision + 1}. Lần chạy cũ giữ snapshot riêng.`, `File “${pendingReplace?.file}”: ${replaceSummary}. The data is validated before writing; if valid it becomes revision ${data.revision + 1}. Earlier runs keep their own snapshots.`)}

@@ -49,6 +49,10 @@ export const ALGORITHMS: AlgorithmInfo[] = [
 export const MANUAL = algorithm("manual" as Algorithm, ["Chỉnh tay", "Manual edit"], tr("Chỉnh tay", "Manual"), "manual", ["Người lập lịch sửa từ một phương án", "A planner's edit of an option"],
   ["Người lập lịch đổi máy, thứ tự hoặc giờ sớm nhất của vài lượt trên một phương án; hệ thống xếp lại giờ, kiểm bằng bộ kiểm độc lập và chấm điểm như mọi phương án khác.", "A planner changed the machine, order or earliest start of some runs of an option; the system re-timed it, checked it with the independent validator and scored it like any other option."]);
 
+/** CP-SAT neighbourhood search around a planner's edit, keeping the runs they locked. */
+export const CP_REPAIR = algorithm("cp_repair" as Algorithm, ["Tối ưu quanh bản sửa", "Optimised around an edit"], tr("Tối ưu+", "Re-opt"), "cp", ["CP-SAT xếp lại phần không khoá", "CP-SAT re-sequences what is not locked"],
+  ["Bắt đầu từ bản sửa của người lập lịch: các lượt đã khoá (và vùng giữ nguyên) không đổi; phần còn lại được dồn ca rồi CP-SAT xếp lại theo từng vùng lân cận. Không bao giờ tệ hơn bản sửa.", "Starts from the planner's edit: locked runs (and the frozen zone) stay as they are; the rest is shift-consolidated, then re-sequenced by CP-SAT neighbourhood by neighbourhood. Never worse than the edit."]);
+
 export function familyLabel(family: AlgorithmFamily): string {
   return { rule: tr("Luật điều độ", "Dispatching rules"), search: "Metaheuristic", cp: tr("Quy hoạch ràng buộc", "Constraint programming"), manual: tr("Chỉnh tay", "Manual edit") }[family];
 }
@@ -83,6 +87,7 @@ const BY_VALUE = new Map(ALGORITHMS.map((item) => [item.value, item]));
 
 export function algorithmInfo(value: string): AlgorithmInfo {
   if (value === "manual") return MANUAL;
+  if (value === "cp_repair") return CP_REPAIR;
   return BY_VALUE.get(value as Algorithm) ?? {
     value: value as Algorithm,
     label: value.replaceAll("_", " "),

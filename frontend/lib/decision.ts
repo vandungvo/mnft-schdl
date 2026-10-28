@@ -82,18 +82,22 @@ export function toAlternative(run: ScheduleRunDetail, input: AnySchedulingInput 
     id: run.id,
     metrics,
     algorithm: run.algorithm,
-    label: run.algorithm === "manual" ? manualLabel(run) : sameAlgo > 1 ? `${info.short} · seed ${run.seed}` : info.short,
+    label: run.algorithm === "manual" || run.algorithm === "cp_repair" ? manualLabel(run) : sameAlgo > 1 ? `${info.short} · seed ${run.seed}` : info.short,
     // Machines running around the clock (shift null) open no rostered shift.
     shifts: new Set(run.operations.filter((op) => op.shift != null).map((op) => `${op.machine}|${op.shift}`)),
     late: typeof metrics.late_orders === "number" ? metrics.late_orders : input ? deliveriesOf(input, run.operations).filter((d) => d.tardiness > 0).length : 0,
   };
 }
 
-/** "Chỉnh tay · <planner's label>" (or the run's short id when unnamed). */
+/** "Chỉnh tay · <planner's label>" / "Tối ưu+ · <label>" (or the run's short id when unnamed). */
 function manualLabel(run: ScheduleRunDetail): string {
   const label = run.solver_metadata?.label;
-  return `${tr("Chỉnh tay", "Manual")} · ${typeof label === "string" && label.trim() ? label.trim() : run.id.slice(0, 6)}`;
+  const kind = run.algorithm === "cp_repair" ? tr("Tối ưu+", "Re-opt") : tr("Chỉnh tay", "Manual");
+  return `${kind} · ${typeof label === "string" && label.trim() ? label.trim() : run.id.slice(0, 6)}`;
 }
+
+/** Runs a planner created from another option (hand edits and re-optimisations around them). */
+export const isPlannerRun = (algorithm: string) => algorithm === "manual" || algorithm === "cp_repair";
 
 /** Operating cost of a metrics record (the weighted terms outside service). */
 export function opsCostOf(metrics: Record<string, number>, weights: Record<string, number>): number {

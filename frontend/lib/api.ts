@@ -28,6 +28,7 @@ import type {
   ScheduleDecisionList,
   ScheduleEditPreview,
   ScheduleEditRequest,
+  ScheduleOptimizeRequest,
   ScheduleRunDetail,
   ScheduleRunList,
   ScheduleRunSummary,
@@ -166,6 +167,15 @@ export function previewScheduleEdit(id: string, payload: ScheduleEditRequest, si
 /** Store a valid edit as a new run (algorithm "manual") among the options of the same inputs. */
 export function saveScheduleEdit(id: string, payload: ScheduleEditRequest, idempotencyKey = crypto.randomUUID()): Promise<ScheduleRunSummary> {
   return apiRequest(`/schedule-runs/${encodeURIComponent(id)}/edits`, {
+    method: "POST",
+    headers: { "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify(payload),
+  });
+}
+
+/** Queue a CP-SAT re-optimisation of everything the planner did not lock (algorithm "cp_repair"). */
+export function optimizeScheduleEdit(id: string, payload: ScheduleOptimizeRequest, idempotencyKey = crypto.randomUUID()): Promise<ScheduleRunSummary> {
+  return apiRequest(`/schedule-runs/${encodeURIComponent(id)}/edits/optimize`, {
     method: "POST",
     headers: { "Idempotency-Key": idempotencyKey },
     body: JSON.stringify(payload),

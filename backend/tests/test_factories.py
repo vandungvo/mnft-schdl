@@ -343,3 +343,25 @@ def test_schedule_state_counts_started_runs_as_done() -> None:
     state = schedule_state(model, [], 0)
     assert state.finished == {p: s["initial_stock"] for p, s in model["products"].items()}
     assert state.delivered == {} and state.started == 0
+
+
+def test_manual_edit_on_a_period_and_none_once_it_is_closed(factory_client) -> None:
+    period = _period(factory_client)
+    run = _run_and_commit(factory_client, period)
+    detail = factory_client.get(f"{API}/schedule-runs/{run['id']}").json()
+    sequence: dict[str, list[str]] = {}
+    for op in sorted(detail["operations"], key=lambda op: (op["machine"], op["block_start"])):
+        sequence.setdefault(op["machine"], []).append(op["lot"])
+    first = detail["operations"][0]["lot"]
+    not_before = {first: detail["operations"][0]["block_start"] + 120}
+    preview = factory_client.post(f"{API}/schedule-runs/{run['id']}/edits/preview", json={"sequence": sequence, "not_before": not_before}).json()
+    assert preview["valid"] is True, preview["issues"]
+    saved = factory_client.post(f"{API}/schedule-runs/{run['id']}/edits", json={"sequence": sequence, "not_before": not_before, "label": "Lùi 2 giờ"})
+    assert saved.status_code == 201, saved.text
+    assert saved.json()["dataset_id"] == period["dataset_id"], "the edit is an option of the period"
+
+    assert factory_client.post(f"{API}/periods/{period['id']}/close", json={}).status_code in (200, 204)
+    closed = factory_client.post(f"{API}/schedule-runs/{run['id']}/edits", json={"sequence": sequence, "not_before": not_before})
+    assert closed.status_code == 409 and closed.json()["error"]["code"] == "PERIOD_CLOSED"
+    optimise = factory_client.post(f"{API}/schedule-runs/{run['id']}/edits/optimize", json={"sequence": sequence, "time_budget_seconds": 2})
+    assert optimise.status_code == 409

@@ -73,18 +73,25 @@ class ScheduleJobDispatcher:
                 logger.error("Claimed run disappeared", extra={"run_id": run_id})
                 return
             logger.info("Schedule run started", extra={"run_id": run_id})
+            # A re-optimisation around a manual edit carries its input (the edit and its
+            # pins) in solver_metadata; the stored result keeps the lineage, not the rows.
+            spec = (run.solver_metadata or {}).get("repair")
             try:
                 result = self._engine.run(
                     run.input_snapshot,
                     algorithm=run.algorithm,
                     time_budget_seconds=run.time_budget_seconds,
                     seed=run.seed,
+                    options=spec,
                 )
+                metadata = result.solver_metadata
+                if spec:
+                    metadata = {**metadata, **{key: value for key, value in spec.items() if key != "rows"}}
                 repository.complete(
                     run,
                     operations=result.operations,
                     solver_status=result.solver_status,
-                    solver_metadata=result.solver_metadata,
+                    solver_metadata=metadata,
                     validation=result.validation,
                     metrics=result.metrics,
                 )

@@ -88,3 +88,29 @@ class ManualEdits(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Repair(unittest.TestCase):
+    def test_pinned_runs_stay_and_the_rest_never_gets_worse(self):
+        from models.common.stage_runs.evaluate import evaluate
+        from models.common.stage_runs.manual import repair
+        base = decode(DATA, "edd")
+        pinned = {r["run"] for r in base if r["stage"] == DATA["stages"][0]}
+        rows, meta = repair(DATA, base, pinned, seconds=6, seed=3)
+        self.assertTrue(validate(DATA, rows)["valid"])
+        self.assertLessEqual(evaluate(DATA, rows)[0]["objective"], evaluate(DATA, base)[0]["objective"])
+        before = {(r["stage"], r["item"], r["machine"], r["block_start"], r["end"]) for r in base if r["run"] in pinned}
+        after = {(r["stage"], r["item"], r["machine"], r["block_start"], r["end"]) for r in rows}
+        self.assertTrue(before <= after, "every pinned block is still there (twins may swap ids)")
+        self.assertEqual(meta["fixed_runs"], len(pinned))
+
+    def test_all_pinned_returns_the_edit(self):
+        from models.common.stage_runs.manual import repair
+        base = decode(DATA, "edd")
+        rows, meta = repair(DATA, base, {r["run"] for r in base}, seconds=3, seed=3)
+        kept = {(r["machine"], r["block_start"]) for r in base}
+        self.assertTrue(kept <= {(r["machine"], r["block_start"]) for r in rows}, "every pinned block is kept")
+        # With everything pinned the solver can only add build-ahead (reserve) runs in free capacity.
+        added = [r for r in rows if (r["machine"], r["block_start"]) not in kept]
+        self.assertTrue(all("reserve_option" in RUNS[r["run"]] for r in added))
+        self.assertTrue(validate(DATA, rows)["valid"])

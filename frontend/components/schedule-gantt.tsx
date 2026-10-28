@@ -38,6 +38,8 @@ export interface GanttEdit {
   selected: string | null;
   /** Runs whose machine or start differ from the schedule being edited. */
   changed: Set<string>;
+  /** Runs the planner locked (kept as they are when the rest is re-optimised). */
+  locked: Set<string>;
   onSelect: (lot: string) => void;
   /** A bar dropped on a machine row, at the minute its block would start. */
   onDrop: (lot: string, machine: string, minute: number) => void;
@@ -246,6 +248,7 @@ export function ScheduleGantt({ operations, input, origin, horizon, deliveries, 
                 {op.setup_minutes > 0 && <rect x={x(maintEnd)} y={y} width={Math.max(1, x(op.start) - x(maintEnd))} height={h} style={{ fill: "var(--setup)" }} />}
                 <rect x={x(op.start)} y={y} width={width} height={h} rx={2.5} className="g-run" style={{ fill }} />
                 {width > op.lot.length * 6.4 + 6 && <text x={x(op.start) + width / 2} y={y + h / 2 + 4} textAnchor="middle" className="g-label" style={{ fill: ink }}>{op.lot}</text>}
+                {edit?.locked.has(op.lot) && <g className="g-lock" transform={`translate(${x(op.block_start) + 1} ${y - 7})`}><path d="M1.5 4 V2.5 a2.5 2.5 0 0 1 5 0 V4" /><rect y={4} width={8} height={5.5} rx={1} /><title>{t("Đã khoá", "Locked")}</title></g>}
               </g>;
             })}
           </g>
