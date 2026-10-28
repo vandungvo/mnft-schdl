@@ -57,6 +57,9 @@ class MasterDataset(Base):
     # Schema 5 (fixed runs per stage) is stored whole, as the validated document; the
     # normalised child tables below hold schema 4 only and stay empty for it.
     document: Mapped[dict | None] = mapped_column(JSON)
+    # Set when a planning period compiled this scenario; it is then edited through
+    # the period, never replaced or deleted on its own.
+    owner_period_id: Mapped[str | None] = mapped_column(String(36), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utc_now, onupdate=utc_now
@@ -505,3 +508,114 @@ class ScheduleOperation(Base):
     shift: Mapped[str | None] = mapped_column(String(100))
 
     run: Mapped[ScheduleRun] = relationship(back_populates="operations")
+
+
+class Factory(Base):
+    """A plant whose configuration is versioned; periods and the order book hang off it."""
+
+    __tablename__ = "factories"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name: Mapped[str] = mapped_column(String(200))
+    current_version: Mapped[int] = mapped_column(Integer, default=1)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, onupdate=utc_now
+    )
+
+    versions: Mapped[list[FactoryVersion]] = relationship(
+        back_populates="factory", cascade="all, delete-orphan", order_by="FactoryVersion.version"
+    )
+
+
+class FactoryVersion(Base):
+    """Immutable plant configuration. A period pins the version it was planned with."""
+
+    __tablename__ = "factory_versions"
+    __table_args__ = (UniqueConstraint("factory_id", "version"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    factory_id: Mapped[str] = mapped_column(
+        ForeignKey("factories.id", ondelete="CASCADE"), index=True
+    )
+    version: Mapped[int] = mapped_column(Integer)
+    # First period start date the version applies to (ISO date); None = from the start.
+    effective_from: Mapped[str | None] = mapped_column(String(10))
+    config: Mapped[dict] = mapped_column(JSON)
+    note: Mapped[str | None] = mapped_column(Text)
+    changes: Mapped[list] = mapped_column(JSON, default=list)
+    actor: Mapped[str] = mapped_column(String(100), default="system")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+    factory: Mapped[Factory] = relationship(back_populates="versions")
+
+
+class BookOrder(Base):
+    """Customer order in the factory's order book, independent of any period."""
+
+    __tablename__ = "order_book"
+    __table_args__ = (
+        UniqueConstraint("factory_id", "code"),
+        Index("ix_order_book_factory_status_due", "factory_id", "status", "due"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    factory_id: Mapped[str] = mapped_column(
+        ForeignKey("factories.id", ondelete="CASCADE"), index=True
+    )
+    code: Mapped[str] = mapped_column(String(100))
+    product: Mapped[str] = mapped_column(String(100))
+    quantity: Mapped[int] = mapped_column(Integer)
+    # Local wall-clock time of the factory, "YYYY-MM-DDTHH:MM".
+    due: Mapped[str] = mapped_column(String(16))
+    priority: Mapped[int] = mapped_column(Integer, default=2)
+    pickup: Mapped[str] = mapped_column(String(20), default="at_due")
+    customer: Mapped[str | None] = mapped_column(String(120))
+    note: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(20), default="open", index=True)
+    delivered_at: Mapped[str | None] = mapped_column(String(16))
+    delivered_period_id: Mapped[str | None] = mapped_column(String(36))
+    source: Mapped[str] = mapped_column(String(20), default="manual")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, onupdate=utc_now
+    )
+
+
+class PlanningPeriod(Base):
+    """One scheduling period of a factory: its inputs and the scenario compiled from them.
+
+    kind: "regular" (a period of the calendar), "variant" (what-if copy of a period)
+    or "reschedule" (rest of a period replanned from a cut-off after an incident).
+    """
+
+    __tablename__ = "planning_periods"
+    __table_args__ = (Index("ix_planning_periods_factory_start", "factory_id", "start_date"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    factory_id: Mapped[str] = mapped_column(
+        ForeignKey("factories.id", ondelete="CASCADE"), index=True
+    )
+    factory_version: Mapped[int] = mapped_column(Integer)
+    name: Mapped[str] = mapped_column(String(200))
+    start_date: Mapped[str] = mapped_column(String(10))
+    days: Mapped[int] = mapped_column(Integer)
+    kind: Mapped[str] = mapped_column(String(20), default="regular")
+    parent_id: Mapped[str | None] = mapped_column(
+        ForeignKey("planning_periods.id", ondelete="SET NULL"), index=True
+    )
+    variant_label: Mapped[str | None] = mapped_column(String(120))
+    inputs: Mapped[dict] = mapped_column(JSON)
+    revision: Mapped[int] = mapped_column(Integer, default=1)
+    dataset_id: Mapped[str | None] = mapped_column(
+        ForeignKey("master_datasets.id", ondelete="SET NULL"), index=True
+    )
+    compile_issues: Mapped[list] = mapped_column(JSON, default=list)
+    compile_load: Mapped[list] = mapped_column(JSON, default=list)
+    # Period revision the scenario was last compiled from (None = never compiled).
+    compiled_revision: Mapped[int | None] = mapped_column(Integer)
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, onupdate=utc_now
+    )

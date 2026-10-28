@@ -106,6 +106,8 @@ export interface MasterDatasetSummary {
   is_ready: boolean;
   readiness_errors: string[];
   counts: MasterDatasetCounts;
+  /** Set when a planning period compiled this scenario: it is edited through that period. */
+  owner_period_id?: string | null;
   created_at: string;
   updated_at: string;
 }

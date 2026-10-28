@@ -9,6 +9,7 @@ services:
       MNFT_ENVIRONMENT: production
       MNFT_DATABASE_URL: sqlite:////srv/data/mnft.db
       MNFT_DATABASE_AUTO_CREATE: "false"
+      MNFT_OPERATOR_API_KEY: ${MNFT_OPERATOR_API_KEY:?Set MNFT_OPERATOR_API_KEY (at least 24 characters) before docker compose up}
       MNFT_BOOTSTRAP_STANDARD_DATA: "true"
       MNFT_STANDARD_DATA_PATH: /srv/models/input/wheel_factory.json
       MNFT_CORS_ORIGINS: '["http://localhost:3000"]'
@@ -31,6 +32,7 @@ services:
       dockerfile: frontend/Dockerfile
       args:
         NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+        NEXT_PUBLIC_API_TOKEN: ${MNFT_OPERATOR_API_KEY:?Set MNFT_OPERATOR_API_KEY}
     ports:
       - "3000:3000"
     depends_on:

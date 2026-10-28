@@ -82,9 +82,11 @@ export function useMdLocation() {
 
 /* ---------- mutation errors: revision conflicts are explained, not just echoed ---------- */
 
-export function MutationNotice({ error, fallback, className }: { error: unknown; fallback: string; className?: string }) {
+/** Also used outside a scenario (periods, factory, order book): without a dataset, "load latest" reloads the page. */
+export function MutationNotice({ error, fallback, className, onReload }: { error: unknown; fallback: string; className?: string; onReload?: () => void }) {
   const { t } = useI18n();
-  const { reload } = useDataset();
+  const dataset = useContext(Ctx);
+  const reload = onReload ?? dataset?.reload ?? (() => window.location.reload());
   if (!error) return null;
   if (isRevisionConflict(error)) {
     return (

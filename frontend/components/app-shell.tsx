@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { BarChart3, CalendarClock, Compass, Factory, Menu, Plus, Search, Upload } from "lucide-react";
+import { BarChart3, CalendarClock, CalendarRange, ClipboardList, Factory, FileJson, Menu, Plus, Search, Upload } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
@@ -10,8 +10,9 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { getHealth, listMasterDatasets } from "@/lib/api";
-import { formatDateTime, formatInputName } from "@/lib/format";
+import { getHealth } from "@/lib/api";
+import { useCurrentFactory } from "@/lib/factory";
+import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { AppNavigation } from "./app-navigation";
 import { Breadcrumbs } from "./breadcrumbs";
@@ -42,27 +43,36 @@ function SearchButton({ onOpen }: { onOpen?: () => void }) {
   );
 }
 
-/** One entry point for every "create" job (Databricks "+ New"): scenario import, options, single run, plan. */
+/** One entry point for every "create" job (Databricks "+ New"): the planner's jobs first, engineering tools after. */
 function NewMenu({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useI18n();
   const router = useRouter();
-  const datasets = useQuery({ queryKey: ["master-datasets"], queryFn: () => listMasterDatasets() });
-  const ready = (datasets.data?.items ?? []).filter((dataset) => dataset.is_ready).slice(0, 3);
   const go = (href: string) => { onNavigate?.(); router.push(href); };
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild><Button size="sm" className="w-full justify-start"><Plus />{t("Tạo mới", "New")}</Button></DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64">
-        <DropdownMenuItem onSelect={() => go("/scenarios")}><Upload />{t("Kịch bản từ file JSON", "Scenario from JSON file")}</DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => go("/planning")}><BarChart3 />{t("Kế hoạch tổng hợp", "Aggregate plan")}</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => go("/periods?new=1")}><CalendarRange />{t("Kỳ lập lịch mới", "New planning period")}</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => go("/orders?import=1")}><Upload />{t("Nhập đơn hàng từ Excel", "Import orders from Excel")}</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => go("/orders?new=1")}><ClipboardList />{t("Thêm một đơn hàng", "Add one order")}</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel className="text-xs text-muted-foreground">{t("Nâng cao", "Advanced")}</DropdownMenuLabel>
+        <DropdownMenuItem onSelect={() => go("/scenarios")}><FileJson />{t("Kịch bản từ file JSON", "Scenario from JSON file")}</DropdownMenuItem>
         <DropdownMenuItem onSelect={() => go("/runs/new")}><CalendarClock />{t("Lần chạy đơn", "Single run")}</DropdownMenuItem>
-        {ready.length > 0 && <>
-          <DropdownMenuSeparator />
-          <DropdownMenuLabel className="text-xs text-muted-foreground">{t("Sinh phương án cho", "Generate options for")}</DropdownMenuLabel>
-          {ready.map((dataset) => <DropdownMenuItem key={dataset.id} onSelect={() => go(`/scenarios/${dataset.id}?tab=options&generate=1`)}><Compass /><span className="truncate">{formatInputName(dataset.name)}</span></DropdownMenuItem>)}
-        </>}
+        <DropdownMenuItem onSelect={() => go("/planning")}><BarChart3 />{t("Kế hoạch tổng hợp (v4)", "Aggregate plan (v4)")}</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function FactoryLabel({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useI18n();
+  const { factory } = useCurrentFactory();
+  return (
+    <Link href="/factory" onClick={onNavigate} className="flex items-center gap-2 rounded-md px-1 text-xs hover:text-sidebar-strong focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+      <Factory className="size-3.5 shrink-0" aria-hidden />
+      <span className="min-w-0 truncate"><span className="font-semibold text-sidebar-strong">{factory?.name ?? t("Chưa có nhà máy", "No factory yet")}</span>{factory && ` · v${factory.current_version}`}</span>
+    </Link>
   );
 }
 
@@ -88,16 +98,12 @@ function SystemStatus({ health }: { health: Health }) {
 }
 
 function SidebarBody({ onNavigate, health }: { onNavigate?: () => void; health: Health }) {
-  const { t } = useI18n();
   return (
     <div className="flex h-full min-w-0 flex-col gap-5 overflow-y-auto border-r border-sidebar-border bg-sidebar px-3 py-4 text-sidebar-foreground">
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3">
         <Brand />
         <NewMenu onNavigate={onNavigate} />
-        <div className="flex items-center gap-2 rounded-md px-1 text-xs">
-          <Factory className="size-3.5 shrink-0" aria-hidden />
-          <span className="min-w-0 truncate"><span className="font-semibold text-sidebar-strong">{t("Nhà máy linh kiện mẫu", "Sample components plant")}</span> · Asia/Ho_Chi_Minh</span>
-        </div>
+        <FactoryLabel onNavigate={onNavigate} />
         <SearchButton onOpen={onNavigate} />
       </div>
       <AppNavigation onNavigate={onNavigate} />

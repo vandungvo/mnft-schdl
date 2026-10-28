@@ -525,6 +525,8 @@ class MasterDatasetSummary(BaseModel):
     is_ready: bool
     readiness_errors: list[str]
     counts: MasterDatasetCounts
+    # The planning period that compiled this scenario (edit it there), if any.
+    owner_period_id: str | None = None
     created_at: datetime
     updated_at: datetime
 

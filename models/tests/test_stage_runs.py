@@ -167,3 +167,27 @@ class ValidatorCatches(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class StageNames(unittest.TestCase):
+    """prepare() finds the last and feeding stages by position, not by the wheel plant's names."""
+
+    def test_renamed_stages_prepare_the_same_runs(self):
+        text = (DATASET / "raw_input.json").read_text(encoding="utf-8")
+        renamed = json.loads(text.replace('"paint"', '"coat"').replace('"qc"', '"final_check"'))
+        from models.common.stage_runs.prepare import prepare
+        original, model = prepare(json.loads(text)), prepare(renamed)
+        rename = {"paint": "coat", "qc": "final_check"}
+        expected = [{**r, "stage": rename.get(r["stage"], r["stage"])} for r in original["runs"]]
+        self.assertEqual(model["runs"], expected)
+        self.assertEqual(model["reserve_options"], original["reserve_options"])
+
+    def test_shared_code_needs_one_upstream_code(self):
+        from models.common.stage_runs.prepare import PrepError, check_raw
+        raw = json.loads((DATASET / "raw_input.json").read_text(encoding="utf-8"))
+        first, second = raw["stages"][0], raw["stages"][1]
+        products = [p for p, s in raw["products"].items() if s["route"][second] == raw["products"]["F_BLACK"]["route"][second]]
+        self.assertGreater(len(products), 1, "the dataset should share a code at the second stage")
+        raw["products"]["F_BLACK"]["route"][first] = raw["products"]["R_BLACK"]["route"][first]
+        with self.assertRaisesRegex(PrepError, "made from two different codes"):
+            check_raw(raw)

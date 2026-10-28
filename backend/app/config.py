@@ -25,6 +25,12 @@ class Settings(BaseSettings):
     database_auto_create: bool = True
     bootstrap_standard_data: bool = True
     standard_data_path: Path = Path("models/input/wheel_factory.json")
+    # Sample plant (5-stage wheel line) with its order book and first period,
+    # created when no factory exists yet.
+    bootstrap_factory: bool = True
+    standard_factory_path: Path = (
+        Path(__file__).resolve().parent / "seed" / "wheel_factory_5stages.json"
+    )
     cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
     solver_max_concurrent_jobs: int = Field(default=1, ge=1, le=8)
     solver_default_budget_seconds: float = Field(default=30, gt=0, le=900)

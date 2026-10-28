@@ -1,5 +1,20 @@
 import { tr } from "./locale";
 import type {
+  BookOrder,
+  BookOrderInput,
+  FactoryConfig,
+  FactoryDetail,
+  FactorySummary,
+  OrderImportResult,
+  Outlook,
+  PeriodDetail,
+  PeriodInputs,
+  PeriodOrder,
+  PeriodState,
+  PeriodSummary,
+  CalendarException,
+} from "./factory-types";
+import type {
   ApiErrorBody,
   AuditEventList,
   HealthResponse,
@@ -176,9 +191,10 @@ export function createProductionPlan(payload: {
   });
 }
 
-export function listMasterDatasets(filters?: { limit?: number; offset?: number; search?: string }): Promise<MasterDatasetList> {
+export function listMasterDatasets(filters?: { limit?: number; offset?: number; search?: string; owner?: "all" | "standalone" | "periods" }): Promise<MasterDatasetList> {
   const params = new URLSearchParams({ limit: String(filters?.limit ?? 100), offset: String(filters?.offset ?? 0) });
   if (filters?.search?.trim()) params.set("search", filters.search.trim());
+  if (filters?.owner) params.set("owner", filters.owner);
   return apiRequest(`/master-data/datasets?${params.toString()}`);
 }
 
@@ -316,4 +332,133 @@ export async function deleteMasterDataset(id: string): Promise<void> {
   if (!response.ok) {
     throw new ApiError(tr("Không thể xóa bộ dữ liệu", "Could not delete the dataset"), "DELETE_FAILED", response.status);
   }
+}
+
+async function apiDelete(path: string): Promise<void> {
+  const response = await fetch(`${API_URL}${path}`, {
+    method: "DELETE",
+    headers: API_TOKEN ? { Authorization: `Bearer ${API_TOKEN}` } : undefined,
+  });
+  if (!response.ok) {
+    let body: ApiErrorBody | undefined;
+    try { body = (await response.json()) as ApiErrorBody; } catch { /* non-JSON error */ }
+    throw new ApiError(body?.error.message ?? tr("Không thể xóa", "Could not delete"), body?.error.code ?? "DELETE_FAILED", response.status, body?.error.request_id, body?.error.details);
+  }
+}
+
+const post = (body: unknown): RequestInit => ({ method: "POST", body: JSON.stringify(body) });
+const put = (body: unknown): RequestInit => ({ method: "PUT", body: JSON.stringify(body) });
+const enc = encodeURIComponent;
+
+/* ---------- factories ---------- */
+
+export function listFactories(): Promise<{ items: FactorySummary[]; total: number }> {
+  return apiRequest("/factories");
+}
+
+export function getFactory(id: string): Promise<FactoryDetail> {
+  return apiRequest(`/factories/${enc(id)}`);
+}
+
+export function importFactory(name: string, document: unknown): Promise<FactoryDetail> {
+  return apiRequest("/factories/import", post({ name, document, create_period: true }));
+}
+
+export function renameFactory(id: string, name: string): Promise<FactoryDetail> {
+  return apiRequest(`/factories/${enc(id)}`, { method: "PATCH", body: JSON.stringify({ name }) });
+}
+
+export function updateFactoryConfig(id: string, payload: { expected_version: number; config: FactoryConfig; effective_from: string | null; note: string | null }): Promise<FactoryDetail> {
+  return apiRequest(`/factories/${enc(id)}/config`, put(payload));
+}
+
+export function getFactoryVersion(id: string, version: number): Promise<FactoryDetail["versions"][number] & { config: FactoryConfig }> {
+  return apiRequest(`/factories/${enc(id)}/versions/${version}`);
+}
+
+export function getOutlook(id: string, start?: string, weeks = 8): Promise<Outlook> {
+  const params = new URLSearchParams({ weeks: String(weeks) });
+  if (start) params.set("start", start);
+  return apiRequest(`/factories/${enc(id)}/outlook?${params.toString()}`);
+}
+
+/* ---------- order book ---------- */
+
+export function listBookOrders(factoryId: string, filters?: { status?: string; search?: string; dueFrom?: string; dueTo?: string }): Promise<{ items: BookOrder[]; total: number }> {
+  const params = new URLSearchParams({ limit: "1000" });
+  if (filters?.status) params.set("status", filters.status);
+  if (filters?.search?.trim()) params.set("search", filters.search.trim());
+  if (filters?.dueFrom) params.set("due_from", filters.dueFrom);
+  if (filters?.dueTo) params.set("due_to", filters.dueTo);
+  return apiRequest(`/factories/${enc(factoryId)}/orders?${params.toString()}`);
+}
+
+export function createBookOrder(factoryId: string, order: BookOrderInput): Promise<BookOrder> {
+  return apiRequest(`/factories/${enc(factoryId)}/orders`, post(order));
+}
+
+export function updateBookOrder(factoryId: string, code: string, order: BookOrderInput): Promise<BookOrder> {
+  return apiRequest(`/factories/${enc(factoryId)}/orders/${enc(code)}`, put(order));
+}
+
+export function deleteBookOrder(factoryId: string, code: string): Promise<void> {
+  return apiDelete(`/factories/${enc(factoryId)}/orders/${enc(code)}`);
+}
+
+export function importBookOrders(factoryId: string, payload: { format: "csv" | "tsv" | "xlsx"; content: string; mode: "upsert" | "replace_open"; commit: boolean; skip_invalid: boolean }): Promise<OrderImportResult> {
+  return apiRequest(`/factories/${enc(factoryId)}/orders/import`, post(payload));
+}
+
+/* ---------- planning periods ---------- */
+
+export function listPeriods(factoryId?: string): Promise<{ items: PeriodSummary[]; total: number }> {
+  return apiRequest(`/periods${factoryId ? `?factory_id=${enc(factoryId)}` : ""}`);
+}
+
+export function getPeriod(id: string): Promise<PeriodDetail> {
+  return apiRequest(`/periods/${enc(id)}`);
+}
+
+export function createPeriod(payload: { factory_id: string; start_date: string; days?: number; name?: string; opening: "previous" | "zero"; pull_orders: boolean }): Promise<PeriodDetail> {
+  return apiRequest("/periods", post(payload));
+}
+
+export function renamePeriod(id: string, name: string, variantLabel?: string | null): Promise<PeriodDetail> {
+  return apiRequest(`/periods/${enc(id)}`, { method: "PATCH", body: JSON.stringify({ name, variant_label: variantLabel ?? null }) });
+}
+
+export function updatePeriodInputs(id: string, expectedRevision: number, inputs: PeriodInputs): Promise<PeriodDetail> {
+  return apiRequest(`/periods/${enc(id)}/inputs`, put({ expected_revision: expectedRevision, inputs }));
+}
+
+export function upgradePeriodFactory(id: string): Promise<PeriodDetail> {
+  return apiRequest(`/periods/${enc(id)}/upgrade-factory`, { method: "POST" });
+}
+
+export function syncPeriodBook(id: string, expectedRevision: number): Promise<PeriodDetail> {
+  return apiRequest(`/periods/${enc(id)}/book-sync?expected_revision=${expectedRevision}`, { method: "POST" });
+}
+
+export function createPeriodVariant(id: string, label: string): Promise<PeriodDetail> {
+  return apiRequest(`/periods/${enc(id)}/variants`, post({ label }));
+}
+
+export function getPeriodState(id: string, at?: string): Promise<PeriodState> {
+  return apiRequest(`/periods/${enc(id)}/state${at ? `?at=${enc(at)}` : ""}`);
+}
+
+export function reschedulePeriod(id: string, payload: { cutoff: string; label?: string | null; exceptions: CalendarException[]; add_orders: PeriodOrder[] }): Promise<PeriodDetail> {
+  return apiRequest(`/periods/${enc(id)}/reschedule`, post(payload));
+}
+
+export function closePeriod(id: string): Promise<PeriodDetail> {
+  return apiRequest(`/periods/${enc(id)}/close`, { method: "POST" });
+}
+
+export function rolloverPeriod(id: string, payload: { start_date?: string; days?: number; name?: string } = {}): Promise<PeriodDetail> {
+  return apiRequest(`/periods/${enc(id)}/rollover`, post(payload));
+}
+
+export function deletePeriod(id: string): Promise<void> {
+  return apiDelete(`/periods/${enc(id)}`);
 }

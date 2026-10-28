@@ -17,6 +17,7 @@ dist/
 # Application state
 data/*.db
 data/*.db-*
+data/backups/
 backend/data/
 
 # Node / Next.js

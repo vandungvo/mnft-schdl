@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 from time import perf_counter
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, Header, Query, Request, Response, status
 from models.common.experiment import METHODS
@@ -173,8 +173,11 @@ def list_master_datasets(
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     offset: Annotated[int, Query(ge=0)] = 0,
     search: Annotated[str | None, Query(min_length=1, max_length=200)] = None,
+    owner: Annotated[Literal["all", "standalone", "periods"], Query()] = "all",
 ) -> MasterDatasetList:
-    items, total = MasterDataService(session).list(limit=limit, offset=offset, search=search)
+    items, total = MasterDataService(session).list(
+        limit=limit, offset=offset, search=search, owner=owner
+    )
     return MasterDatasetList(items=items, total=total, limit=limit, offset=offset)
 
 
@@ -203,6 +206,7 @@ def replace_master_dataset(
             "expected_revision is required when replacing master data",
             status_code=428,
         )
+    MasterDataService(session).require_standalone(dataset_id)
     dataset = MasterDataService(session).replace(
         dataset_id, payload.input, expected_revision=payload.expected_revision
     )
@@ -498,6 +502,7 @@ def delete_machine(
     tags=["master-data"],
 )
 def delete_master_dataset(dataset_id: str, session: DbSession) -> Response:
+    MasterDataService(session).require_standalone(dataset_id)
     MasterDataService(session).delete(dataset_id)
     AuditService(session).record("master_data.deleted", "master_dataset", dataset_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

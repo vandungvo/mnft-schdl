@@ -21,7 +21,9 @@ Lát cắt đầu tiên đã hỗ trợ:
 - Lịch sử run, chi tiết KPI/metadata và 192 operation của scenario chuẩn.
 - UI quản lý dataset, kế hoạch tổng hợp, upload JSON dùng một lần, theo dõi trạng thái, KPI và Gantt theo máy.
 
-Explanation và what-if/re-scheduling sẽ được bổ sung theo [implementation plan](docs/_product/implementation-plan.md).
+- **Nhà máy, sổ đơn hàng, kỳ lập lịch** (mô hình 5 công đoạn): cấu hình nhà máy có phiên bản và ngày hiệu lực, chỉ khai báo một lần. Đơn hàng nhập một lần vào sổ (Excel/CSV/dán từ Excel, xem trước và báo lỗi từng dòng). Mỗi kỳ tự lấy đơn còn mở, lấy tồn đầu kỳ dự kiến từ lịch đã chốt kỳ trước, tự suy ra lô/lượt rồi biên dịch thành kịch bản schema 5. Có biến thể what-if, lập lại lịch sau sự cố (giữ nguyên phần đã chạy), lệnh sản xuất in/xuất CSV, đóng kỳ và chuyển kỳ. Xem [docs/_product/factory-periods.md](docs/_product/factory-periods.md).
+
+Explanation sẽ được bổ sung theo [implementation plan](docs/_product/implementation-plan.md).
 
 ## Cấu trúc thư mục
 
@@ -34,13 +36,14 @@ Explanation và what-if/re-scheduling sẽ được bổ sung theo [implementati
 | `dataset/` | Dữ liệu benchmark và bộ wheel-factory, mỗi nguồn có `SOURCE.md` |
 | `references/` | Ghi chú trích dẫn và PDF bài báo (`references/pdfs/`) |
 | `report/` | Báo cáo đồ án: bản nộp ở gốc, `progress/`, `demo/`, `figures/`, tài liệu phân tích theo chủ đề |
-| `docs/` | Tài liệu đặc tả sản phẩm (PRD, SRS, use case, kế hoạch triển khai) |
+| `docs/` | Tài liệu đặc tả sản phẩm (SRS, use case, kế hoạch triển khai) |
 
 ## Chạy bằng Docker Compose
 
-Yêu cầu Docker Engine có Compose v2:
+Yêu cầu Docker Engine có Compose v2. Container backend chạy ở chế độ `production` nên bắt buộc có API key (tối thiểu 24 ký tự); key này cũng được build vào frontend làm token gọi API:
 
 ```powershell
+$env:MNFT_OPERATOR_API_KEY = "local-dev-operator-key-change-me"
 docker compose up --build
 ```
 
@@ -52,7 +55,15 @@ Container backend chạy Alembic migration trước khi khởi động API và c
 
 ## Chạy local để phát triển
 
-Backend:
+Yêu cầu Python 3.13 và Node.js 22 trở lên (CI dùng đúng hai phiên bản này). Lệnh backend chạy từ thư mục gốc repo.
+
+Chạy nhanh cả hai bằng một lệnh (sau khi đã `pip install -r backend/requirements-dev.txt`): migrate DB, mở backend ở cửa sổ riêng, chạy frontend ở cửa sổ hiện tại; Ctrl+C tắt cả hai.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/dev.ps1
+```
+
+Hoặc chạy từng phần — backend:
 
 ```powershell
 python -m pip install -r backend/requirements-dev.txt
@@ -71,6 +82,8 @@ npm.cmd ci
 npm.cmd run dev
 ```
 
+Mở web ở <http://localhost:3000>, API docs ở <http://localhost:8000/api/v1/docs>. Ở chế độ development không cần API key.
+
 Khi database chưa có master data, backend tự kiểm tra và import `models/input/wheel_factory.json` trong lúc khởi động. Mở `/` để xem trạng thái vận hành, vào `/planning` để tạo kế hoạch tổng hợp, rồi lập lịch chi tiết từ snapshot của plan. Có thể tắt bootstrap bằng `MNFT_BOOTSTRAP_STANDARD_DATA=false` hoặc đổi nguồn bằng `MNFT_STANDARD_DATA_PATH`.
 
 ## Kiểm tra chất lượng
@@ -79,6 +92,7 @@ Khi database chưa có master data, backend tự kiểm tra và import `models/i
 python -m pytest backend/tests models/tests -q
 python -m unittest research.notebooks.test_cp_sat_cold_notebook
 cd frontend
+npm.cmd ci
 npm.cmd run lint
 npm.cmd run typecheck
 npm.cmd run build

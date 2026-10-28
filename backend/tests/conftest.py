@@ -27,6 +27,25 @@ def client(tmp_path: Path):
         solver_default_budget_seconds=1,
         solver_max_budget_seconds=10,
         log_level="WARNING",
+        bootstrap_factory=False,
+    )
+    with TestClient(create_app(settings)) as test_client:
+        yield test_client
+
+
+@pytest.fixture
+def factory_client(tmp_path: Path):
+    """App with only the sample factory (5-stage plant, order book, first period)."""
+    settings = Settings(
+        environment="test",
+        database_url=f"sqlite:///{(tmp_path / 'factory.db').as_posix()}",
+        database_auto_create=True,
+        run_jobs_inline=True,
+        solver_default_budget_seconds=1,
+        solver_max_budget_seconds=10,
+        log_level="WARNING",
+        bootstrap_standard_data=False,
+        bootstrap_factory=True,
     )
     with TestClient(create_app(settings)) as test_client:
         yield test_client

@@ -1,14 +1,14 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { CalendarClock, Compass, CornerDownLeft, Database, Languages, Moon, Plus, Search, Upload, type LucideIcon } from "lucide-react";
+import { CalendarClock, CalendarRange, Compass, CornerDownLeft, Database, Languages, Moon, Plus, Search, Upload, type LucideIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { algorithmInfo } from "@/lib/algorithms";
-import { listMasterDatasets, listScheduleRuns } from "@/lib/api";
+import { listMasterDatasets, listPeriods, listScheduleRuns } from "@/lib/api";
 import { formatDateTime, formatInputName } from "@/lib/format";
 import { NAV_ITEMS } from "@/lib/nav";
 import { cn } from "@/lib/utils";
@@ -73,18 +73,23 @@ function Palette({ onClose }: { onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
-  const datasets = useQuery({ queryKey: ["master-datasets"], queryFn: () => listMasterDatasets() });
+  const datasets = useQuery({ queryKey: ["master-datasets", "standalone"], queryFn: () => listMasterDatasets({ owner: "standalone" }) });
+  const periods = useQuery({ queryKey: ["periods", "palette"], queryFn: () => listPeriods() });
   const runs = useQuery({ queryKey: ["schedule-runs", "palette"], queryFn: () => listScheduleRuns({ limit: 6 }) });
 
   const go = useCallback((href: string) => () => { onClose(); router.push(href); }, [onClose, router]);
 
   const commands = useMemo<Command[]>(() => {
     const pages = t("Trang", "Pages");
-    const scenarios = t("Kịch bản", "Scenarios");
+    const scenarios = t("Kịch bản JSON", "JSON scenarios");
+    const periodGroup = t("Kỳ lập lịch", "Planning periods");
     const recent = t("Lần chạy gần đây", "Recent runs");
     const actions = t("Hành động", "Actions");
     return [
       ...NAV_ITEMS.map((item) => ({ id: `nav:${item.href}`, group: pages, label: t(item.label), hint: t(item.hint), icon: item.icon, run: go(item.href) })),
+      ...(periods.data?.items ?? []).filter((period) => period.status !== "closed").map((period) => ({ id: `period:${period.id}`, group: periodGroup, label: period.variant_label ? `${period.name} · ${period.variant_label}` : period.name, hint: `${period.start_date} → ${period.end_date}`, icon: CalendarRange, keywords: `${period.name} ${period.variant_label ?? ""} ky`, run: go(`/periods/${period.id}`) })),
+      { id: "act:new-period", group: actions, label: t("Lập lịch kỳ mới", "Plan a new period"), icon: Plus, keywords: "period ky moi", run: go("/periods?new=1") },
+      { id: "act:import-orders", group: actions, label: t("Nhập đơn hàng từ Excel", "Import orders from Excel"), icon: Upload, keywords: "orders excel csv don hang", run: go("/orders?import=1") },
       ...(datasets.data?.items ?? []).flatMap((dataset) => [
         { id: `desk:${dataset.id}`, group: scenarios, label: formatInputName(dataset.name), hint: t(`Phương án lịch · rev ${dataset.revision}`, `Schedule options · rev ${dataset.revision}`), icon: Compass, keywords: dataset.name, run: go(`/scenarios/${dataset.id}?tab=options`) },
         { id: `data:${dataset.id}`, group: scenarios, label: `${formatInputName(dataset.name)} — ${t("dữ liệu", "data")}`, hint: t(`${dataset.counts.orders} đơn · ${dataset.counts.machines} máy`, `${dataset.counts.orders} orders · ${dataset.counts.machines} machines`), icon: Database, keywords: dataset.name, run: go(`/scenarios/${dataset.id}?tab=products`) },
@@ -95,7 +100,7 @@ function Palette({ onClose }: { onClose: () => void }) {
       { id: "act:theme", group: actions, label: resolvedTheme === "dark" ? t("Chuyển sang giao diện sáng", "Switch to light theme") : t("Chuyển sang giao diện tối", "Switch to dark theme"), icon: Moon, keywords: "theme dark light giao dien", run: () => { setTheme(resolvedTheme === "dark" ? "light" : "dark"); onClose(); } },
       { id: "act:lang", group: actions, label: locale === "vi" ? "Switch to English" : "Chuyển sang tiếng Việt", icon: Languages, keywords: "language ngon ngu english tieng viet", run: () => { setLocale(locale === "vi" ? "en" : "vi"); onClose(); } },
     ];
-  }, [datasets.data, runs.data, go, t, locale, setLocale, resolvedTheme, setTheme, onClose]);
+  }, [datasets.data, periods.data, runs.data, go, t, locale, setLocale, resolvedTheme, setTheme, onClose]);
 
   const results = useMemo(() => {
     const needle = fold(query.trim());

@@ -13,8 +13,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from .api.factory_routes import router as factory_router
 from .api.routes import router
-from .bootstrap import bootstrap_standard_data
+from .bootstrap import bootstrap_factory, bootstrap_standard_data
 from .config import Settings, get_settings
 from .database import Base, create_database_engine, create_session_factory
 from .engine.adapter import SchedulingEngine
@@ -51,6 +52,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         with session_factory() as session:
             if runtime_settings.bootstrap_standard_data:
                 bootstrap_standard_data(session, runtime_settings.standard_data_path)
+            if runtime_settings.bootstrap_factory:
+                bootstrap_factory(session, runtime_settings.standard_factory_path)
             interrupted_ids = ScheduleRunRepository(session).recover_interrupted()
         for run_id in interrupted_ids:
             dispatcher.submit(run_id)
@@ -232,6 +235,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
 
     app.include_router(router, prefix=runtime_settings.api_prefix)
+    app.include_router(factory_router, prefix=runtime_settings.api_prefix)
     return app
 
 

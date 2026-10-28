@@ -32,7 +32,8 @@ export default function ScenariosPage() {
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
   const [ready, setReady] = useState<string | null>(null);
-  const query = useQuery({ queryKey: ["master-datasets"], queryFn: () => listMasterDatasets() });
+  // Scenarios a planning period compiled live with their period; this list is for standalone JSON datasets.
+  const query = useQuery({ queryKey: ["master-datasets", "standalone"], queryFn: () => listMasterDatasets({ owner: "standalone" }) });
   // Shares the run-list cache key so the run counts cost nothing extra when switching pages.
   const runs = useQuery({ queryKey: ["schedule-runs", "all"], queryFn: () => listAllScheduleRuns(), refetchInterval: 15_000 });
   const mutation = useMutation({ mutationFn: importMasterDataset, onSuccess: async (dataset) => { await queryClient.invalidateQueries({ queryKey: ["master-datasets"] }); showToast(t(`Import thành công: ${formatInputName(dataset.name)} (revision ${dataset.revision}).`, `Import succeeded: ${formatInputName(dataset.name)} (revision ${dataset.revision}).`), "success"); router.push(`/scenarios/${dataset.id}`); } });
@@ -76,7 +77,7 @@ export default function ScenariosPage() {
 
   return (
     <div {...dropProps} className="relative">
-      <PageHeader title={t("Kịch bản", "Scenarios")} description={t("Mỗi kịch bản là một bộ dữ liệu nhà máy có revision, cùng các phương án lịch và quyết định trên nó.", "Each scenario is a revisioned factory dataset with the schedule options and decisions made on it.")}
+      <PageHeader title={t("Kịch bản JSON", "JSON scenarios")} description={<>{t("Bộ dữ liệu nhập nguyên khối từ file JSON (schema 4 hoặc 5), dùng cho thực nghiệm và so sánh thuật toán. Lập lịch sản xuất hằng kỳ nên dùng ", "Whole datasets imported from JSON files (schema 4 or 5), for experiments and algorithm comparisons. For day-to-day production scheduling use ")}<Link href="/periods" className="font-medium text-primary hover:underline">{t("Kỳ lập lịch", "Planning periods")}</Link>{t(" — chỉ cần nhập đơn hàng.", " — they only need orders.")}</>}
         actions={<>
           <input ref={inputRef} className="sr-only" type="file" accept="application/json,.json" tabIndex={-1} aria-hidden disabled={mutation.isPending} onChange={(event) => void importFile(event.target.files?.[0])} />
           <Button disabled={mutation.isPending} onClick={pick}>{mutation.isPending ? <Loader2 className="animate-spin" /> : <Upload />}{importLabel}</Button>

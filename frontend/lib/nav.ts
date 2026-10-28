@@ -1,4 +1,4 @@
-import { BarChart3, CalendarClock, Layers, LayoutGrid, type LucideIcon } from "lucide-react";
+import { BarChart3, CalendarClock, CalendarRange, ClipboardList, Factory, FlaskConical, LayoutGrid, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
   href: string;
@@ -13,20 +13,29 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-/* Grouped by the planner's job. One object, one page: a scenario holds its data, options, schedule and decision. */
+/* Grouped by how often the data changes: the planner's daily loop (periods, orders) first, the plant set-up
+   (changes a few times a year) next, research/engineering tools last. */
 export const NAV_GROUPS: NavGroup[] = [
   {
     label: ["Điều độ", "Schedule"],
     items: [
-      { href: "/", label: ["Tổng quan", "Overview"], hint: ["Việc cần làm và tình trạng hệ thống", "What needs doing and system status"], icon: LayoutGrid },
-      { href: "/scenarios", label: ["Kịch bản", "Scenarios"], hint: ["Dữ liệu nhà máy, phương án lịch, so sánh và chốt", "Factory data, schedule options, comparison and commit"], icon: Layers },
-      { href: "/runs", label: ["Lần chạy", "Runs"], hint: ["Hàng đợi solver, lỗi và chi tiết từng lịch", "Solver queue, failures and each schedule's details"], icon: CalendarClock },
+      { href: "/", label: ["Hôm nay", "Today"], hint: ["Việc cần làm của kỳ hiện tại", "What needs doing in the current period"], icon: LayoutGrid },
+      { href: "/periods", label: ["Kỳ lập lịch", "Planning periods"], hint: ["Chuẩn bị, sinh phương án, chốt và thực hiện từng kỳ", "Prepare, generate, commit and run each period"], icon: CalendarRange },
+      { href: "/orders", label: ["Sổ đơn hàng", "Order book"], hint: ["Nhập đơn một lần, theo dõi tải theo tuần", "Enter orders once, watch weekly load"], icon: ClipboardList },
     ],
   },
   {
-    label: ["Chuẩn bị", "Prepare"],
+    label: ["Dữ liệu nền", "Plant set-up"],
     items: [
-      { href: "/planning", label: ["Kế hoạch tổng hợp", "Aggregate planning"], hint: ["Cân đối nhu cầu với công suất theo kỳ", "Balance demand against capacity per period"], icon: BarChart3 },
+      { href: "/factory", label: ["Nhà máy", "Factory"], hint: ["Sản phẩm, máy, ca, lịch nghỉ, chính sách — có phiên bản", "Products, machines, shifts, calendar, policies — versioned"], icon: Factory },
+    ],
+  },
+  {
+    label: ["Nâng cao", "Advanced"],
+    items: [
+      { href: "/scenarios", label: ["Kịch bản JSON", "JSON scenarios"], hint: ["Bộ dữ liệu nhập từ file, dùng cho thực nghiệm", "Datasets imported from files, for experiments"], icon: FlaskConical },
+      { href: "/runs", label: ["Lần chạy", "Runs"], hint: ["Hàng đợi solver, lỗi và chi tiết từng lịch", "Solver queue, failures and each schedule's details"], icon: CalendarClock },
+      { href: "/planning", label: ["Kế hoạch tổng hợp (v4)", "Aggregate planning (v4)"], hint: ["Cân đối nhu cầu với công suất cho kịch bản 4 công đoạn", "Demand vs capacity for 4-stage scenarios"], icon: BarChart3 },
     ],
   },
 ];

@@ -664,9 +664,13 @@ class MasterDataService:
         )
 
     def list(
-        self, *, limit: int, offset: int, search: str | None = None
+        self, *, limit: int, offset: int, search: str | None = None, owner: str = "all"
     ) -> tuple[list[MasterDatasetSummary], int]:
         filters = []
+        if owner == "standalone":
+            filters.append(MasterDataset.owner_period_id.is_(None))
+        elif owner == "periods":
+            filters.append(MasterDataset.owner_period_id.is_not(None))
         if search:
             filters.append(func.lower(MasterDataset.name).like(f"%{search.strip().lower()}%"))
         datasets = list(
@@ -724,6 +728,17 @@ class MasterDataService:
         self.session.delete(dataset)
         self.session.commit()
 
+    def require_standalone(self, dataset_id: str) -> None:
+        """A scenario compiled by a planning period changes only through that period."""
+        dataset = self.session.get(MasterDataset, dataset_id)
+        if dataset is not None and dataset.owner_period_id:
+            raise ApplicationError(
+                "SCENARIO_OWNED_BY_PERIOD",
+                "This scenario belongs to a planning period; edit or delete the period instead",
+                status_code=409,
+                details={"period_id": dataset.owner_period_id},
+            )
+
     def _get(self, dataset_id: str) -> MasterDataset:
         dataset = self.session.scalar(self._dataset_query().where(MasterDataset.id == dataset_id))
         if dataset is None:
@@ -766,6 +781,7 @@ class MasterDataService:
             is_ready=is_ready,
             readiness_errors=errors,
             counts=MasterDataService._counts(dataset),
+            owner_period_id=dataset.owner_period_id,
             created_at=dataset.created_at,
             updated_at=dataset.updated_at,
         )

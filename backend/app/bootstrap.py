@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 from pathlib import Path
 
@@ -8,7 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .master_data import MasterDataService
-from .models import MasterDataset
+from .models import Factory, MasterDataset
 from .schemas import MasterDatasetDetail, SchedulingInput
 
 logger = logging.getLogger(__name__)
@@ -43,3 +44,21 @@ def bootstrap_standard_data(
         extra={"dataset_id": dataset.id, "dataset_name": dataset.name},
     )
     return dataset
+
+
+def bootstrap_factory(session: Session, source_path: Path) -> str | None:
+    """Create the sample factory (plant, order book, first period) when there is none."""
+    if session.scalar(select(func.count()).select_from(Factory)):
+        return None
+    try:
+        document = json.loads(source_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise RuntimeError(f"Cannot read the sample factory at '{source_path}'") from exc
+    # Imported lazily: the routes module wires every service, bootstrap must stay light.
+    from .api.factory_routes import import_factory_document
+
+    factory_id = import_factory_document(
+        session, "Nhà máy vành xe (mẫu)", document, create_period=True
+    )
+    logger.info("Imported sample factory", extra={"factory_id": factory_id})
+    return factory_id
