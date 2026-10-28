@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lịch chi tiết — Wireframe</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] },
+    colors: { brand: { 50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',900:'#1e3a8a' } }
+  } } }
+</script>
+<style>
+  html,body{height:100%;}
+  ::-webkit-scrollbar{width:8px;height:8px;} ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px;}
+  .hatch{background-image:repeating-linear-gradient(45deg, rgba(100,116,139,.35) 0 4px, transparent 4px 8px);}
+  .hatch-red{background-image:repeating-linear-gradient(45deg, rgba(225,29,72,.45) 0 4px, transparent 4px 8px);}
+  .block{cursor:pointer; transition:transform .1s, box-shadow .1s;}
+  .block:hover{transform:translateY(-1px); box-shadow:0 2px 6px rgba(0,0,0,.15); z-index:10;}
+</style>
+</head>
+<body class="font-sans text-slate-800 bg-slate-100">
+
+<div class="flex h-screen overflow-hidden">
+
+  <aside class="w-64 shrink-0 bg-slate-900 text-slate-200 flex flex-col">
+    <div class="px-5 py-5 border-b border-slate-800">
+      <a href="index.html" class="text-xs text-slate-400 hover:text-white">◀ Danh sách wireframe</a>
+      <h1 class="mt-2 font-bold text-white leading-tight text-sm">Explainable<br>Scheduling Agent</h1>
+      <p class="text-[11px] text-slate-500 mt-1">Nhà máy bánh xe — demo nội bộ</p>
+    </div>
+    <nav class="flex-1 py-4 space-y-1 px-3 text-sm">
+      <a href="01-order-entry.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">📥 Đơn hàng &amp; Tồn kho</a>
+      <a href="02-aggregate-gantt.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">🗓️ Kế hoạch tổng hợp</a>
+      <a href="03-detailed-gantt.html" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-600 text-white font-medium">⏱️ Lịch chi tiết</a>
+      <a href="04-explain-panel.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">💡 Vì sao?</a>
+      <a href="05-counterfactual.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">🔀 Giả lập kịch bản</a>
+      <a href="06-kpi-dashboard.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">📊 Dashboard KPI</a>
+    </nav>
+    <div class="px-4 py-4 border-t border-slate-800 text-[11px] text-slate-500">
+      Run gần nhất: <span class="text-slate-300">#run-2026-09-17-02</span><br>
+      Quản đốc: <span class="text-slate-300">Nguyễn Văn A</span>
+    </div>
+  </aside>
+
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <header class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shrink-0">
+      <div>
+        <p class="text-xs text-slate-400">Production Scheduling — Tầng 2</p>
+        <h2 class="font-bold text-slate-900">Lịch chi tiết theo máy/ca — Ngày 3 (Thứ 4, 16/09/2026)</h2>
+      </div>
+      <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold px-3 py-1.5 border border-amber-200">⚠ WIREFRAME</span>
+    </header>
+    <div class="bg-amber-50 text-amber-900 text-xs px-6 py-2 border-b border-amber-200 shrink-0">
+      Wireframe tĩnh minh hoạ giao diện — không phải code sản xuất. Bố cục/màu sắc lấy cảm hứng từ dữ liệu <code>model/detailed_day_schedule.py</code> (MACHINES, ELIGIBLE, CHANGEOVER). Kéo/zoom chỉ mang tính thẩm mỹ, chưa có tương tác thật.
+    </div>
+
+    <!-- Toolbar -->
+    <div class="bg-white border-b border-slate-200 px-6 py-2.5 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-2 text-sm">
+        <button class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-slate-500 hover:bg-slate-50">◀</button>
+        <span class="font-semibold text-slate-700 px-1">Ngày 3 / 10</span>
+        <button class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-slate-500 hover:bg-slate-50">▶</button>
+        <button class="ml-2 px-3 py-1.5 rounded-lg border border-brand-300 text-brand-700 bg-brand-50 text-xs font-semibold">Hôm nay</button>
+      </div>
+      <div class="flex items-center gap-3 text-sm">
+        <div class="flex items-center rounded-lg border border-slate-300 overflow-hidden text-xs">
+          <button class="px-3 py-1.5 bg-slate-100 font-semibold text-slate-700">Theo máy</button>
+          <button class="px-3 py-1.5 text-slate-500 hover:bg-slate-50">Theo sản phẩm</button>
+        </div>
+        <div class="flex items-center gap-1">
+          <button class="w-8 h-8 rounded-lg border border-slate-300 text-slate-500 hover:bg-slate-50 flex items-center justify-center">−</button>
+          <span class="text-xs text-slate-400 w-10 text-center">100%</span>
+          <button class="w-8 h-8 rounded-lg border border-slate-300 text-slate-500 hover:bg-slate-50 flex items-center justify-center">+</button>
+        </div>
+      </div>
+    </div>
+
+    <main class="flex-1 overflow-y-auto p-6 space-y-4">
+
+      <!-- Legend -->
+      <div class="flex flex-wrap items-center gap-4 text-xs text-slate-500">
+        <span class="font-semibold text-slate-600">Chú giải:</span>
+        <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-sky-500"></span>Loại A</span>
+        <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-violet-500"></span>Loại B</span>
+        <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500"></span>Loại C</span>
+        <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded hatch bg-slate-100 border border-slate-300"></span>Đổi khuôn (changeover)</span>
+        <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-slate-100 border border-dashed border-slate-300"></span>Máy tắt / nhàn rỗi</span>
+        <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded hatch-red bg-rose-50 border border-rose-300"></span>Tăng ca</span>
+        <span class="ml-auto text-slate-400">👆 Nhấp vào 1 khối để xem giải thích "Vì sao?"</span>
+      </div>
+
+      <!-- Gantt -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+
+        <!-- time axis -->
+        <div class="flex text-xs">
+          <div class="w-32 shrink-0"></div>
+          <div class="flex-1 relative h-6">
+            <div class="absolute inset-y-0" style="left:0%; width:32%; background:#f8fafc;"></div>
+            <div class="absolute inset-y-0" style="left:64%; width:32%; background:#f8fafc;"></div>
+            <div class="absolute top-0 text-slate-400" style="left:0%">0h</div>
+            <div class="absolute top-0 text-slate-400" style="left:16%">4h</div>
+            <div class="absolute top-0 text-slate-400" style="left:32%">8h</div>
+            <div class="absolute top-0 text-slate-400" style="left:48%">12h</div>
+            <div class="absolute top-0 text-slate-400" style="left:64%">16h</div>
+            <div class="absolute top-0 text-slate-400" style="left:80%">20h</div>
+            <div class="absolute top-0 font-semibold text-rose-500" style="left:96%">24h</div>
+            <div class="absolute inset-y-0 border-l-2 border-dashed border-rose-300" style="left:96%"></div>
+            <div class="absolute inset-y-0" style="left:96%; width:4%; background:repeating-linear-gradient(45deg, rgba(225,29,72,.12) 0 4px, transparent 4px 8px);"></div>
+          </div>
+        </div>
+        <div class="flex text-[10px] text-slate-400 mb-2">
+          <div class="w-32 shrink-0"></div>
+          <div class="flex-1 relative h-4">
+            <div class="absolute" style="left:14%">Ca 1 (0–8h)</div>
+            <div class="absolute" style="left:46%">Ca 2 (8–16h)</div>
+            <div class="absolute" style="left:78%">Ca 3 (16–24h)</div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+
+          <!-- Cast1 -->
+          <div class="flex items-center">
+            <div class="w-32 shrink-0 text-sm font-semibold text-slate-700">Cast1 <span class="block text-[10px] font-normal text-slate-400">Đúc</span></div>
+            <div class="flex-1 relative h-11 bg-slate-50 rounded-lg overflow-visible">
+              <div class="block absolute top-1 bottom-1 rounded-md bg-amber-500 text-white text-[11px] font-semibold flex items-center justify-center" style="left:0%; width:36%;" title="ORD-2026-047 · Loại C · lot 20 · 00:00–09:00">C-047 (20)</div>
+              <div class="block absolute top-1 bottom-1 rounded-md hatch bg-slate-200 border border-slate-300" style="left:36%; width:2%;" title="Đổi khuôn C→A (~0.5h)"></div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-sky-500 text-white text-[11px] font-semibold flex items-center justify-center" style="left:38%; width:24%;" title="ORD-2026-042 · Loại A · lot 15 · 09:30–15:30">A-042 (15)</div>
+              <div class="block absolute top-1 bottom-1 rounded-md hatch bg-slate-200 border border-slate-300" style="left:62%; width:2%;" title="Đổi khuôn A→B (~0.5h)"></div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-violet-500 text-white text-[11px] font-semibold flex items-center justify-center" style="left:64%; width:32%;" title="ORD-2026-046 · Loại B · lot 10 · 16:00–24:00">B-046 (10)</div>
+              <div class="block absolute top-1 bottom-1 rounded-md hatch-red bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center" style="left:96%; width:4%;" title="Tăng ca +0.75h — dồn lô loại C ngày cao điểm">+OT</div>
+            </div>
+          </div>
+
+          <!-- Cast2 -->
+          <div class="flex items-center">
+            <div class="w-32 shrink-0 text-sm font-semibold text-slate-700">Cast2 <span class="block text-[10px] font-normal text-slate-400">Đúc</span></div>
+            <div class="flex-1 relative h-11 bg-slate-50 rounded-lg overflow-visible">
+              <div class="block absolute top-1 bottom-1 rounded-md bg-sky-500 text-white text-[11px] font-semibold flex items-center justify-center" style="left:0%; width:16%;" title="ORD-2026-041 · Loại A · lot 10 · 00:00–04:00">A-041 (10)</div>
+              <div class="block absolute top-1 bottom-1 rounded-md hatch bg-slate-200 border border-slate-300" style="left:16%; width:2%;" title="Đổi khuôn A→B (~0.5h)"></div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-violet-500 text-white text-[11px] font-semibold flex items-center justify-center" style="left:18%; width:24%;" title="ORD-2026-045 · Loại B · lot 10 · 04:30–10:30">B-045 (10)</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-slate-100 border border-dashed border-slate-300 text-slate-400 text-[10px] flex items-center justify-center" style="left:42%; width:54%;" title="Không đủ việc bù lấp ca — solver chọn KHÔNG bật thêm">Máy tắt — không đủ việc lấp ca</div>
+            </div>
+          </div>
+
+          <!-- CNC1 -->
+          <div class="flex items-center">
+            <div class="w-32 shrink-0 text-sm font-semibold text-slate-700">CNC1 <span class="block text-[10px] font-normal text-slate-400">Gia công CNC</span></div>
+            <div class="flex-1 relative h-11 bg-slate-50 rounded-lg overflow-visible">
+              <div class="block absolute top-1 bottom-1 rounded-md bg-amber-500 text-white text-[11px] font-semibold flex items-center justify-center" style="left:36%; width:16%;" title="ORD-2026-047 · Loại C · lot 20 · 09:00–13:00 · chờ Cast1 xong lúc 9:00">C-047 (20)</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-violet-500 text-white text-[11px] font-semibold flex items-center justify-center" style="left:52%; width:12%;" title="ORD-2026-046 · Loại B · lot 10 · 13:00–16:00">B-046 (10)</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-sky-500 text-white text-[11px] font-semibold flex items-center justify-center" style="left:64%; width:12%;" title="ORD-2026-042 · Loại A · lot 15 · 16:00–19:00">A-042 (15)</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-slate-100 border border-dashed border-slate-300 text-slate-400 text-[10px] flex items-center justify-center" style="left:0%; width:36%;" title="Chờ Cast1 hoàn thành lô đầu tiên">chờ đúc xong</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-slate-100 border border-dashed border-slate-300 text-slate-400 text-[10px] flex items-center justify-center" style="left:76%; width:20%;" title="Nhàn rỗi — hết việc trong ngày">nhàn rỗi</div>
+            </div>
+          </div>
+
+          <!-- CNC2 -->
+          <div class="flex items-center">
+            <div class="w-32 shrink-0 text-sm font-semibold text-slate-700">CNC2 <span class="block text-[10px] font-normal text-slate-400">Gia công CNC</span></div>
+            <div class="flex-1 relative h-11 bg-slate-50 rounded-lg overflow-visible">
+              <div class="block absolute top-1 bottom-1 rounded-md bg-slate-100 border border-dashed border-slate-300 text-slate-400 text-[10px] flex items-center justify-center" style="left:0%; width:64%;" title="Không có lô loại A/C nào cần gán thêm">Máy tắt — không đủ việc lấp ca</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-sky-500 text-white text-[11px] font-semibold flex items-center justify-center" style="left:64%; width:8%;" title="ORD-2026-041 · Loại A · lot dự phòng 5 · 16:00–18:00">A-041 (5)</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-slate-100 border border-dashed border-slate-300 text-slate-400 text-[10px] flex items-center justify-center" style="left:72%; width:24%;" title="Hết việc — máy tắt sớm">nhàn rỗi</div>
+            </div>
+          </div>
+
+          <!-- Paint1 -->
+          <div class="flex items-center">
+            <div class="w-32 shrink-0 text-sm font-semibold text-slate-700">Paint1 <span class="block text-[10px] font-normal text-slate-400">Sơn</span></div>
+            <div class="flex-1 relative h-11 bg-slate-50 rounded-lg overflow-visible">
+              <div class="block absolute top-1 bottom-1 rounded-md bg-slate-100 border border-dashed border-slate-300 text-slate-400 text-[10px] flex items-center justify-center" style="left:0%; width:52%;" title="Chờ CNC1 hoàn thành lô C">chờ CNC xong</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-amber-500 text-white text-[11px] font-semibold flex items-center justify-center" style="left:52%; width:12%;" title="ORD-2026-047 · Loại C · 13:00–16:00">C-047</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-slate-100 border border-dashed border-slate-300 text-slate-400 text-[10px] flex items-center justify-center" style="left:64%; width:12%;" title="Chờ CNC1 hoàn thành lô A">chờ</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-sky-500 text-white text-[11px] font-semibold flex items-center justify-center" style="left:76%; width:8%;" title="ORD-2026-042 · Loại A · 19:00–21:00">A-042</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-slate-100 border border-dashed border-slate-300 text-slate-400 text-[10px] flex items-center justify-center" style="left:84%; width:12%;" title="Hết việc">nhàn rỗi</div>
+            </div>
+          </div>
+
+          <!-- Paint2 -->
+          <div class="flex items-center">
+            <div class="w-32 shrink-0 text-sm font-semibold text-slate-700">Paint2 <span class="block text-[10px] font-normal text-slate-400">Sơn</span></div>
+            <div class="flex-1 relative h-11 bg-slate-50 rounded-lg overflow-visible">
+              <div class="block absolute top-1 bottom-1 rounded-md bg-slate-100 border border-dashed border-slate-300 text-slate-400 text-[10px] flex items-center justify-center" style="left:0%; width:64%;" title="Chờ CNC1 hoàn thành lô B">chờ CNC xong</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-violet-500 text-white text-[11px] font-semibold flex items-center justify-center" style="left:64%; width:8%;" title="ORD-2026-046 · Loại B · 16:00–18:00">B-046</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-slate-100 border border-dashed border-slate-300 text-slate-400 text-[10px] flex items-center justify-center" style="left:72%; width:24%;" title="Hết việc">nhàn rỗi</div>
+            </div>
+          </div>
+
+          <!-- QC1 -->
+          <div class="flex items-center">
+            <div class="w-32 shrink-0 text-sm font-semibold text-slate-700">QC1 <span class="block text-[10px] font-normal text-slate-400">Kiểm tra CL</span></div>
+            <div class="flex-1 relative h-11 bg-slate-50 rounded-lg overflow-visible">
+              <div class="block absolute top-1 bottom-1 rounded-md bg-slate-100 border border-dashed border-slate-300 text-slate-400 text-[10px] flex items-center justify-center" style="left:0%; width:64%;" title="Chờ Paint xong lô đầu tiên">chờ sơn xong</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-amber-500 text-white text-[11px] font-semibold flex items-center justify-center" style="left:64%; width:6%;" title="ORD-2026-047 · Loại C · 16:00–17:30">C-047</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-violet-500 text-white text-[11px] font-semibold flex items-center justify-center" style="left:72%; width:4%;" title="ORD-2026-046 · Loại B · 18:00–19:00">B-046</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-sky-500 text-white text-[11px] font-semibold flex items-center justify-center" style="left:84%; width:4%;" title="ORD-2026-042 · Loại A · 21:00–22:00">A-042</div>
+              <div class="block absolute top-1 bottom-1 rounded-md bg-slate-100 border border-dashed border-slate-300 text-slate-400 text-[10px] flex items-center justify-center" style="left:88%; width:12%;" title="Hết việc">nhàn rỗi</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 text-xs text-slate-400 px-1">
+        <span>💡 Gợi ý: khối <span class="font-semibold text-rose-500">"+OT" (đỏ)</span> trên Cast1 chính là ví dụ dùng trong màn hình <a href="04-explain-panel.html" class="text-brand-600 hover:underline font-semibold">Panel "Vì sao?"</a>.</span>
+      </div>
+
+    </main>
+  </div>
+</div>
+</body>
+</html>
