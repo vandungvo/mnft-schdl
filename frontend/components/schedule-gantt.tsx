@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState, type KeyboardEvent, type MouseEvent } from "react";
+import { useMemo, useState, type KeyboardEvent, type MouseEvent, type PointerEvent } from "react";
 
 import { useI18n } from "@/components/i18n-provider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { activeShifts, type Delivery } from "@/lib/decision";
 import { formatClock, formatDay, formatDuration, formatHour, productLabel, stageLabel } from "@/lib/format";
 import { plantOf } from "@/lib/plant";
+import { cn } from "@/lib/utils";
 import type { AnySchedulingInput, ScheduleOperation } from "@/lib/types";
 
 const KNOWN_PRODUCT_COLORS: Record<string, [string, string]> = {
@@ -28,7 +29,23 @@ interface Props {
   horizon: number;
   deliveries?: Delivery[];
   compare?: { operations: ScheduleOperation[]; label: string } | null;
+  /** Edit mode: bars can be selected and dragged to another machine row or time. */
+  edit?: GanttEdit;
 }
+
+export interface GanttEdit {
+  /** Run (op.lot) being edited. */
+  selected: string | null;
+  /** Runs whose machine or start differ from the schedule being edited. */
+  changed: Set<string>;
+  onSelect: (lot: string) => void;
+  /** A bar dropped on a machine row, at the minute its block would start. */
+  onDrop: (lot: string, machine: string, minute: number) => void;
+  canDrop: (lot: string, machine: string) => boolean;
+}
+
+const SNAP = 15;
+const DRAG_THRESHOLD = 4;
 
 const LEFT = 132;
 const ROW = 42;
@@ -36,9 +53,10 @@ const TOP = 46;
 const SHIP = 60;
 const TICKS = [60, 120, 240, 360, 480, 720, 1440];
 
-export function ScheduleGantt({ operations, input, origin, horizon, deliveries, compare }: Props) {
+export function ScheduleGantt({ operations, input, origin, horizon, deliveries, compare, edit }: Props) {
   const { t } = useI18n();
   const [zoom, setZoom] = useState(1);
+  const [drag, setDrag] = useState<{ op: ScheduleOperation; row: number; x0: number; y0: number; dx: number; dy: number } | null>(null);
   const [highlight, setHighlight] = useState<string | null>(null);
   const [focusId, setFocusId] = useState<number | null>(null);
   const [tip, setTip] = useState<{ x: number; y: number; title: string; lines: string[] } | null>(null);
@@ -110,7 +128,8 @@ export function ScheduleGantt({ operations, input, origin, horizon, deliveries, 
   function onKey(event: KeyboardEvent, op: ScheduleOperation) {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      setHighlight((current) => (current === lineOf(op) ? null : lineOf(op)));
+      if (edit) edit.onSelect(op.lot);
+      else setHighlight((current) => (current === lineOf(op) ? null : lineOf(op)));
     }
     if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
       event.preventDefault();
@@ -124,6 +143,30 @@ export function ScheduleGantt({ operations, input, origin, horizon, deliveries, 
 
   const ticks: number[] = [];
   for (let t = 0; t <= days * 1440; t += tick) ticks.push(t);
+
+  // Drag: where the bar would land (row under the pointer, start snapped to 15 minutes).
+  const target = drag ? (() => {
+    const row = Math.min(machines.length - 1, Math.max(0, drag.row + Math.round(drag.dy / ROW)));
+    const minute = Math.max(0, Math.round((drag.op.block_start + drag.dx / scale) / SNAP) * SNAP);
+    const machine = machines[row];
+    return { row, minute, machine, ok: edit?.canDrop(drag.op.lot, machine) ?? false };
+  })() : null;
+  const dragging = Boolean(drag && Math.abs(drag.dx) + Math.abs(drag.dy) >= DRAG_THRESHOLD);
+  function startDrag(event: PointerEvent<SVGGElement>, op: ScheduleOperation) {
+    if (!edit || event.button !== 0) return;
+    event.currentTarget.ownerSVGElement?.setPointerCapture(event.pointerId);
+    setTip(null);
+    setDrag({ op, row: machines.indexOf(op.machine), x0: event.clientX, y0: event.clientY, dx: 0, dy: 0 });
+  }
+  function moveDrag(event: PointerEvent<SVGSVGElement>) {
+    if (drag) setDrag({ ...drag, dx: event.clientX - drag.x0, dy: event.clientY - drag.y0 });
+  }
+  function endDrag() {
+    if (!drag || !edit) return;
+    if (!dragging) edit.onSelect(drag.op.lot);
+    else if (target?.ok && (target.machine !== drag.op.machine || target.minute !== drag.op.block_start)) edit.onDrop(drag.op.lot, target.machine, target.minute);
+    setDrag(null);
+  }
 
   return (
     <div className="min-w-0">
@@ -144,7 +187,9 @@ export function ScheduleGantt({ operations, input, origin, horizon, deliveries, 
         </ToggleGroup>
       </div>
       <div className="overflow-x-auto border-t bg-card" onMouseLeave={() => setTip(null)}>
-        <svg width={LEFT + plotWidth + 16} height={height} role="group" aria-label={t(`Biểu đồ Gantt: ${operations.length} lượt trên ${machines.length} máy`, `Gantt chart: ${operations.length} operations on ${machines.length} machines`)} className={highlight ? "viz block is-dimmed" : "viz block"}>
+        <svg width={LEFT + plotWidth + 16} height={height} role="group" aria-label={t(`Biểu đồ Gantt: ${operations.length} lượt trên ${machines.length} máy`, `Gantt chart: ${operations.length} operations on ${machines.length} machines`)}
+          className={cn("viz block", highlight && "is-dimmed", edit && "is-editable", dragging && "is-dragging")}
+          onPointerMove={edit ? moveDrag : undefined} onPointerUp={edit ? endDrag : undefined} onPointerCancel={() => setDrag(null)}>
           <defs>
             <pattern id="gantt-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
               <rect width="6" height="6" style={{ fill: "var(--setup)" }} />
@@ -189,12 +234,13 @@ export function ScheduleGantt({ operations, input, origin, horizon, deliveries, 
               const maintEnd = prep + op.maintenance_minutes;
               const width = Math.max(2, x(op.end) - x(op.start) - 1);
               const on = highlight && lineOf(op) === highlight;
-              return <g key={op.id} data-op={op.id} className={on ? "g-bar is-on" : "g-bar"} tabIndex={op.id === activeId ? 0 : -1} role="button"
+              return <g key={op.id} data-op={op.id} className={cn("g-bar", on && "is-on", edit?.selected === op.lot && "is-selected", edit?.changed.has(op.lot) && "is-changed", drag?.op.id === op.id && dragging && "is-lifted")} tabIndex={op.id === activeId ? 0 : -1} role="button"
                 aria-label={t(`${op.lot} trên ${op.machine}, ${formatClock(origin, op.start)} đến ${formatClock(origin, op.end)}`, `${op.lot} on ${op.machine}, ${formatClock(origin, op.start)} to ${formatClock(origin, op.end)}`)}
-                onMouseMove={(event) => showTip(event, op)} onMouseLeave={() => setTip(null)}
+                onMouseMove={(event) => { if (!drag) showTip(event, op); }} onMouseLeave={() => setTip(null)}
+                onPointerDown={edit ? (event) => startDrag(event, op) : undefined}
                 onFocus={(event) => { const r = event.currentTarget.getBoundingClientRect(); const { title, lines } = describe(op); setTip({ x: r.left, y: r.bottom, title, lines }); }}
                 onBlur={() => setTip(null)}
-                onClick={() => setHighlight((current) => (current === lineOf(op) ? null : lineOf(op)))}
+                onClick={edit ? undefined : () => setHighlight((current) => (current === lineOf(op) ? null : lineOf(op)))}
                 onKeyDown={(event) => onKey(event, op)}>
                 {op.maintenance_minutes > 0 && <rect x={x(prep)} y={y} width={Math.max(1, x(maintEnd) - x(prep))} height={h} fill="url(#gantt-hatch)" />}
                 {op.setup_minutes > 0 && <rect x={x(maintEnd)} y={y} width={Math.max(1, x(op.start) - x(maintEnd))} height={h} style={{ fill: "var(--setup)" }} />}
@@ -203,6 +249,15 @@ export function ScheduleGantt({ operations, input, origin, horizon, deliveries, 
               </g>;
             })}
           </g>
+          {drag && dragging && target && (() => {
+            const y = TOP + target.row * ROW;
+            const width = Math.max(2, x(drag.op.end) - x(drag.op.block_start));
+            return <g className={target.ok ? "g-drop" : "g-drop is-bad"} pointerEvents="none">
+              <rect x={LEFT} y={y + 1} width={plotWidth} height={ROW - 2} className="g-drop-row" />
+              <rect x={x(target.minute)} y={y + 8} width={width} height={ROW - 16} rx={2.5} className="g-ghost" />
+              <text x={x(target.minute)} y={y + 6} className="g-ghost-label">{target.ok ? `${target.machine} · ${formatClock(origin, target.minute)}` : t(`${target.machine} không làm được lượt này`, `${target.machine} cannot make this run`)}</text>
+            </g>;
+          })()}
           {showShip && <g>
             <text x={6} y={rowsBottom + SHIP / 2 + 4} className="g-machine">{t("Giao hàng", "Deliveries")}</text>
             {[...deliveries!].filter((d) => Number.isFinite(d.time)).sort((a, b) => a.time - b.time).map((d, index) => {
@@ -218,7 +273,8 @@ export function ScheduleGantt({ operations, input, origin, horizon, deliveries, 
           </g>}
         </svg>
       </div>
-      <p className="px-4 pt-2.5 pb-3.5 text-[13px] text-muted-foreground">{t("Rê chuột lên thanh để xem chi tiết; bấm (hoặc Enter) để làm nổi cả dòng sản phẩm, dùng phím ← → để chuyển lượt.", "Hover a bar for details; click (or press Enter) to highlight the whole product line, and use ← → to move between operations.")}{highlight && <> {t("Đang làm nổi dòng", "Highlighting line")} <b>{highlight}</b> · <button type="button" className="font-semibold text-primary hover:underline" onClick={() => setHighlight(null)}>{t("bỏ làm nổi", "clear highlight")}</button></>}</p>
+      {edit ? <p className="px-4 pt-2.5 pb-3.5 text-[13px] text-muted-foreground">{t("Kéo một thanh sang máy khác hoặc sang giờ khác (bước 15 phút); bấm hoặc Enter để chọn lượt và sửa trong bảng chi tiết lượt. Viền nét đứt = lượt đã đổi so với bản gốc.", "Drag a bar to another machine or time (15-minute steps); click or press Enter to select a run and edit it in the run panel. Dashed outline = changed from the original.")}</p>
+      : <p className="px-4 pt-2.5 pb-3.5 text-[13px] text-muted-foreground">{t("Rê chuột lên thanh để xem chi tiết; bấm (hoặc Enter) để làm nổi cả dòng sản phẩm, dùng phím ← → để chuyển lượt.", "Hover a bar for details; click (or press Enter) to highlight the whole product line, and use ← → to move between operations.")}{highlight && <> {t("Đang làm nổi dòng", "Highlighting line")} <b>{highlight}</b> · <button type="button" className="font-semibold text-primary hover:underline" onClick={() => setHighlight(null)}>{t("bỏ làm nổi", "clear highlight")}</button></>}</p>}
       {tip && <div className="pointer-events-none fixed z-[60] grid max-w-[min(340px,92vw)] gap-0.5 rounded-lg bg-foreground px-3 py-2 text-[12.5px] leading-snug text-background shadow-lg" role="tooltip" style={{ left: Math.min(tip.x + 14, (typeof window !== "undefined" ? window.innerWidth : 1200) - 320), top: Math.min(tip.y + 14, (typeof window !== "undefined" ? window.innerHeight : 800) - 120) }}><strong className="text-[13px]">{tip.title}</strong>{tip.lines.map((line) => <span key={line}>{line}</span>)}</div>}
     </div>
   );

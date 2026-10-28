@@ -348,6 +348,37 @@ class ScheduleRunRetry(StrictModel):
         return value
 
 
+class ScheduleEditRequest(StrictModel):
+    """A planner's edit of a succeeded schema-5 run: the full run order per machine
+    (moving a run = taking it out of one list and into another), the runs the planner
+    moved (they go as early as their new place allows; every other run keeps its old
+    start as a lower bound unless `compact`), and earliest starts in horizon minutes."""
+
+    sequence: dict[str, list[str]] = Field(min_length=1)
+    moved: list[str] = Field(default_factory=list, max_length=2000)
+    not_before: dict[str, NonNegativeInt] = Field(default_factory=dict)
+    compact: bool = False
+    label: str | None = Field(default=None, max_length=80)
+    note: str | None = Field(default=None, max_length=1000)
+
+
+class ScheduleEditIssue(StrictModel):
+    code: str
+    subject: str | None = None
+    minute: int | None = None
+    raw: str
+    runs: list[str] = Field(default_factory=list)
+
+
+class ScheduleEditChange(StrictModel):
+    run: str
+    stage: str
+    from_machine: str
+    to_machine: str
+    from_start: int
+    to_start: int
+
+
 class ProductionPlanCreate(StrictModel):
     dataset_id: str = Field(min_length=36, max_length=36)
     period_start: NonNegativeInt = 0
@@ -590,6 +621,15 @@ class ScheduleRunDetail(ScheduleRunSummary):
     solver_metadata: dict[str, Any] | None
     validation: dict[str, Any] | None
     metrics: dict[str, Any] | None
+    operations: list[ScheduleOperationResponse]
+
+
+class ScheduleEditPreview(StrictModel):
+    valid: bool
+    issues: list[ScheduleEditIssue]
+    metrics: dict[str, Any] | None
+    base_metrics: dict[str, Any]
+    changes: list[ScheduleEditChange]
     operations: list[ScheduleOperationResponse]
 
 

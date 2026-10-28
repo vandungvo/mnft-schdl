@@ -1,7 +1,7 @@
 import { tr } from "./locale";
 import type { Algorithm } from "./types";
 
-export type AlgorithmFamily = "rule" | "search" | "cp";
+export type AlgorithmFamily = "rule" | "search" | "cp" | "manual";
 
 export interface AlgorithmInfo {
   value: Algorithm;
@@ -45,8 +45,12 @@ export const ALGORITHMS: AlgorithmInfo[] = [
     ["Chia horizon thành các cửa sổ liên tiếp, giải CP-SAT từng cửa sổ và cố định phần đã xếp.", "Splits the horizon into consecutive windows, solves each with CP-SAT and freezes what is already scheduled."]),
 ];
 
+/** A planner's edit of another option (not a solver: never offered in the generate dialog). */
+export const MANUAL = algorithm("manual" as Algorithm, ["Chỉnh tay", "Manual edit"], tr("Chỉnh tay", "Manual"), "manual", ["Người lập lịch sửa từ một phương án", "A planner's edit of an option"],
+  ["Người lập lịch đổi máy, thứ tự hoặc giờ sớm nhất của vài lượt trên một phương án; hệ thống xếp lại giờ, kiểm bằng bộ kiểm độc lập và chấm điểm như mọi phương án khác.", "A planner changed the machine, order or earliest start of some runs of an option; the system re-timed it, checked it with the independent validator and scored it like any other option."]);
+
 export function familyLabel(family: AlgorithmFamily): string {
-  return { rule: tr("Luật điều độ", "Dispatching rules"), search: "Metaheuristic", cp: tr("Quy hoạch ràng buộc", "Constraint programming") }[family];
+  return { rule: tr("Luật điều độ", "Dispatching rules"), search: "Metaheuristic", cp: tr("Quy hoạch ràng buộc", "Constraint programming"), manual: tr("Chỉnh tay", "Manual edit") }[family];
 }
 
 const FAMILY_WHY: Record<AlgorithmFamily, Array<[Text, Text]>> = {
@@ -59,6 +63,10 @@ const FAMILY_WHY: Record<AlgorithmFamily, Array<[Text, Text]>> = {
     [["Cách tìm", "How the search works"], ["Mỗi lời giải gồm số ưu tiên cho từng lượt, độ lệch chọn máy và độ lùi giờ. Bộ xếp giống FIFO/EDD/SPT dựng lịch từ đó, chấm bằng đúng hàm mục tiêu.", "Each solution holds a priority per operation, a machine-choice bias and a delay. The same decoder as FIFO/EDD/SPT builds the schedule, scored by the exact objective."]],
     [["Chờ để gom ca", "Wait to batch shifts"], ["Gen lùi giờ cho phép một lượt đợi tới ca đã bật thay vì mở ca mới, nên lịch thường ít ca-máy hơn luật.", "The delay gene lets an operation wait for an already-open shift instead of opening a new one, so schedules usually use fewer machine-shifts than rules."]],
     [["Phụ thuộc seed", "Seed dependent"], ["Kết quả dao động theo seed và ngân sách thời gian; nên chạy vài seed và so sánh.", "Results vary with the seed and time budget; run a few seeds and compare."]],
+  ],
+  manual: [
+    [["Giờ được xếp lại thế nào", "How times are rebuilt"], ["Mỗi máy làm các lượt đúng thứ tự người sửa đặt; mỗi lượt vào ô sớm nhất hợp lệ (trong ca, setup theo lượt trước, khuôn rảnh và đã bảo trì, đủ bán thành phẩm).", "Each machine runs its runs in exactly the order the planner set; each run takes its earliest valid slot (inside a shift, setup from the previous run, mold free and maintained, semi-finished stock available)."]],
+    [["Ít xáo trộn", "Minimal disruption"], ["Các lượt không bị sửa giữ giờ cũ làm mốc sớm nhất: chỉ những lượt bị đẩy mới dời muộn hơn.", "Runs that were not edited keep their old start as a lower bound: only the runs that get pushed move later."]],
   ],
   cp: [
     [["Cách giải", "How it solves"], ["CP-SAT dựng toàn bộ bài toán: chọn máy, ca, thứ tự trên từng máy, bảo trì khuôn theo chu kỳ, tồn bán thành phẩm và phương án làm trước.", "CP-SAT models the whole problem: machine and shift choice, sequence on each machine, cyclic mold maintenance, semi-finished stock and build-ahead options."]],
@@ -74,6 +82,7 @@ export function familyWhy(family: AlgorithmFamily): Array<[string, string]> {
 const BY_VALUE = new Map(ALGORITHMS.map((item) => [item.value, item]));
 
 export function algorithmInfo(value: string): AlgorithmInfo {
+  if (value === "manual") return MANUAL;
   return BY_VALUE.get(value as Algorithm) ?? {
     value: value as Algorithm,
     label: value.replaceAll("_", " "),

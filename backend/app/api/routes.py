@@ -39,12 +39,15 @@ from ..schemas import (
     ScheduleDecisionCreate,
     ScheduleDecisionList,
     ScheduleDecisionResponse,
+    ScheduleEditPreview,
+    ScheduleEditRequest,
     ScheduleRunCreate,
     ScheduleRunDetail,
     ScheduleRunList,
     ScheduleRunRetry,
     ScheduleRunSummary,
 )
+from ..manual_edits import ManualEditService
 from ..services import ScheduleRunService
 
 router = APIRouter()
@@ -677,6 +680,32 @@ def retry_schedule_run(
             details={"retry_of_id": run_id, "algorithm": run.algorithm},
         )
     return ScheduleRunSummary.model_validate(run)
+
+
+@router.post(
+    "/schedule-runs/{run_id}/edits/preview",
+    response_model=ScheduleEditPreview,
+    tags=["scheduling"],
+)
+def preview_schedule_edit(run_id: str, payload: ScheduleEditRequest, session: DbSession) -> ScheduleEditPreview:
+    """Rebuild, validate and score an edit of a run without storing anything."""
+    return ScheduleEditPreview.model_validate(ManualEditService(session).preview(run_id, payload))
+
+
+@router.post(
+    "/schedule-runs/{run_id}/edits",
+    response_model=ScheduleRunSummary,
+    status_code=status.HTTP_201_CREATED,
+    tags=["scheduling"],
+)
+def save_schedule_edit(
+    run_id: str,
+    payload: ScheduleEditRequest,
+    session: DbSession,
+    idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key", max_length=200)] = None,
+) -> ScheduleRunSummary:
+    """Store a valid edit as a new run (algorithm `manual`) next to the solver's options."""
+    return ScheduleRunSummary.model_validate(ManualEditService(session).save(run_id, payload, idempotency_key))
 
 
 @router.get("/schedule-runs", response_model=ScheduleRunList, tags=["scheduling"])

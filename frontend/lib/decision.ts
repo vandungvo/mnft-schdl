@@ -82,11 +82,22 @@ export function toAlternative(run: ScheduleRunDetail, input: AnySchedulingInput 
     id: run.id,
     metrics,
     algorithm: run.algorithm,
-    label: sameAlgo > 1 ? `${info.short} · seed ${run.seed}` : info.short,
+    label: run.algorithm === "manual" ? manualLabel(run) : sameAlgo > 1 ? `${info.short} · seed ${run.seed}` : info.short,
     // Machines running around the clock (shift null) open no rostered shift.
     shifts: new Set(run.operations.filter((op) => op.shift != null).map((op) => `${op.machine}|${op.shift}`)),
     late: typeof metrics.late_orders === "number" ? metrics.late_orders : input ? deliveriesOf(input, run.operations).filter((d) => d.tardiness > 0).length : 0,
   };
+}
+
+/** "Chỉnh tay · <planner's label>" (or the run's short id when unnamed). */
+function manualLabel(run: ScheduleRunDetail): string {
+  const label = run.solver_metadata?.label;
+  return `${tr("Chỉnh tay", "Manual")} · ${typeof label === "string" && label.trim() ? label.trim() : run.id.slice(0, 6)}`;
+}
+
+/** Operating cost of a metrics record (the weighted terms outside service). */
+export function opsCostOf(metrics: Record<string, number>, weights: Record<string, number>): number {
+  return Object.keys(weights).filter((key) => !SERVICE_KEYS.includes(key)).reduce((sum, key) => sum + (weights[key] ?? 0) * (metrics[key] ?? 0), 0);
 }
 
 export function weightedSum(alt: Alternative, weights: Record<string, number>, keys: string[]): number {
@@ -94,7 +105,7 @@ export function weightedSum(alt: Alternative, weights: Record<string, number>, k
 }
 
 export function opsCost(alt: Alternative, weights: Record<string, number>): number {
-  return weightedSum(alt, weights, Object.keys(weights).filter((key) => !SERVICE_KEYS.includes(key)));
+  return opsCostOf(alt.metrics, weights);
 }
 
 export function score(alt: Alternative, weights: Record<string, number>, policy: PolicyKey): [number, number] {

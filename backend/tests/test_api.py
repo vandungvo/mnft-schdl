@@ -862,3 +862,87 @@ def test_scenario_can_be_replaced_across_production_models(client, scheduling_in
     assert back.json()["schema_version"] == 4
     assert back.json()["counts"]["lots"] == len(scheduling_input["lots"])
     assert back.json()["counts"].get("runs") is None
+
+
+def _schema5_run(client) -> dict:
+    dataset = client.post("/api/v1/master-data/datasets/import", json={"input": _schema5_input()}).json()
+    run = client.post(
+        "/api/v1/schedule-runs",
+        json={"dataset_id": dataset["id"], "algorithm": "edd", "seed": 11, "time_budget_seconds": 1},
+    ).json()
+    assert run["status"] == "SUCCEEDED", run
+    return client.get(f"/api/v1/schedule-runs/{run['id']}").json()
+
+
+def _sequence(operations: list[dict]) -> dict[str, list[str]]:
+    out: dict[str, list[str]] = {}
+    for op in sorted(operations, key=lambda op: (op["machine"], op["block_start"])):
+        out.setdefault(op["machine"], []).append(op["lot"])
+    return out
+
+
+def _move(detail: dict) -> tuple[dict, str, str]:
+    """Move one casting run to the other casting machine (the fixture has two)."""
+    document = _schema5_input()
+    sequence = _sequence(detail["operations"])
+    for op in detail["operations"]:
+        item = op["item"]
+        others = [m for m, spec in document["machines"].items()
+                  if spec["stage"] == op["stage"] and item in spec["minutes_per_unit"] and m != op["machine"]]
+        if others:
+            sequence[op["machine"]].remove(op["lot"])
+            sequence.setdefault(others[0], []).insert(0, op["lot"])
+            return sequence, op["lot"], others[0]
+    raise AssertionError("no movable run")
+
+
+def test_manual_edit_preview_save_and_rank_with_the_options(client) -> None:
+    base = _schema5_run(client)
+    unchanged = client.post(f"/api/v1/schedule-runs/{base['id']}/edits/preview", json={"sequence": _sequence(base["operations"])})
+    assert unchanged.status_code == 200, unchanged.text
+    assert unchanged.json()["valid"] is True and unchanged.json()["changes"] == []
+
+    sequence, run_id, target = _move(base)
+    preview = client.post(f"/api/v1/schedule-runs/{base['id']}/edits/preview", json={"sequence": sequence, "moved": [run_id]})
+    body = preview.json()
+    assert body["valid"] is True, body["issues"]
+    assert any(change["run"] == run_id and change["to_machine"] == target for change in body["changes"])
+    assert body["metrics"]["objective"] > 0 and body["base_metrics"] == base["metrics"]
+
+    saved = client.post(
+        f"/api/v1/schedule-runs/{base['id']}/edits",
+        json={"sequence": sequence, "moved": [run_id], "label": "Chuyển sang máy khác", "note": "máy 1 bảo trì"},
+        headers={"Idempotency-Key": "edit-1"},
+    )
+    assert saved.status_code == 201, saved.text
+    edited = client.get(f"/api/v1/schedule-runs/{saved.json()['id']}").json()
+    assert edited["algorithm"] == "manual" and edited["status"] == "SUCCEEDED"
+    assert edited["input_hash"] == base["input_hash"], "an edit joins the options of the same input snapshot"
+    assert edited["validation"]["valid"] is True
+    assert edited["solver_metadata"]["edited_from"] == base["id"]
+    assert next(op for op in edited["operations"] if op["lot"] == run_id)["machine"] == target
+    again = client.post(f"/api/v1/schedule-runs/{base['id']}/edits", json={"sequence": sequence, "moved": [run_id]}, headers={"Idempotency-Key": "edit-1"})
+    assert again.json()["id"] == edited["id"]
+
+    # the source run is evidence: it is never modified
+    assert client.get(f"/api/v1/schedule-runs/{base['id']}").json()["operations"] == base["operations"]
+    # an edited run can itself be edited, but not re-solved
+    assert client.post(f"/api/v1/schedule-runs/{edited['id']}/edits/preview", json={"sequence": _sequence(edited["operations"])}).status_code == 200
+    assert client.post(f"/api/v1/schedule-runs/{edited['id']}/retry", json={}).status_code == 422
+
+
+def test_manual_edit_rejects_bad_plans_with_stable_codes(client, scheduling_input) -> None:
+    base = _schema5_run(client)
+    sequence = _sequence(base["operations"])
+    first_machine = next(iter(sequence))
+    dropped = {**sequence, first_machine: sequence[first_machine][1:]}
+    preview = client.post(f"/api/v1/schedule-runs/{base['id']}/edits/preview", json={"sequence": dropped}).json()
+    assert preview["valid"] is False and preview["issues"][0]["code"] == "RUN_SET_CHANGED"
+    saved = client.post(f"/api/v1/schedule-runs/{base['id']}/edits", json={"sequence": dropped})
+    assert saved.status_code == 422 and saved.json()["error"]["code"] == "EDIT_INVALID"
+    empty = client.post(f"/api/v1/schedule-runs/{base['id']}/edits", json={"sequence": sequence})
+    assert empty.status_code == 422 and empty.json()["error"]["code"] == "EDIT_EMPTY"
+
+    v4 = client.post("/api/v1/schedule-runs", json={"input": scheduling_input, "algorithm": "edd", "seed": 11}).json()
+    refused = client.post(f"/api/v1/schedule-runs/{v4['id']}/edits/preview", json={"sequence": {"M": []}})
+    assert refused.status_code == 422 and refused.json()["error"]["code"] == "EDIT_NOT_SUPPORTED"

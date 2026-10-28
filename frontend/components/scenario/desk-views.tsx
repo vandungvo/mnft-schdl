@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, CalendarRange, CheckCircle2, GitCompare, Plus } from "lucide-react";
+import { ArrowRight, CalendarRange, CheckCircle2, GitCompare, Pencil, Plus } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -85,6 +85,7 @@ export function OptionsView({ ctx, policy, onPolicy, current, decided, loading, 
       description={t("Hệ thống chạy vài thuật toán trên cùng dữ liệu rồi đề xuất các lịch đáng cân nhắc để bạn so sánh và chốt. Mức “Nhanh” cho kết quả trong khoảng 1 phút.", "The system runs a few algorithms on the same data and recommends the schedules worth considering, for you to compare and commit. “Quick” returns results in about a minute.")}
       action={<Button onClick={onGenerate} disabled={!canGenerate}>{t("Sinh phương án đầu tiên", "Generate the first options")}</Button>} />;
   }
+  const manual = ctx.alts.filter((alt) => alt.algorithm === "manual" && !ctx.list.keys.includes(alt.id)).map((alt) => alt.id);
   return (
     <div className="grid min-w-0 gap-4">
       <Panel>
@@ -98,6 +99,11 @@ export function OptionsView({ ctx, policy, onPolicy, current, decided, loading, 
         <FormulaDetails ctx={ctx} />
       </Panel>
       <AlternativeCards ctx={ctx} current={current} decided={decided} onPick={onPick} />
+      {/* A planner's own edits stay in view even when another option beats them. */}
+      {manual.length > 0 && <>
+        <h3 className="mt-1 text-sm font-semibold">{t(`Bản sửa tay ngoài đề xuất · ${manual.length}`, `Manual edits not recommended · ${manual.length}`)}</h3>
+        <AlternativeCards ctx={ctx} current={current} decided={decided} onPick={onPick} ids={manual} label={t("Bản sửa tay", "Manual edits")} />
+      </>}
       <Hint className="mt-0">{t(`Đề xuất ${ctx.list.keys.length} trong ${ctx.alts.length} lịch: các lịch còn lại đều thua ít nhất một lịch đề xuất ở cả ba mặt (trễ hạn, thiếu tồn an toàn, chi phí vận hành). Bấm một thẻ để xem nhanh.`, `Recommending ${ctx.list.keys.length} of ${ctx.alts.length} schedules: every other schedule is beaten by a recommended one on all three axes (lateness, safety-stock shortfall, operating cost). Click a card for a quick look.`)}</Hint>
       {ctx.alts.length > 1 && <Panel title={t("Đánh đổi: chi phí vận hành ↔ thiếu tồn an toàn", "Trade-off: operating cost ↔ safety-stock shortfall")}>
         <TradeoffChart alternatives={ctx.alts} weights={ctx.weights} list={ctx.list} current={current} displayName={ctx.displayName} onPick={onPick} />
@@ -109,8 +115,10 @@ export function OptionsView({ ctx, policy, onPolicy, current, decided, loading, 
 
 /* ---------- schedule: one option in depth, optionally against another ---------- */
 
-export function ScheduleView({ ctx, current, compare, deliveries, onPick, onCompare }: {
+export function ScheduleView({ ctx, current, compare, deliveries, onPick, onCompare, onEdit }: {
   ctx: WorkspaceCtx; current: Alternative | null; compare: Alternative | null; deliveries: Delivery[]; onPick: (id: string) => void; onCompare: (id: string | null) => void;
+  /** Present when the schedule can be edited by hand (5-stage model). */
+  onEdit?: (id: string) => void;
 }) {
   const { t } = useI18n();
   if (!current) return <EmptyState icon={<CalendarRange />} title={t("Chưa có lịch để xem", "No schedule to view")} description={t("Sinh phương án ở tab Phương án trước.", "Generate options in the Options tab first.")} />;
@@ -133,7 +141,8 @@ export function ScheduleView({ ctx, current, compare, deliveries, onPick, onComp
             <SelectContent><SelectItem value={NONE}>— {t("không so sánh", "no comparison")} —</SelectItem><SelectSeparator />{optionItems(current.id, t(" (đang xem)", " (viewing)"))}</SelectContent>
           </Select>
         </label>
-        <p className="text-xs text-muted-foreground sm:ml-auto">{algorithmInfo(current.algorithm).label} · seed {current.run.seed} · {current.run.time_budget_seconds}s · {solverStatusLabel(current.run.solver_status)} · {formatDateTime(current.run.created_at)}</p>
+        <p className="text-xs text-muted-foreground sm:ml-auto">{algorithmInfo(current.algorithm).label} · {current.algorithm === "manual" ? t(`sửa từ ${editedFrom(ctx, current)}`, `edited from ${editedFrom(ctx, current)}`) : `seed ${current.run.seed} · ${current.run.time_budget_seconds}s · ${solverStatusLabel(current.run.solver_status)}`} · {formatDateTime(current.run.created_at)}</p>
+        {onEdit && <Button size="sm" variant="outline" onClick={() => onEdit(current.id)}><Pencil />{t("Sửa lịch này bằng tay", "Edit this schedule by hand")}</Button>}
       </div>
       <StatTiles ctx={ctx} alt={current} />
       <Panel flush>
@@ -151,6 +160,12 @@ export function ScheduleView({ ctx, current, compare, deliveries, onPick, onComp
       </details>
     </div>
   );
+}
+
+/** Name of the option a manual edit started from (or its short id when that run is not loaded). */
+function editedFrom(ctx: WorkspaceCtx, alt: Alternative): string {
+  const source = alt.run.solver_metadata?.edited_from;
+  return typeof source === "string" ? (ctx.byId.has(source) ? ctx.displayName(source) : source.slice(0, 8)) : "—";
 }
 
 /* ---------- analysis: every schedule, algorithm speed ---------- */
@@ -179,9 +194,9 @@ export function AnalysisView({ ctx, runs, current, onPick, truncatedAt, matrix }
 
 /* ---------- quick look: a right-side panel instead of scrolling away (Databricks detail pane) ---------- */
 
-export function OptionSheet({ ctx, alt, rank, committed, viewingId, onClose, onSchedule, onCompare, onCommit }: {
+export function OptionSheet({ ctx, alt, rank, committed, viewingId, onClose, onSchedule, onCompare, onCommit, onEdit }: {
   ctx: WorkspaceCtx; alt: Alternative | null; rank: number | null; committed: boolean; viewingId: string | null;
-  onClose: () => void; onSchedule: (id: string) => void; onCompare: (id: string) => void; onCommit: (id: string) => void;
+  onClose: () => void; onSchedule: (id: string) => void; onCompare: (id: string) => void; onCommit: (id: string) => void; onEdit?: (id: string) => void;
 }) {
   const { t } = useI18n();
   return (
@@ -220,6 +235,7 @@ export function OptionSheet({ ctx, alt, rank, committed, viewingId, onClose, onS
           <SheetFooter className="mt-auto flex-row flex-wrap border-t">
             <Button onClick={() => onSchedule(alt.id)}><CalendarRange />{t("Xem lịch", "View schedule")}</Button>
             {viewingId && viewingId !== alt.id && <Button variant="outline" onClick={() => onCompare(alt.id)}><GitCompare />{t("So với lịch đang xem", "Compare with current")}</Button>}
+            {onEdit && <Button variant="outline" onClick={() => onEdit(alt.id)}><Pencil />{t("Sửa tay", "Edit")}</Button>}
             <Button variant="outline" onClick={() => onCommit(alt.id)}><CheckCircle2 />{t("Chốt", "Commit")}</Button>
           </SheetFooter>
         </>}

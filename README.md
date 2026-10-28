@@ -23,6 +23,8 @@ Lát cắt đầu tiên đã hỗ trợ:
 
 - **Nhà máy, sổ đơn hàng, kỳ lập lịch** (mô hình 5 công đoạn): cấu hình nhà máy có phiên bản và ngày hiệu lực, chỉ khai báo một lần. Đơn hàng nhập một lần vào sổ (Excel/CSV/dán từ Excel, xem trước và báo lỗi từng dòng). Mỗi kỳ tự lấy đơn còn mở, lấy tồn đầu kỳ dự kiến từ lịch đã chốt kỳ trước, tự suy ra lô/lượt rồi biên dịch thành kịch bản schema 5. Có biến thể what-if, lập lại lịch sau sự cố (giữ nguyên phần đã chạy), lệnh sản xuất in/xuất CSV, đóng kỳ và chuyển kỳ. Xem [docs/_product/factory-periods.md](docs/_product/factory-periods.md).
 
+- **Chỉnh lịch bằng tay (người lập lịch trong vòng lặp)**: trên một phương án (mô hình 5 công đoạn), kéo-thả lượt sang máy/giờ khác hoặc đổi máy, thứ tự, giờ sớm nhất trong bảng chi tiết. Hệ thống xếp lại giờ (lượt không sửa giữ giờ cũ, chỉ lượt bị đẩy mới dời), kiểm bằng bộ kiểm độc lập và hiện KPI thay đổi ngay; có hoàn tác/làm lại. Bản sửa hợp lệ được lưu thành phương án mới (`algorithm = manual`) để so sánh và chốt như mọi phương án; phương án gốc giữ nguyên. API: `POST /api/v1/schedule-runs/{id}/edits/preview` và `/edits`.
+
 Explanation sẽ được bổ sung theo [implementation plan](docs/_product/implementation-plan.md).
 
 ## Cấu trúc thư mục

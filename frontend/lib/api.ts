@@ -26,6 +26,8 @@ import type {
   ScheduleDecision,
   ScheduleDecisionCreate,
   ScheduleDecisionList,
+  ScheduleEditPreview,
+  ScheduleEditRequest,
   ScheduleRunDetail,
   ScheduleRunList,
   ScheduleRunSummary,
@@ -150,6 +152,20 @@ export function retryScheduleRun(
   idempotencyKey = crypto.randomUUID(),
 ): Promise<ScheduleRunSummary> {
   return apiRequest(`/schedule-runs/${encodeURIComponent(id)}/retry`, {
+    method: "POST",
+    headers: { "Idempotency-Key": idempotencyKey },
+    body: JSON.stringify(payload),
+  });
+}
+
+/** Rebuild, validate and score an edit of a run; nothing is stored. */
+export function previewScheduleEdit(id: string, payload: ScheduleEditRequest, signal?: AbortSignal): Promise<ScheduleEditPreview> {
+  return apiRequest(`/schedule-runs/${encodeURIComponent(id)}/edits/preview`, { method: "POST", body: JSON.stringify(payload), signal });
+}
+
+/** Store a valid edit as a new run (algorithm "manual") among the options of the same inputs. */
+export function saveScheduleEdit(id: string, payload: ScheduleEditRequest, idempotencyKey = crypto.randomUUID()): Promise<ScheduleRunSummary> {
+  return apiRequest(`/schedule-runs/${encodeURIComponent(id)}/edits`, {
     method: "POST",
     headers: { "Idempotency-Key": idempotencyKey },
     body: JSON.stringify(payload),

@@ -212,6 +212,19 @@
   .viz .point { cursor: pointer; }
   .viz .point:focus { outline: none; }
   .viz .point:focus-visible .dot { stroke: var(--primary); stroke-width: 3; }
+  /* Gantt edit mode: selected / changed bars, drag ghost and target row. */
+  .viz.is-editable .g-bar { cursor: grab; touch-action: none; }
+  .viz.is-dragging, .viz.is-dragging .g-bar { cursor: grabbing; }
+  .viz .g-bar.is-selected .g-run { stroke: var(--primary); stroke-width: 2.5; }
+  .viz .g-bar.is-changed .g-run { stroke: var(--foreground); stroke-width: 1.5; stroke-dasharray: 4 2; }
+  .viz .g-bar.is-selected.is-changed .g-run { stroke: var(--primary); stroke-width: 2.5; stroke-dasharray: 4 2; }
+  .viz .g-bar.is-lifted { opacity: 0.35; }
+  .viz .g-drop-row { fill: var(--primary); fill-opacity: 0.06; }
+  .viz .g-ghost { fill: var(--primary); fill-opacity: 0.35; stroke: var(--primary); stroke-width: 1.5; stroke-dasharray: 4 3; }
+  .viz .g-ghost-label { fill: var(--primary); font-size: 11px; font-weight: 600; }
+  .viz .g-drop.is-bad .g-drop-row { fill: var(--destructive); }
+  .viz .g-drop.is-bad .g-ghost { fill: var(--destructive); stroke: var(--destructive); }
+  .viz .g-drop.is-bad .g-ghost-label { fill: var(--destructive); }
   .viz .dot { fill: var(--muted-foreground); fill-opacity: 0.6; stroke: var(--card); stroke-width: 1.2; }
   .viz .dot-main, .viz .dot-current { fill-opacity: 1; }
   .viz .dot-main { fill: var(--success); }

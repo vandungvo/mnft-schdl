@@ -85,7 +85,15 @@ function Metric({ label, children, best }: { label: string; children: ReactNode;
 export function rankReason(ctx: WorkspaceCtx, id: string): string {
   const index = ctx.list.keys.indexOf(id);
   const alt = ctx.byId.get(id);
-  if (!alt || index < 0) return "";
+  if (!alt) return "";
+  if (index < 0) {
+    // Not recommended (e.g. a manual edit): say which option beats it and where.
+    const winner = ctx.byId.get(ctx.list.dominatedBy[id] ?? "");
+    if (!winner) return tr("Trùng kết quả với một phương án đề xuất.", "Same result as a recommended option.");
+    const { losses } = tradesVs(alt, winner, ctx.weights);
+    return tr(`Không vào đề xuất vì “${ctx.displayName(winner.id)}” tốt bằng hoặc hơn ở mọi mặt${losses.length ? ` (lịch này ${losses.join(", ")})` : ""}.`,
+      `Not recommended: “${ctx.displayName(winner.id)}” is as good or better on every axis${losses.length ? ` (this one: ${losses.join(", ")})` : ""}.`);
+  }
   if (ctx.list.keys.length === 1) return tr("Không lịch nào khác tốt hơn ở bất kỳ mặt nào.", "No other schedule is better on any axis.");
   const join = (items: string[]) => items.join(", ");
   const ref = ctx.byId.get(ctx.list.keys[index === 0 ? 1 : 0])!;
@@ -104,16 +112,21 @@ export function rankReason(ctx: WorkspaceCtx, id: string): string {
     : tr(`Tổng giờ trễ ít hơn ${hours(-raw)} nhưng rơi vào đơn ưu tiên cao hơn.`, `${hours(-raw)} less late in total, but on higher-priority orders.`)}`;
 }
 
-export function AlternativeCards({ ctx, current, decided, onPick }: { ctx: WorkspaceCtx; current: string | null; decided: string | null; onPick: (id: string) => void }) {
+export function AlternativeCards({ ctx, current, decided, onPick, ids, label }: {
+  ctx: WorkspaceCtx; current: string | null; decided: string | null; onPick: (id: string) => void;
+  /** Cards to show (default: the recommended options, in rank order). */
+  ids?: string[]; label?: string;
+}) {
   const { t } = useI18n();
-  const shown = ctx.list.keys.map((id) => ctx.byId.get(id)!);
+  const shown = (ids ?? ctx.list.keys).map((id) => ctx.byId.get(id)!).filter(Boolean);
   // Best value of each figure across the cards, highlighted like a product comparison table.
   const figures = (alt: Alternative) => [alt.late, lateMinutes(alt, ctx.input), alt.metrics.safety_shortfall ?? 0, opsCost(alt, ctx.weights)].map(Math.round);
   const best = shown.length > 1 ? [0, 1, 2, 3].map((i) => Math.min(...shown.map((alt) => figures(alt)[i]))) : null;
   return (
-    <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr))]" role="group" aria-label={t("Phương án đề xuất", "Recommended options")}>
-      {shown.map((alt, index) => {
+    <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr))]" role="group" aria-label={label ?? t("Phương án đề xuất", "Recommended options")}>
+      {shown.map((alt) => {
         const id = alt.id;
+        const index = ctx.list.keys.indexOf(id);
         const twins = ctx.list.twins[id] ?? [];
         const active = id === current;
         const values = figures(alt);
@@ -123,10 +136,12 @@ export function AlternativeCards({ ctx, current, decided, onPick }: { ctx: Works
             className={cn("group relative flex min-w-0 flex-col gap-3 rounded-lg border bg-card p-4 text-left shadow-card transition-[border-color,box-shadow] hover:border-primary/60 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
               active && "border-primary ring-1 ring-primary")}>
             <span className="flex items-start gap-2.5">
-              <span className={cn("grid size-7 shrink-0 place-items-center rounded-md text-xs font-bold tabular-nums", index ? "bg-muted text-muted-foreground" : "bg-success-soft text-success")} aria-label={`${t("Hạng", "Rank")} ${index + 1}`}>#{index + 1}</span>
+              {index >= 0
+                ? <span className={cn("grid size-7 shrink-0 place-items-center rounded-md text-xs font-bold tabular-nums", index ? "bg-muted text-muted-foreground" : "bg-success-soft text-success")} aria-label={`${t("Hạng", "Rank")} ${index + 1}`}>#{index + 1}</span>
+                : <span className="grid h-7 shrink-0 place-items-center rounded-md border border-dashed px-1.5 text-[11px] font-semibold text-muted-foreground">{t("ngoài", "other")}</span>}
               <span className="grid min-w-0 flex-1">
-                <span className="text-[15px] leading-tight font-semibold">{ctx.list.name[id]}</span>
-                <span className="truncate text-xs text-muted-foreground">{t("Thuật toán", "Algorithm")}: {alt.label}</span>
+                <span className="text-[15px] leading-tight font-semibold">{ctx.list.name[id] ?? alt.label}</span>
+                <span className="truncate text-xs text-muted-foreground">{alt.algorithm === "manual" ? t("Bản sửa tay", "Manual edit") : `${t("Thuật toán", "Algorithm")}: ${alt.label}`}</span>
               </span>
               {id === decided && <Badge variant="info"><CheckCircle2 />{t("Đã chốt", "Committed")}</Badge>}
             </span>

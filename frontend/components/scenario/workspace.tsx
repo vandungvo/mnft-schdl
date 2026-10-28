@@ -21,6 +21,7 @@ import { ProductsSection } from "@/components/master-data/products";
 import { SettingsSection } from "@/components/master-data/settings";
 import { DatasetProvider, ScenarioMetaProvider } from "@/components/master-data/shared";
 import { AnalysisView, DeskSummary, OptionSheet, OptionsView, ScheduleView } from "@/components/scenario/desk-views";
+import { ScheduleEditor } from "@/components/scenario/schedule-editor";
 import { RunMatrix } from "@/components/scenario/run-matrix";
 import { DataV5, OverviewV5, V5_DATA_TABS, v5Counts, v5DataLabel, type V5DataTab } from "@/components/scenario/v5-views";
 import { useToast } from "@/components/toast-provider";
@@ -239,6 +240,11 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
   const staleSnapshot = Boolean(snapshot && snapshot.revision != null && snapshot.revision !== data.revision);
   const rankOf = (runId: string) => { const index = list.keys.indexOf(runId); return index >= 0 ? index + 1 : null; };
   const peek = peekId ? byId.get(peekId) ?? null : null;
+  // ?edit=<run> opens the manual editor on that option (5-stage model only), inside the schedule tab.
+  // The tab stays mounted while editing, so looking at another tab never loses unsaved edits.
+  const editParam = params.get("edit");
+  const editing = editParam && isV5(input) ? byId.get(editParam) ?? null : null;
+  const editRun = (runId: string) => { set({ tab: "schedule", edit: runId, run: runId }, "push"); toTabTop(); };
 
   const errorCount = (tab: MdTab) => issues.filter((issue) => issue.tab === tab && issue.severity === "error").length;
   const dataErrors = DATA_TABS.reduce((sum, tab) => sum + errorCount(tab), 0);
@@ -369,9 +375,12 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
               loading={detailsLoading || runs.isLoading} onPick={pick} onGenerate={() => setGenerateOpen(true)} canGenerate={data.is_ready} />
           </TabsContent>
 
-          <TabsContent value="schedule" className="min-w-0"><h2 className="sr-only">{t("Lịch & so sánh", "Schedule & compare")}</h2>
-            <ScheduleView ctx={ctx} current={current} compare={compare} deliveries={deliveries}
-              onPick={(runId) => set({ run: runId, cmp: compareId === runId ? null : params.get("cmp") })} onCompare={(runId) => set({ cmp: runId ?? "none" })} />
+          <TabsContent value="schedule" forceMount={editing ? true : undefined} className="min-w-0 data-[state=inactive]:hidden"><h2 className="sr-only">{t("Lịch & so sánh", "Schedule & compare")}</h2>
+            {editing ? (
+              <ScheduleEditor key={editing.id} ctx={ctx} base={editing} onCancel={() => set({ edit: null })}
+                onSaved={(runId) => { set({ edit: null, run: runId, cmp: editing.id }); showToast(t("Đã lưu bản sửa thành phương án mới; đang so với bản gốc.", "The edit is saved as a new option, compared with the original."), "success"); }} />
+            ) : <ScheduleView ctx={ctx} current={current} compare={compare} deliveries={deliveries} onEdit={v5 ? editRun : undefined}
+              onPick={(runId) => set({ run: runId, cmp: compareId === runId ? null : params.get("cmp") })} onCompare={(runId) => set({ cmp: runId ?? "none" })} />}
           </TabsContent>
 
           <TabsContent value="decide" forceMount className="min-w-0 data-[state=inactive]:hidden"><h2 className="sr-only">{t("Chốt", "Commit")}</h2>
@@ -425,7 +434,7 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
           <TabsContent value="history" className="min-w-0"><h2 className="sr-only">{t("Lịch sử", "History")}</h2><HistorySection runs={runs.data} go={goData} /></TabsContent>
         </Tabs>
 
-        {current && (view === "options" || view === "schedule") && (
+        {current && (view === "options" || (view === "schedule" && !editing)) && (
           <DecisionBar name={displayName(current.id)} rank={rankOf(current.id)} committed={current.id === decided} compareName={view === "schedule" && compare ? displayName(compare.id) : null}
             onView={() => goView("schedule")} onCommit={() => commitFlow()}
             metrics={[
@@ -439,7 +448,7 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
         <OptionSheet ctx={ctx} alt={peek} rank={peek ? rankOf(peek.id) : null} committed={peek?.id === decided} viewingId={current?.id ?? null} onClose={() => setPeekId(null)}
           onSchedule={(runId) => { setPeekId(null); set({ tab: "schedule", run: runId, cmp: compareId === runId ? null : params.get("cmp") }, "push"); toTabTop(); }}
           onCompare={(runId) => { setPeekId(null); set({ tab: "schedule", cmp: runId }, "push"); toTabTop(); }}
-          onCommit={(runId) => commitFlow(runId)} />
+          onCommit={(runId) => commitFlow(runId)} onEdit={v5 ? (runId) => { setPeekId(null); editRun(runId); } : undefined} />
         <GenerateDialog datasetId={id} schemaVersion={input.schema_version} open={generateOpen} onClose={() => setGenerateOpen(false)} />
         <ConfirmDialog open={pendingReplace !== null} title={t("Thay toàn bộ dữ liệu bằng file này?", "Replace all data with this file?")}
           description={t(`File “${pendingReplace?.file}”: ${replaceSummary}. Dữ liệu được kiểm tra trước khi ghi; nếu hợp lệ sẽ tạo revision ${data.revision + 1}. Lần chạy cũ giữ snapshot riêng.`, `File “${pendingReplace?.file}”: ${replaceSummary}. The data is validated before writing; if valid it becomes revision ${data.revision + 1}. Earlier runs keep their own snapshots.`)}

@@ -27,7 +27,8 @@ export interface ScheduleRunSummary {
   plan_id: string | null;
   retry_of_id: string | null;
   status: RunStatus;
-  algorithm: Algorithm;
+  /** "manual": a planner's edit of another run (stored by the edit endpoint, never solved). */
+  algorithm: Algorithm | "manual";
   seed: number;
   time_budget_seconds: number;
   input_name: string;
@@ -67,6 +68,30 @@ export interface ScheduleRunDetail extends ScheduleRunSummary {
   solver_metadata: Record<string, unknown> | null;
   validation: { valid: boolean; errors: string[]; operations_checked?: number } | null;
   metrics: Record<string, number> | null;
+  operations: ScheduleOperation[];
+}
+
+/** A planner's edit of a succeeded schema-5 run (backend ScheduleEditRequest). */
+export interface ScheduleEditRequest {
+  /** Full run order per machine: moving a run takes it out of one list and into another. */
+  sequence: Record<string, string[]>;
+  /** Runs the planner moved: they go as early as their new place allows (the rest keep their old start as a lower bound). */
+  moved: string[];
+  /** Earliest start per run, in horizon minutes. */
+  not_before: Record<string, number>;
+  compact: boolean;
+  label?: string | null;
+  note?: string | null;
+}
+
+export interface ScheduleEditIssue { code: string; subject: string | null; minute: number | null; raw: string; runs: string[] }
+
+export interface ScheduleEditPreview {
+  valid: boolean;
+  issues: ScheduleEditIssue[];
+  metrics: Record<string, number> | null;
+  base_metrics: Record<string, number>;
+  changes: Array<{ run: string; stage: string; from_machine: string; to_machine: string; from_start: number; to_start: number }>;
   operations: ScheduleOperation[];
 }
 
@@ -242,7 +267,7 @@ export interface ScheduleDecision {
   run_id: string | null;
   dataset_revision: number | null;
   input_hash: string;
-  algorithm: Algorithm;
+  algorithm: Algorithm | "manual";
   seed: number;
   alternative: string;
   policy: string;
