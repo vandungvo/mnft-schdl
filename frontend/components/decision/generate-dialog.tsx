@@ -22,19 +22,27 @@ const deterministic = (value: Algorithm) => ["fifo", "edd", "spt"].includes(valu
 
 /* A planner picks how long to wait, not which solver: each preset is a mix of fast rules
    (always a schedule within seconds) and search/CP methods given a time budget. */
-type Preset = "quick" | "balanced" | "thorough";
+export type Preset = "quick" | "balanced" | "thorough";
+/* CP-SAT needs minutes on a 2-week period (model building alone takes several seconds): with a 30-second budget it
+   ends where its EDD hint started. "Quick" therefore runs the rules and one short search, and leaves CP-SAT to the others. */
 const PRESETS: Record<Preset, { algorithms: Algorithm[]; budget: number; seeds: number; label: [string, string]; hint: [string, string] }> = {
-  quick: { algorithms: ["edd", "spt", "cp_sat_hint"], budget: 30, seeds: 1, label: ["Nhanh", "Quick"], hint: ["Vài lịch trong khoảng 1 phút — đủ để xem tình hình", "A few schedules in about a minute — enough to see where things stand"] },
+  quick: { algorithms: ["edd", "spt", "simulated_annealing"], budget: 30, seeds: 1, label: ["Nhanh", "Quick"], hint: ["Luật điều độ + một lần tìm kiếm ngắn, khoảng 1 phút — đủ để xem tình hình (chưa có CP-SAT)", "Dispatching rules + one short search, about a minute — enough to see where things stand (no CP-SAT)"] },
   balanced: { algorithms: ["edd", "simulated_annealing", "cp_sat_hint", "cp_lns"], budget: 120, seeds: 1, label: ["Cân bằng", "Balanced"], hint: ["Khuyến nghị cho lịch 2 tuần · khoảng 5–8 phút", "Recommended for a 2-week period · about 5–8 minutes"] },
   thorough: { algorithms: ["edd", "simulated_annealing", "genetic_algorithm", "cp_sat_hint", "cp_lns", "cp_rolling"], budget: 300, seeds: 2, label: ["Kỹ", "Thorough"], hint: ["Tìm lịch tốt hơn khi còn thời gian · có thể tới 30–60 phút", "Searches harder when there is time · can take 30–60 minutes"] },
 };
 
-export function GenerateDialog({ datasetId, schemaVersion, open, onClose }: { datasetId: string; schemaVersion?: number; open: boolean; onClose: () => void }) {
+export function GenerateDialog({ datasetId, schemaVersion, open, preset: initial, onClose }: { datasetId: string; schemaVersion?: number; open: boolean; preset?: Preset; onClose: () => void }) {
   const { t } = useI18n();
   const health = useQuery({ queryKey: ["health"], queryFn: getHealth });
   const queryClient = useQueryClient();
   const showToast = useToast();
-  const [mode, setMode] = useState<Preset | "custom">("balanced");
+  const [mode, setMode] = useState<Preset | "custom">(initial ?? "balanced");
+  // Opened from "Generate with Thorough": start on that preset.
+  const [openedWith, setOpenedWith] = useState<{ open: boolean; initial?: Preset }>({ open, initial });
+  if (openedWith.open !== open || openedWith.initial !== initial) {
+    setOpenedWith({ open, initial });
+    if (open) setMode(initial ?? "balanced");
+  }
   const [customPicked, setPicked] = useState<Algorithm[]>(DEFAULT);
   const [customSeeds, setSeeds] = useState(1);
   const [budget, setBudget] = useState<number | null>(null);
@@ -128,6 +136,7 @@ export function GenerateDialog({ datasetId, schemaVersion, open, onClose }: { da
               <Input type="number" min={1} max={maxBudget} value={effectiveBudget} onChange={(event) => setBudget(event.target.value === "" ? 0 : Number(event.target.value))} />
             </Field>
           </div>}
+          {mode === "custom" && budget != null && budget < 120 && runnable.some((value) => value.startsWith("cp_")) && <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-warning">{t("Ngân sách dưới 2 phút thường không đủ để CP-SAT cải thiện lịch 2 tuần; nó sẽ giữ lịch EDD.", "Under 2 minutes is usually too short for CP-SAT to improve a 2-week schedule; it will keep the EDD schedule.")}</p>}
           {invalid && <p role="alert" className="rounded-md bg-danger-soft px-3 py-2 text-sm text-destructive">{picked.length ? t(`Ngân sách phải từ 1 đến ${maxBudget} giây.`, `Budget must be between 1 and ${maxBudget} seconds.`) : t("Chọn ít nhất một thuật toán.", "Choose at least one algorithm.")}</p>}
         </form>
         <DialogFooter className="items-center gap-2 sm:justify-between">

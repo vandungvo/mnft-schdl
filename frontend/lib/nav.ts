@@ -11,6 +11,8 @@ export interface NavItem {
 export interface NavGroup {
   label: readonly [string, string];
   items: NavItem[];
+  /** Engineering/research tools: folded in the sidebar by default. */
+  advanced?: boolean;
 }
 
 /* Grouped by how often the data changes: the planner's daily loop (periods, orders) first, the plant set-up
@@ -32,6 +34,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     label: ["Nâng cao", "Advanced"],
+    advanced: true,
     items: [
       { href: "/scenarios", label: ["Kịch bản JSON", "JSON scenarios"], hint: ["Bộ dữ liệu nhập từ file, dùng cho thực nghiệm", "Datasets imported from files, for experiments"], icon: FlaskConical },
       { href: "/runs", label: ["Lần chạy", "Runs"], hint: ["Hàng đợi solver, lỗi và chi tiết từng lịch", "Solver queue, failures and each schedule's details"], icon: CalendarClock },

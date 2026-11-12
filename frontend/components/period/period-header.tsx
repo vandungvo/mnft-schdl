@@ -38,7 +38,9 @@ export function periodSteps(period: PeriodDetail): Record<string, StepState> {
   return {
     prepare: period.counts.errors > 0 ? "blocked" : period.compiled_revision ? "done" : "current",
     options: period.runs.succeeded ? "done" : s === "ready" || s === "solving" ? "current" : "todo",
-    decide: period.decision?.current ? "done" : s === "options" ? "current" : "todo",
+    // Comparing is where the planner is once options exist; committing follows from it.
+    schedule: period.decision?.current ? "done" : period.runs.succeeded ? "current" : "todo",
+    decide: period.decision?.current ? "done" : "todo",
     execute: s === "closed" ? "done" : period.decision ? "current" : "todo",
   };
 }
@@ -75,9 +77,9 @@ function NextStep({ period, goTab }: { period: PeriodDetail; goTab: (tab: string
   const tones = { info: "border-primary/30 bg-info-soft text-primary", warning: "border-warning/40 bg-warning-soft text-warning", danger: "border-destructive/30 bg-danger-soft text-destructive", success: "border-success/30 bg-success-soft text-success" };
   const Icon = tone === "warning" || tone === "danger" ? AlertTriangle : tone === "success" ? CheckCircle2 : ArrowRight;
   return (
-    <div role="status" className={cn("flex flex-col items-start gap-x-3 gap-y-2 rounded-lg border px-4 py-2.5 text-sm sm:flex-row sm:items-center", tones[tone])}>
+    <div role="status" className={cn("flex flex-col items-start gap-x-3 gap-y-1.5 rounded-lg border px-3.5 py-1.5 text-sm sm:flex-row sm:items-center", tones[tone])}>
       <span className="flex min-w-0 flex-1 items-start gap-3"><Icon className="mt-0.5 size-4 shrink-0" /><span className="min-w-0">{text}</span></span>
-      {action && <Button size="sm" variant={tone === "info" ? "default" : "outline"} className="bg-card/60" onClick={() => goTab(action[0])}>{action[1]}<ArrowRight /></Button>}
+      {action && <Button size="sm" variant={tone === "info" ? "default" : "outline"} className="h-7 bg-card/60" onClick={() => goTab(action[0])}>{action[1]}<ArrowRight /></Button>}
     </div>
   );
 }
@@ -90,7 +92,9 @@ export function PeriodHeader({ period, actions, snapshot, onChanged }: { period:
   const [variantOpen, setVariantOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const closed = period.status === "closed";
+  const newer = !closed && period.factory.applicable_version > period.factory.pinned_version;
 
   const upgrade = useMutation({ mutationFn: () => upgradePeriodFactory(period.id), onSuccess: onChanged });
   const remove = useMutation({
@@ -106,7 +110,9 @@ export function PeriodHeader({ period, actions, snapshot, onChanged }: { period:
     <div className="grid min-w-0 gap-3">
       <PageHeader back={{ href: "/periods", label: t("Kỳ lập lịch", "Planning periods") }} crumb={period.variant_label ? `${period.name} · ${period.variant_label}` : period.name}
         title={<>{period.name}{period.variant_label && <span className="font-normal text-muted-foreground"> · {period.variant_label}</span>}</>}
-        meta={<><PeriodStatusBadge status={period.status} />{isOverdue(period) && <Badge variant="warning">{t("Quá hạn đóng", "Overdue to close")}</Badge>}<KindBadge kind={period.kind} />{snapshot}</>}
+        meta={<><PeriodStatusBadge status={period.status} />{isOverdue(period) && <Badge variant="warning">{t("Quá hạn đóng", "Overdue to close")}</Badge>}<KindBadge kind={period.kind} />{snapshot}
+          {newer && <button type="button" onClick={() => setUpgradeOpen(true)} className="inline-flex h-6 items-center gap-1 rounded-full border border-primary/40 bg-info-soft px-2.5 text-xs font-medium text-primary hover:border-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+            <RefreshCw className="size-3" />{t(`Có cấu hình nhà máy v${period.factory.applicable_version}…`, `Factory set-up v${period.factory.applicable_version} available…`)}</button>}</>}
         description={<>
           {fmtRange(period.start_date, period.end_date)} · {t(`${period.days} ngày`, `${period.days} days`)} · {t(`${period.counts.scheduled} đơn trong kỳ, ${period.counts.long_term} đơn sau kỳ`, `${period.counts.scheduled} orders in, ${period.counts.long_term} after`)} · {t("cấu hình nhà máy", "factory set-up")} <Link href="/factory" className="font-medium hover:underline">v{period.factory.pinned_version}</Link>
           {period.inputs.frozen_until != null && <> · {t(`giữ nguyên trước ${fmtLocal(period.inputs.opening.as_of)}`, `fixed before ${fmtLocal(period.inputs.opening.as_of)}`)}</>}
@@ -124,12 +130,6 @@ export function PeriodHeader({ period, actions, snapshot, onChanged }: { period:
           {actions}
         </>} />
 
-      {!closed && period.factory.applicable_version > period.factory.pinned_version && (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/30 bg-info-soft px-4 py-2.5 text-sm text-primary">
-          <span>{t(`Cấu hình nhà máy v${period.factory.applicable_version} đã có hiệu lực cho kỳ này (kỳ đang dùng v${period.factory.pinned_version}).`, `Factory set-up v${period.factory.applicable_version} now applies to this period (it uses v${period.factory.pinned_version}).`)}</span>
-          <Button size="sm" disabled={upgrade.isPending} onClick={() => upgrade.mutate()}>{upgrade.isPending ? <Loader2 className="animate-spin" /> : <RefreshCw />}{t(`Áp dụng v${period.factory.applicable_version}`, `Use v${period.factory.applicable_version}`)}</Button>
-        </div>
-      )}
       <MutationNotice error={upgrade.error ?? remove.error} fallback={t("Thao tác không thành công.", "The action failed.")} />
 
       <FamilyBar period={period} />
@@ -140,6 +140,10 @@ export function PeriodHeader({ period, actions, snapshot, onChanged }: { period:
 
       <VariantDialog open={variantOpen} period={period} onClose={() => setVariantOpen(false)} />
       <RenameDialog open={renameOpen} period={period} onClose={() => setRenameOpen(false)} onSaved={onChanged} />
+      <ConfirmDialog open={upgradeOpen} title={t(`Dùng cấu hình nhà máy v${period.factory.applicable_version} cho kỳ này?`, `Use factory set-up v${period.factory.applicable_version} for this period?`)}
+        description={t(`Kỳ đang dùng v${period.factory.pinned_version}. Đầu vào được biên dịch lại theo v${period.factory.applicable_version}; ${period.runs.succeeded ? `${period.runs.succeeded} phương án hiện có vẫn giữ nhưng được đánh dấu là sinh từ đầu vào cũ, cần sinh lại để so sánh công bằng.` : "chưa có phương án nào bị ảnh hưởng."}${period.decision ? " Lịch đã chốt không đổi cho tới khi bạn chốt lại." : ""}`,
+          `The period uses v${period.factory.pinned_version}. Its inputs are recompiled with v${period.factory.applicable_version}; ${period.runs.succeeded ? `the ${period.runs.succeeded} existing options are kept but marked as generated from older inputs — generate again to compare fairly.` : "no option is affected yet."}${period.decision ? " The committed schedule stays until you commit again." : ""}`)}
+        confirmLabel={t(`Dùng v${period.factory.applicable_version}`, `Use v${period.factory.applicable_version}`)} pending={upgrade.isPending} onCancel={() => setUpgradeOpen(false)} onConfirm={() => { setUpgradeOpen(false); upgrade.mutate(); }} />
       <ConfirmDialog open={deleteOpen} title={t("Xóa?", "Delete?")}
         description={t("Đầu vào, phương án và quyết định gắn với phiên bản này (và các biến thể/bản lập lại lịch con) sẽ bị xóa. Đơn trong sổ đơn hàng không bị ảnh hưởng.", "Inputs, options and decisions of this version (and its child variants/reschedules) are deleted. The order book is not affected.")}
         confirmLabel={t("Xóa", "Delete")} pending={remove.isPending} onCancel={() => setDeleteOpen(false)} onConfirm={() => { setDeleteOpen(false); remove.mutate(); }} />

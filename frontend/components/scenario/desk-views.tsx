@@ -2,7 +2,7 @@
 
 import { ArrowRight, CalendarRange, CheckCircle2, GitCompare, Pencil, Plus } from "lucide-react";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 import { EmptyState, Hint, Panel } from "@/components/blocks";
 import { TradeoffChart } from "@/components/decision/charts";
@@ -11,7 +11,9 @@ import {
   type WorkspaceCtx,
 } from "@/components/decision/sections";
 import { useI18n } from "@/components/i18n-provider";
+import { OrderTimeline } from "@/components/order-timeline";
 import { ScheduleGantt } from "@/components/schedule-gantt";
+import { differenceNote, LoadHeatmap, OptimiserNotice, PeriodMetrics, WhyOrderPanel } from "@/components/scenario/schedule-insights";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -21,7 +23,8 @@ import { SkeletonCards } from "@/components/ui-states";
 import { algorithmInfo } from "@/lib/algorithms";
 import { fmtN, hours, isPlannerRun, lateMinutes, opsCost, POLICIES, policyOf, type Alternative, type Delivery, type PolicyKey } from "@/lib/decision";
 import type { DecisionEntry } from "@/lib/decision-log";
-import { formatDateTime, formatDuration, solverStatusLabel } from "@/lib/format";
+import { gapText, optimalityGap } from "@/lib/explain";
+import { formatDateTime, solverStatusLabel } from "@/lib/format";
 import type { ScheduleRunDetail } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -45,7 +48,7 @@ export function DeskSummary({ ctx, pending, decided, onOpen, onGenerate, canGene
         <SummaryCell label={t(`Đề xuất #1 · ${policyOf(ctx.policy).name}`, `Recommended #1 · ${policyOf(ctx.policy).name}`)}>
           {best ? <>
             <b className="font-semibold">{ctx.displayName(best.id)}</b>
-            <span className="block text-xs text-muted-foreground">{t("đúng hạn", "on time")} {ctx.nOrders - best.late}/{ctx.nOrders} · {t("thiếu tồn", "shortfall")} {fmtN(best.metrics.safety_shortfall ?? 0)} · {best.shifts.size} {t("ca-máy", "machine-shifts")}</span>
+            <span className="block text-xs text-muted-foreground">{t("đúng hạn", "on time")} {ctx.nOrders - best.late}/{ctx.nOrders} · {t("thiếu tồn", "shortfall")} {fmtN(best.metrics.safety_shortfall ?? 0)} · {best.shifts.size} {t("ca máy mở", "machine shifts open")}</span>
           </> : <span className="text-muted-foreground">{t("Chưa có phương án", "No options yet")}</span>}
         </SummaryCell>
         <SummaryCell label={t("Quyết định", "Decision")} action={ctx.alts.length > 0 && <LinkButton onClick={() => onOpen("decide")}>{decided ? t("Nhật ký", "Log") : t("Chốt", "Commit")}</LinkButton>}>
@@ -74,9 +77,9 @@ function LinkButton({ onClick, children }: { onClick: () => void; children: Reac
 
 /* ---------- options: policy, recommended cards, trade-off chart ---------- */
 
-export function OptionsView({ ctx, policy, onPolicy, current, decided, loading, onPick, onGenerate, canGenerate }: {
+export function OptionsView({ ctx, policy, onPolicy, current, decided, loading, onPick, onGenerate, onThorough, canGenerate }: {
   ctx: WorkspaceCtx; policy: PolicyKey; onPolicy: (policy: PolicyKey) => void; current: string | null; decided: string | null; loading: boolean;
-  onPick: (id: string) => void; onGenerate: () => void; canGenerate: boolean;
+  onPick: (id: string) => void; onGenerate: () => void; onThorough?: () => void; canGenerate: boolean;
 }) {
   const { t } = useI18n();
   if (loading && !ctx.alts.length) return <SkeletonCards count={3} />;
@@ -86,8 +89,10 @@ export function OptionsView({ ctx, policy, onPolicy, current, decided, loading, 
       action={<Button onClick={onGenerate} disabled={!canGenerate}>{t("Sinh phương án đầu tiên", "Generate the first options")}</Button>} />;
   }
   const manual = ctx.alts.filter((alt) => isPlannerRun(alt.algorithm) && !ctx.list.keys.includes(alt.id)).map((alt) => alt.id);
+  const note = differenceNote(ctx);
   return (
     <div className="grid min-w-0 gap-4">
+      <OptimiserNotice ctx={ctx} onThorough={canGenerate ? onThorough : undefined} />
       <Panel>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="font-semibold">{t("Kỳ này ưu tiên gì?", "What matters most this period?")}</h3>
@@ -98,6 +103,7 @@ export function OptionsView({ ctx, policy, onPolicy, current, decided, loading, 
         <Hint>{policyOf(policy).note}</Hint>
         <FormulaDetails ctx={ctx} />
       </Panel>
+      {note && <p className="rounded-lg border border-dashed bg-surface-2 px-3.5 py-2.5 text-sm"><b>{t("Khác biệt chính:", "What really differs:")}</b> {note}</p>}
       <AlternativeCards ctx={ctx} current={current} decided={decided} onPick={onPick} />
       {/* A planner's own edits stay in view even when another option beats them. */}
       {manual.length > 0 && <>
@@ -115,24 +121,30 @@ export function OptionsView({ ctx, policy, onPolicy, current, decided, loading, 
 
 /* ---------- schedule: one option in depth, optionally against another ---------- */
 
-export function ScheduleView({ ctx, current, compare, deliveries, onPick, onCompare, onEdit }: {
+export function ScheduleView({ ctx, current, compare, deliveries, onPick, onCompare, onEdit, frozenUntil }: {
   ctx: WorkspaceCtx; current: Alternative | null; compare: Alternative | null; deliveries: Delivery[]; onPick: (id: string) => void; onCompare: (id: string | null) => void;
   /** Present when the schedule can be edited by hand (5-stage model). */
   onEdit?: (id: string) => void;
+  /** Runs before this minute are fixed (a reschedule): shaded on the Gantt chart. */
+  frozenUntil?: number | null;
 }) {
   const { t } = useI18n();
+  const [order, setOrder] = useState<string | null>(null);
+  const [mode, setMode] = useState<"machines" | "orders" | "load">("machines");
   if (!current) return <EmptyState icon={<CalendarRange />} title={t("Chưa có lịch để xem", "No schedule to view")} description={t("Sinh phương án ở tab Phương án trước.", "Generate options in the Options tab first.")} />;
   const others = ctx.alts.filter((alt) => !ctx.list.name[alt.id]);
   const optionItems = (disabledId: string | null, suffix: string) => <>
     <SelectGroup><SelectLabel>{t("Phương án đề xuất", "Recommended options")}</SelectLabel>{ctx.list.keys.map((id) => <SelectItem key={id} value={id} disabled={id === disabledId}>{ctx.displayName(id)}{id === disabledId ? suffix : ""}</SelectItem>)}</SelectGroup>
     {others.length > 0 && <SelectGroup><SelectLabel>{t("Lịch khác", "Other schedules")}</SelectLabel>{others.map((alt) => <SelectItem key={alt.id} value={alt.id} disabled={alt.id === disabledId}>{alt.label}</SelectItem>)}</SelectGroup>}
   </>;
+  const late = deliveries.filter((d) => d.tardiness > 0).length;
+  const fallback = current.run.solver_status === "HEURISTIC_FALLBACK";
   return (
     <div className="grid min-w-0 gap-4">
       <div className="flex flex-wrap items-end gap-3">
         <label className="grid gap-1">
           <span className="text-xs font-semibold text-muted-foreground">{t("Phương án", "Option")}</span>
-          <Select value={current.id} onValueChange={onPick}><SelectTrigger size="sm" className="w-full sm:w-64"><SelectValue /></SelectTrigger><SelectContent>{optionItems(null, "")}</SelectContent></Select>
+          <Select value={current.id} onValueChange={(id) => { setOrder(null); onPick(id); }}><SelectTrigger size="sm" className="w-full sm:w-64"><SelectValue /></SelectTrigger><SelectContent>{optionItems(null, "")}</SelectContent></Select>
         </label>
         <label className="grid gap-1">
           <span className="text-xs font-semibold text-muted-foreground">{t("So với", "Compare with")}</span>
@@ -141,18 +153,31 @@ export function ScheduleView({ ctx, current, compare, deliveries, onPick, onComp
             <SelectContent><SelectItem value={NONE}>— {t("không so sánh", "no comparison")} —</SelectItem><SelectSeparator />{optionItems(current.id, t(" (đang xem)", " (viewing)"))}</SelectContent>
           </Select>
         </label>
-        <p className="text-xs text-muted-foreground sm:ml-auto">{algorithmInfo(current.algorithm).label} · {isPlannerRun(current.algorithm) ? t(`từ ${editedFrom(ctx, current)}`, `from ${editedFrom(ctx, current)}`) : `seed ${current.run.seed} · ${current.run.time_budget_seconds}s · ${solverStatusLabel(current.run.solver_status)}`} · {formatDateTime(current.run.created_at)}</p>
+        <p className={cn("text-xs text-muted-foreground sm:ml-auto", fallback && "text-warning")} title={`seed ${current.run.seed} · ${current.run.time_budget_seconds}s`}>
+          {t("Dựng bằng", "Built by")} {algorithmInfo(current.algorithm).label}{isPlannerRun(current.algorithm) ? t(` từ ${editedFrom(ctx, current)}`, ` from ${editedFrom(ctx, current)}`) : ` · ${solverStatusLabel(current.run.solver_status)}`} · {formatDateTime(current.run.created_at)}
+        </p>
         {onEdit && <Button size="sm" variant="outline" onClick={() => onEdit(current.id)}><Pencil />{t("Sửa lịch này bằng tay", "Edit this schedule by hand")}</Button>}
       </div>
       <StatTiles ctx={ctx} alt={current} />
       <Panel flush>
-        <ScheduleGantt operations={current.run.operations} input={ctx.input} origin={ctx.origin} horizon={current.run.horizon_minutes} deliveries={deliveries}
-          compare={compare ? { operations: compare.run.operations, label: ctx.displayName(compare.id) } : null} />
+        <div className="flex flex-wrap items-center gap-3 border-b px-4 py-2.5">
+          <ToggleGroup type="single" variant="outline" size="sm" value={mode} onValueChange={(value) => value && setMode(value as typeof mode)} aria-label={t("Cách xem lịch", "How to view the schedule")}>
+            <ToggleGroupItem value="machines" className="px-3 text-xs">{t("Theo máy", "By machine")}</ToggleGroupItem>
+            <ToggleGroupItem value="orders" className="px-3 text-xs" disabled={!ctx.input}>{t("Theo đơn hàng", "By order")}{late > 0 && <span className="ml-1 rounded-full bg-destructive px-1.5 text-[10px] text-white">{late}</span>}</ToggleGroupItem>
+            <ToggleGroupItem value="load" className="px-3 text-xs" disabled={!ctx.input}>{t("Tải máy", "Machine load")}</ToggleGroupItem>
+          </ToggleGroup>
+          {order && <span className="text-xs text-muted-foreground">{t("Đang xem đơn", "Showing order")} <b className="text-foreground">{order}</b> · <button type="button" className="font-semibold text-primary hover:underline" onClick={() => setOrder(null)}>{t("bỏ chọn", "clear")}</button></span>}
+        </div>
+        {mode === "machines" && <ScheduleGantt operations={current.run.operations} input={ctx.input} origin={ctx.origin} horizon={current.run.horizon_minutes} deliveries={deliveries}
+          compare={compare ? { operations: compare.run.operations, label: ctx.displayName(compare.id) } : null} frozenUntil={frozenUntil} focusOrder={order} onOrder={setOrder} />}
+        {mode === "orders" && ctx.input && <OrderTimeline input={ctx.input} operations={current.run.operations} origin={ctx.origin} horizon={current.run.horizon_minutes} deliveries={deliveries} focusOrder={order} onOrder={setOrder} />}
+        {mode === "load" && <div className="p-4"><LoadHeatmap ctx={ctx} alt={current} embedded /></div>}
       </Panel>
+      {order && <div id="schedule-focus" className="scroll-mt-28"><WhyOrderPanel key={`${current.id}-${order}`} ctx={ctx} alt={current} order={order} onClose={() => setOrder(null)} onEdit={onEdit ? () => onEdit(current.id) : undefined} /></div>}
       {compare && <DiffCard ctx={ctx} a={current} b={compare} />}
-      <div className="grid min-w-0 gap-4 xl:grid-cols-12">
-        <div className="min-w-0 xl:col-span-7"><DeliveriesTable ctx={ctx} deliveries={deliveries} /></div>
-        <div className="min-w-0 xl:col-span-5"><StockCard ctx={ctx} alt={current} /></div>
+      <div className="grid min-w-0 gap-4 2xl:grid-cols-12">
+        <div className="min-w-0 2xl:col-span-7"><DeliveriesTable ctx={ctx} deliveries={deliveries} focus={order} onOrder={(id) => { setOrder(id); if (id) window.requestAnimationFrame(() => document.getElementById("schedule-focus")?.scrollIntoView({ behavior: "smooth", block: "center" })); }} /></div>
+        <div className="min-w-0 2xl:col-span-5"><StockCard ctx={ctx} alt={current} /></div>
       </div>
       <details className="group rounded-lg border bg-card px-4 py-3 shadow-card">
         <summary className="cursor-pointer text-sm font-semibold">{t("Thuật toán đã dựng lịch này thế nào", "How the algorithm built this schedule")}</summary>
@@ -170,11 +195,12 @@ function editedFrom(ctx: WorkspaceCtx, alt: Alternative): string {
 
 /* ---------- analysis: every schedule, algorithm speed ---------- */
 
-export function AnalysisView({ ctx, runs, current, onPick, truncatedAt, matrix }: { ctx: WorkspaceCtx; runs: ScheduleRunDetail[]; current: string | null; onPick: (id: string) => void; truncatedAt: number | null; matrix: ReactNode }) {
+export function AnalysisView({ ctx, runs, current, onPick, truncatedAt, matrix, decisions }: { ctx: WorkspaceCtx; runs: ScheduleRunDetail[]; current: string | null; onPick: (id: string) => void; truncatedAt: number | null; matrix: ReactNode; decisions: DecisionEntry[] }) {
   const { t } = useI18n();
   if (!ctx.alts.length) return matrix ? <div className="grid min-w-0 gap-4">{matrix}</div> : <EmptyState icon={<CalendarRange />} title={t("Chưa có gì để phân tích", "Nothing to analyse yet")} description={t("Phân tích xuất hiện sau khi có ít nhất một lần chạy.", "Analysis appears once there is at least one run.")} />;
   return (
     <div className="grid min-w-0 gap-4">
+      <PeriodMetrics ctx={ctx} entries={decisions} />
       {matrix}
       <Panel title={t("Xếp hạng mọi lịch theo chính sách đang chọn", "Every schedule ranked under the selected policy")}>
         <RankingTable ctx={ctx} current={current} onPick={onPick} />
@@ -209,7 +235,7 @@ export function OptionSheet({ ctx, alt, rank, committed, viewingId, onClose, onS
               {committed && <Badge variant="info"><CheckCircle2 />{t("Đã chốt", "Committed")}</Badge>}
             </div>
             <SheetTitle className="text-lg">{ctx.displayName(alt.id)}</SheetTitle>
-            <SheetDescription>{algorithmInfo(alt.algorithm).label} · seed {alt.run.seed} · {alt.run.time_budget_seconds}s · {solverStatusLabel(alt.run.solver_status)}</SheetDescription>
+            <SheetDescription>{algorithmInfo(alt.algorithm).label} · {solverStatusLabel(alt.run.solver_status)}</SheetDescription>
           </SheetHeader>
           <div className="grid gap-4 overflow-y-auto p-4">
             <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-md border bg-border">
@@ -217,8 +243,8 @@ export function OptionSheet({ ctx, alt, rank, committed, viewingId, onClose, onS
               <Fact label={t("Tổng trễ", "Total lateness")} warn={alt.late > 0}>{hours(lateMinutes(alt, ctx.input))}</Fact>
               <Fact label={t("Thiếu tồn an toàn", "Safety shortfall")} warn={(alt.metrics.safety_shortfall ?? 0) > 0}>{fmtN(alt.metrics.safety_shortfall ?? 0)}</Fact>
               <Fact label={t("Chi phí vận hành", "Operating cost")}>{fmtN(opsCost(alt, ctx.weights))}</Fact>
-              <Fact label={t("Ca-máy bật", "Machine-shifts")}>{alt.shifts.size}</Fact>
-              <Fact label={t("Chuẩn bị máy", "Setup")}>{formatDuration(alt.metrics.setup_minutes ?? 0)}</Fact>
+              <Fact label={t("Ca máy mở", "Machine shifts open")}>{alt.shifts.size}</Fact>
+              <Fact label={t("Chuẩn bị máy", "Setup")}>{hours(alt.metrics.setup_minutes ?? 0)}</Fact>
             </dl>
             {rank != null && <p className="text-sm text-muted-foreground">{rankReason(ctx, alt.id)}</p>}
             <section className="grid gap-1">
@@ -230,6 +256,7 @@ export function OptionSheet({ ctx, alt, rank, committed, viewingId, onClose, onS
                 {alt.run.validation.valid ? t("Qua bộ kiểm độc lập", "Passed the independent validator") : t("Không qua bộ kiểm độc lập", "Failed the independent validator")} · {alt.run.validation.operations_checked ?? alt.run.operations.length} {t("lượt", "operations")}
               </p>
             )}
+            <TechLine alt={alt} />
             <Link href={`/runs/${alt.id}`} className="text-sm font-medium text-primary hover:underline">{t("Mở chi tiết lần chạy", "Open run details")} →</Link>
           </div>
           <SheetFooter className="mt-auto flex-row flex-wrap border-t">
@@ -241,6 +268,18 @@ export function OptionSheet({ ctx, alt, rank, committed, viewingId, onClose, onS
         </>}
       </SheetContent>
     </Sheet>
+  );
+}
+
+/** Seed, budget and optimality gap: for whoever needs to reproduce or judge the run, kept out of the planner's way. */
+function TechLine({ alt }: { alt: Alternative }) {
+  const { t } = useI18n();
+  const gap = optimalityGap(alt.run);
+  return (
+    <p className="text-xs text-muted-foreground">
+      {t("Kỹ thuật", "Technical")}: seed {alt.run.seed} · {t("ngân sách", "budget")} {alt.run.time_budget_seconds}s
+      {gap != null && <> · {t("cách tối ưu", "optimality gap")} {gapText(gap)}</>}
+    </p>
   );
 }
 

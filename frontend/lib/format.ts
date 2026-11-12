@@ -39,7 +39,7 @@ export function formatInputName(value: string): string {
 export function solverStatusLabel(value: string | null): string {
   const labels: Record<string, string> = {
     HEURISTIC_FEASIBLE: tr("Có lịch khả thi", "Feasible schedule"),
-    HEURISTIC_FALLBACK: tr("Dùng lịch dự phòng EDD", "EDD fallback schedule"),
+    HEURISTIC_FALLBACK: tr("Chưa cải thiện được, giữ lịch EDD", "No improvement found, EDD schedule kept"),
     OPTIMAL: tr("Tối ưu", "Optimal"),
     FEASIBLE: tr("Có lịch khả thi", "Feasible schedule"),
     INFEASIBLE: tr("Không có lịch khả thi", "No feasible schedule"),
@@ -144,6 +144,35 @@ const PRODUCT_LABELS: Record<string, [string, string]> = {
 export function productLabel(value: string): string {
   const label = PRODUCT_LABELS[value];
   return label ? tr(...label) : value.replaceAll("_", " ");
+}
+
+/** Semi-finished codes follow `<product or line>_<STAGE>` (F_CAST, F_SILVER_PAINT): said in words. */
+const ITEM_STAGES: Record<string, (base: string) => [string, string]> = {
+  CAST: (base) => [`Phôi đúc ${base}`, `${base} casting`],
+  HEAT: (base) => [`${base} đã nhiệt luyện`, `${base} heat-treated`],
+  MACH: (base) => [`${base} đã gia công`, `${base} machined`],
+  PAINT: (base) => [`${base} đã sơn`, `${base} painted`],
+};
+
+/** "F đã gia công" for F_MACH, "F bạc" for F_SILVER; unknown codes keep their name. */
+export function itemLabel(value: string): string {
+  if (PRODUCT_LABELS[value]) return productLabel(value);
+  const match = /^(.+)_(CAST|HEAT|MACH|PAINT)$/.exec(value);
+  if (!match) return value.replaceAll("_", " ");
+  return tr(...ITEM_STAGES[match[2]](productLabel(match[1])));
+}
+
+/** "F đã gia công · mẻ 08" for run F_MACH-08 (the code stays available as the run's id). */
+export function runLabel(lot: string, item?: string | null): string {
+  const dash = lot.lastIndexOf("-");
+  const code = item ?? (dash > 0 ? lot.slice(0, dash) : lot);
+  const number = dash > 0 ? lot.slice(dash + 1) : null;
+  return number ? `${itemLabel(code)} · ${tr("mẻ", "run")} ${number}` : itemLabel(code);
+}
+
+/** Minutes elapsed since the schedule's origin (where "now" falls on its timeline). */
+export function nowMinute(origin: string, now = Date.now()): number {
+  return Math.floor((now - new Date(origin).getTime()) / 60_000);
 }
 
 /** Locale-aware number formatting. */

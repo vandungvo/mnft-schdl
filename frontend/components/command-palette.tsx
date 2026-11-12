@@ -13,6 +13,7 @@ import { formatDateTime, formatInputName } from "@/lib/format";
 import { NAV_ITEMS } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import { useI18n } from "./i18n-provider";
+import { ShortcutsDialog } from "./shortcuts-dialog";
 
 interface Command {
   id: string;
@@ -42,11 +43,13 @@ function isTyping(target: EventTarget | null) {
 
 export function CommandPaletteProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const [shortcuts, setShortcuts] = useState(false);
   const show = useCallback(() => setOpen(true), []);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if ((event.key === "k" || event.key === "K") && (event.metaKey || event.ctrlKey)) { event.preventDefault(); setOpen((value) => !value); return; }
+      if (event.key === "?" && !event.metaKey && !event.ctrlKey && !event.altKey && !isTyping(event.target)) { event.preventDefault(); setShortcuts(true); return; }
       if (event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey && !isTyping(event.target)) { event.preventDefault(); setOpen(true); }
     };
     window.addEventListener("keydown", onKey);
@@ -57,6 +60,7 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
   return (
     <PaletteContext.Provider value={value}>
       {children}
+      <ShortcutsDialog open={shortcuts} onOpenChange={setShortcuts} />
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent showCloseButton={false} className="top-[12vh] translate-y-0 gap-0 overflow-hidden bg-popover p-0 shadow-float sm:max-w-xl">
           {open && <Palette onClose={() => setOpen(false)} />}

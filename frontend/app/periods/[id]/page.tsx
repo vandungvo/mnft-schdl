@@ -81,6 +81,7 @@ function Period() {
       defaultView: DEFAULT_TAB[period.status],
       steps: periodSteps(period),
       readOnly: period.status === "closed",
+      frozenUntil: period.inputs.frozen_until,
       commitNote: <ul className="grid gap-1 rounded-lg border border-dashed px-3 py-2.5">
         <li>• {t("Lịch được chốt dùng để phát lệnh sản xuất ở bước Thực hiện.", "The committed schedule is the one work orders are issued from under Execute.")}</li>
         <li>• {t("Tồn cuối kỳ dự kiến của lịch này thành tồn đầu kỳ của kỳ sau.", "Its projected closing stock becomes the next period's opening stock.")}</li>

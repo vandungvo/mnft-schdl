@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, ChevronDown, Loader2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ChevronDown, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 
@@ -12,13 +12,15 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { algorithmInfo, familyWhy } from "@/lib/algorithms";
 import {
   compareScore, fmtN, fmtScore, fmtSeconds, historyOf, hours, lateMinutes, median, movedOperations, opsCost, policyOf, runSeconds, score, signed,
   termsOf, tierKeys, tradesVs, type Alternative, type Delivery, type PolicyKey, type Shortlist,
 } from "@/lib/decision";
 import type { DecisionEntry } from "@/lib/decision-log";
-import { formatClock, formatDateTime, formatDuration, productLabel, solverStatusLabel } from "@/lib/format";
+import { gapText, optimalityGap } from "@/lib/explain";
+import { formatClock, formatDateTime, formatDay, formatHour, productLabel, solverStatusLabel } from "@/lib/format";
 import { tr } from "@/lib/locale";
 import { plantOf } from "@/lib/plant";
 import type { AnySchedulingInput, ScheduleRunDetail } from "@/lib/types";
@@ -141,7 +143,7 @@ export function AlternativeCards({ ctx, current, decided, onPick, ids, label }: 
                 : <span className="grid h-7 shrink-0 place-items-center rounded-md border border-dashed px-1.5 text-[11px] font-semibold text-muted-foreground">{t("ngoài", "other")}</span>}
               <span className="grid min-w-0 flex-1">
                 <span className="text-[15px] leading-tight font-semibold">{ctx.list.name[id] ?? alt.label}</span>
-                <span className="truncate text-xs text-muted-foreground">{alt.algorithm === "manual" ? t("Bản sửa tay", "Manual edit") : alt.algorithm === "cp_repair" ? t("Tối ưu quanh bản sửa", "Optimised around an edit") : `${t("Thuật toán", "Algorithm")}: ${alt.label}`}</span>
+                <span className="truncate text-xs text-muted-foreground">{alt.algorithm === "manual" ? t("Bản sửa tay", "Manual edit") : alt.algorithm === "cp_repair" ? t("Tối ưu quanh bản sửa", "Optimised around an edit") : `${t("Cách dựng", "Built by")}: ${algorithmInfo(alt.algorithm).label}`}</span>
               </span>
               {id === decided && <Badge variant="info"><CheckCircle2 />{t("Đã chốt", "Committed")}</Badge>}
             </span>
@@ -155,7 +157,7 @@ export function AlternativeCards({ ctx, current, decided, onPick, ids, label }: 
             <span className="mt-auto flex items-center justify-end gap-2 border-t pt-2.5 text-xs">
               {active ? <span className="font-semibold text-primary">{t("Đang xem", "Viewing")}</span> : <span className="font-medium text-muted-foreground group-hover:text-primary">{t("Xem nhanh", "Quick look")} →</span>}
             </span>
-            {twins.length > 0 && <span className="text-xs text-muted-foreground">{t("Trùng kết quả với", "Same result as")} {twins.map(ctx.displayName).join(", ")}</span>}
+            {twins.length > 0 && <span className="text-xs text-muted-foreground">{t("Cho đúng cùng kết quả:", "Gives the very same result:")} {twins.map((twin) => { const other = ctx.byId.get(twin); return other ? algorithmInfo(other.algorithm).label : ctx.displayName(twin); }).join(", ")}</span>}
           </button>
         );
       })}
@@ -168,18 +170,26 @@ export function AlternativeCards({ ctx, current, decided, onPick, ids, label }: 
 
 export function StatTiles({ ctx, alt }: { ctx: WorkspaceCtx; alt: Alternative }) {
   const { t } = useI18n();
+  const [more, setMore] = useState(false);
   const m = alt.metrics;
+  // Every duration in hours, so figures read the same here, in the comparison table and on the cards.
   const items: Array<[string, string, Tone]> = [
-    [t("Đúng hạn", "On time"), `${ctx.nOrders - alt.late} / ${ctx.nOrders}`, alt.late ? "warn" : "ok"],
-    [t("Tổng trễ", "Total lateness"), hours(lateMinutes(alt, ctx.input)), alt.late ? "warn" : "ok"],
-    [t("Ca-máy bật", "Machine-shifts open"), String(alt.shifts.size), "default"],
-    [t("Thời gian rảnh", "Idle time"), formatDuration(m.idle_minutes ?? 0), "default"],
-    [t("Chuẩn bị máy", "Setup"), formatDuration(m.setup_minutes ?? 0), "default"],
-    [t("Lô bắt buộc cuối xong", "Last required lot done"), formatClock(ctx.origin, m.makespan ?? 0), "default"],
-    [t("Thiếu tồn an toàn", "Safety-stock shortfall"), fmtN(m.safety_shortfall ?? 0), m.safety_shortfall ? "warn" : "ok"],
+    [t("Đúng hạn", "On time"), `${ctx.nOrders - alt.late} / ${ctx.nOrders}`, alt.late ? "danger" : "ok"],
+    [t("Tổng trễ", "Total lateness"), hours(lateMinutes(alt, ctx.input)), alt.late ? "danger" : "ok"],
+    [t("Thiếu tồn an toàn", "Safety-stock shortfall"), `${fmtN(m.safety_shortfall ?? 0)} ${t("sp", "units")}`, m.safety_shortfall ? "warn" : "ok"],
     [t("Chi phí vận hành", "Operating cost"), fmtN(opsCost(alt, ctx.weights)), "default"],
+    [t("Ca máy mở", "Machine shifts open"), String(alt.shifts.size), "default"],
+    [t("Thời gian rảnh", "Idle time"), hours(m.idle_minutes ?? 0), "default"],
+    [t("Chuẩn bị máy", "Setup"), hours(m.setup_minutes ?? 0), "default"],
+    [t("Lô bắt buộc cuối xong", "Last required lot done"), formatClock(ctx.origin, m.makespan ?? 0), "default"],
   ];
-  return <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-7">{items.map(([label, value, tone]) => <StatTile key={label} label={label} value={value} tone={tone} className="[&>div:nth-child(2)]:text-lg" />)}</div>;
+  // The four figures the ranking uses always show; the other four fold away below 1536px so the Gantt stays in view.
+  return (
+    <div className="grid gap-1.5">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 2xl:grid-cols-8">{items.map(([label, value, tone], index) => <StatTile key={label} label={label} value={value} tone={tone} className={cn("px-3 py-2 [&>div:nth-child(2)]:mt-0.5 [&>div:nth-child(2)]:text-base", index >= 4 && !more && "hidden 2xl:block")} />)}</div>
+      <button type="button" className="justify-self-start text-xs font-medium text-primary hover:underline 2xl:hidden" aria-expanded={more} onClick={() => setMore(!more)}>{more ? t("Ẩn bớt chỉ số", "Fewer figures") : t("Thêm 4 chỉ số (ca máy, rảnh, chuẩn bị, lô cuối)", "4 more figures (shifts, idle, setup, last lot)")}</button>
+    </div>
+  );
 }
 
 function rankLabel(ctx: WorkspaceCtx, id: string): string {
@@ -192,20 +202,20 @@ export function DiffCard({ ctx, a, b }: { ctx: WorkspaceCtx; a: Alternative; b: 
   const nA = ctx.displayName(a.id), nB = ctx.displayName(b.id);
   const rows: Array<[string, (x: Alternative) => number, ((v: number) => string)?]> = [
     [t("Đơn trễ", "Late orders"), (x) => x.late],
-    [t("Tổng trễ (phút)", "Total lateness (min)"), (x) => lateMinutes(x, ctx.input)],
+    [t("Tổng trễ", "Total lateness"), (x) => lateMinutes(x, ctx.input), hours],
     [t("Trễ theo ưu tiên đơn", "Priority-weighted lateness"), (x) => x.metrics.weighted_tardiness ?? 0],
     [t("Thiếu tồn an toàn", "Safety-stock shortfall"), (x) => x.metrics.safety_shortfall ?? 0],
     [t("Chi phí vận hành", "Operating cost"), (x) => opsCost(x, ctx.weights)],
-    [t("Ca-máy bật", "Machine-shifts open"), (x) => x.shifts.size],
-    [t("Thời gian rảnh (phút)", "Idle time (min)"), (x) => x.metrics.idle_minutes ?? 0],
-    [t("Setup (phút)", "Setup (min)"), (x) => x.metrics.setup_minutes ?? 0],
-    [t("Bảo trì khuôn (phút)", "Mold maintenance (min)"), (x) => x.metrics.maintenance_minutes ?? 0],
+    [t("Ca máy mở", "Machine shifts open"), (x) => x.shifts.size],
+    [t("Thời gian rảnh", "Idle time"), (x) => x.metrics.idle_minutes ?? 0, hours],
+    [t("Chuẩn bị máy", "Setup"), (x) => x.metrics.setup_minutes ?? 0, hours],
+    [t("Bảo trì khuôn", "Mold maintenance"), (x) => x.metrics.maintenance_minutes ?? 0, hours],
     [t("Lô bắt buộc cuối xong", "Last required lot done"), (x) => x.metrics.makespan ?? 0, (v) => formatClock(ctx.origin, v)],
   ];
   const better = compareScore(b, a, ctx.weights, ctx.policy);
   const onlyA = [...a.shifts].filter((s) => !b.shifts.has(s));
   const onlyB = [...b.shifts].filter((s) => !a.shifts.has(s));
-  const fmtShift = (key: string) => key.replace("|", " · ");
+  const fmtShift = (key: string) => shiftName(ctx, key);
   return (
     <Panel title={t(`Đổi từ “${nA}” sang “${nB}” thì được gì, mất gì`, `Switching from “${nA}” to “${nB}”: what you gain and lose`)}>
       <Table>
@@ -222,8 +232,8 @@ export function DiffCard({ ctx, a, b }: { ctx: WorkspaceCtx; a: Alternative; b: 
         </TableBody>
       </Table>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
-        {[[t(`Ca chỉ lịch đang xem bật (${onlyA.length})`, `Shifts open only in the viewed schedule (${onlyA.length})`), onlyA.map(fmtShift).join(", ") || "—"], [t(`Ca chỉ “${nB}” bật (${onlyB.length})`, `Shifts open only in “${nB}” (${onlyB.length})`), onlyB.map(fmtShift).join(", ") || "—"],
-          [t("Lượt thay đổi", "Moved operations"), t(`${movedOperations(a, b)} lượt chung đổi máy hoặc giờ bắt đầu; ${a.shifts.size - onlyA.length} ca-máy dùng chung.`, `${movedOperations(a, b)} shared operations change machine or start time; ${a.shifts.size - onlyA.length} machine-shifts in common.`)]].map(([title, body]) => (
+        {[[t(`Ca chỉ lịch đang xem mở (${onlyA.length})`, `Shifts open only in the viewed schedule (${onlyA.length})`), onlyA.map(fmtShift).join(", ") || "—"], [t(`Ca chỉ “${nB}” mở (${onlyB.length})`, `Shifts open only in “${nB}” (${onlyB.length})`), onlyB.map(fmtShift).join(", ") || "—"],
+          [t("Lượt thay đổi", "Moved operations"), t(`${movedOperations(a, b)} lượt chung đổi máy hoặc giờ bắt đầu; ${a.shifts.size - onlyA.length} ca máy mở ở cả hai.`, `${movedOperations(a, b)} shared operations change machine or start time; ${a.shifts.size - onlyA.length} machine shifts open in both.`)]].map(([title, body]) => (
           <div key={title} className="rounded-lg bg-surface-2 p-3"><h4 className="mb-1 text-[13px] font-semibold">{title}</h4><p className="text-[13px] leading-relaxed break-words text-muted-foreground">{body}</p></div>
         ))}
       </div>
@@ -233,24 +243,46 @@ export function DiffCard({ ctx, a, b }: { ctx: WorkspaceCtx; a: Alternative; b: 
 
 /* ---------- deliveries, stock, why ---------- */
 
-export function DeliveriesTable({ ctx, deliveries }: { ctx: WorkspaceCtx; deliveries: Delivery[] }) {
+export function DeliveriesTable({ ctx, deliveries, focus, onOrder }: { ctx: WorkspaceCtx; deliveries: Delivery[]; focus?: string | null; onOrder?: (order: string | null) => void }) {
   const { t } = useI18n();
-  const sorted = [...deliveries].sort((a, b) => a.time - b.time);
+  const late = deliveries.filter((d) => d.tardiness > 0);
+  const [only, setOnly] = useState<"all" | "late">("all");
+  const [sort, setSort] = useState<"late" | "due">("late");
+  // Worst first: the order a planner has to act on is never at the bottom of a scrolled list.
+  const rows = (only === "late" ? late : deliveries).slice().sort((a, b) => (sort === "late" ? b.tardiness - a.tardiness : 0) || a.due - b.due || a.time - b.time);
+  const pick = (order: string) => onOrder?.(focus === order ? null : order);
   return (
-    <Panel title={t("Giao hàng", "Deliveries")}>
-      <div className="max-h-[440px] overflow-y-auto rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" tabIndex={0} role="region" aria-label={t("Bảng giao hàng (cuộn được)", "Deliveries table (scrollable)")}>
-        <Table>
-          <TableHeader className="sticky top-0 bg-card"><TableRow><TableHead>{t("Đơn", "Order")}</TableHead><TableHead>{t("Sản phẩm", "Product")}</TableHead><TableHead className={N}>{t("Số lượng", "Quantity")}</TableHead><TableHead>{t("Giao lúc", "Delivered")}</TableHead><TableHead>{t("Hạn", "Due")}</TableHead><TableHead className={N}>{t("Còn dư", "Slack")}</TableHead></TableRow></TableHeader>
-          <TableBody>{sorted.map((d) => {
-            const slack = d.due - d.time;
-            return <TableRow key={d.order}><TableCell className="font-semibold">{d.order}{d.urgent && <Badge variant="brand" className="ml-1.5">{t("gấp", "urgent")}</Badge>}</TableCell><TableCell>{productLabel(d.product)}</TableCell><TableCell className={N}>{fmtN(d.quantity)}</TableCell>
-              <TableCell>{Number.isFinite(d.time) ? formatClock(ctx.origin, d.time) : t("chưa xếp", "not scheduled")}</TableCell><TableCell>{formatClock(ctx.origin, d.due)}</TableCell>
-              <TableCell className={cn(N, slack < 0 && "font-semibold text-warning")}>{slack < 0 ? `${t("trễ", "late")} ${hours(-slack)}` : hours(slack)}</TableCell></TableRow>;
-          })}</TableBody>
-        </Table>
-      </div>
+    <Panel title={t("Giao hàng", "Deliveries")} actions={<div className="flex flex-wrap items-center gap-2">
+      <ToggleGroup type="single" variant="outline" size="sm" value={only} onValueChange={(value) => value && setOnly(value as "all" | "late")} aria-label={t("Lọc đơn", "Filter orders")}>
+        <ToggleGroupItem value="all" className="px-2.5 text-xs">{t(`Tất cả (${deliveries.length})`, `All (${deliveries.length})`)}</ToggleGroupItem>
+        <ToggleGroupItem value="late" className="px-2.5 text-xs" disabled={!late.length}>{t(`Trễ (${late.length})`, `Late (${late.length})`)}</ToggleGroupItem>
+      </ToggleGroup>
+      <ToggleGroup type="single" variant="outline" size="sm" value={sort} onValueChange={(value) => value && setSort(value as "late" | "due")} aria-label={t("Sắp xếp", "Sort")}>
+        <ToggleGroupItem value="late" className="px-2.5 text-xs">{t("Trễ nhiều trước", "Most late first")}</ToggleGroupItem>
+        <ToggleGroupItem value="due" className="px-2.5 text-xs">{t("Theo hạn", "By due date")}</ToggleGroupItem>
+      </ToggleGroup>
+    </div>}>
+      <Table>
+        <TableHeader><TableRow><TableHead>{t("Đơn", "Order")}</TableHead><TableHead>{t("Sản phẩm", "Product")}</TableHead><TableHead className={N}>{t("Số lượng", "Quantity")}</TableHead><TableHead>{t("Giao lúc", "Delivered")}</TableHead><TableHead>{t("Hạn", "Due")}</TableHead><TableHead className={N}>{t("Còn dư / trễ", "Slack / late")}</TableHead></TableRow></TableHeader>
+        <TableBody>{rows.map((d) => {
+          const slack = d.due - d.time;
+          return <TableRow key={d.order} data-state={focus === d.order ? "selected" : undefined} className={cn(onOrder && "cursor-pointer")} tabIndex={onOrder ? 0 : undefined}
+            onClick={onOrder ? () => pick(d.order) : undefined} onKeyDown={onOrder ? (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); pick(d.order); } } : undefined}>
+            <TableCell className="font-semibold">{d.order}{d.urgent && <Badge variant="brand" className="ml-1.5">{t("gấp", "urgent")}</Badge>}</TableCell><TableCell>{productLabel(d.product)}</TableCell><TableCell className={N}>{fmtN(d.quantity)}</TableCell>
+            <TableCell>{Number.isFinite(d.time) ? formatClock(ctx.origin, d.time) : t("chưa xếp", "not scheduled")}</TableCell><TableCell>{formatClock(ctx.origin, d.due)}</TableCell>
+            <TableCell className={cn(N, slack < 0 && "font-semibold text-destructive")}>{slack < 0 ? <span className="inline-flex items-center gap-1"><AlertTriangle className="size-3.5" aria-hidden />{t("trễ", "late")} {hours(-slack)}</span> : hours(slack)}</TableCell></TableRow>;
+        })}</TableBody>
+      </Table>
+      {onOrder && <Hint>{t("Bấm một đơn để xem các lượt cấp hàng trên Gantt và vì sao đơn đó trễ hoặc kịp hạn.", "Click an order to see the runs that feed it on the Gantt chart and why it is late or on time.")}</Hint>}
     </Panel>
   );
+}
+
+/** "CNC_1 06:00–14:00 Th 4, 07/10" for a "CNC_1|D03_S1" machine-shift key. */
+function shiftName(ctx: WorkspaceCtx, key: string): string {
+  const [machine, shift] = key.split("|");
+  const def = ctx.input ? plantOf(ctx.input).machine(machine)?.shifts.find((item) => item.id === shift) : undefined;
+  return def ? `${machine} ${formatHour(ctx.origin, def.start)}–${formatHour(ctx.origin, def.end)} ${formatDay(ctx.origin, def.start)}` : key.replace("|", " · ");
 }
 
 export function StockCard({ ctx, alt }: { ctx: WorkspaceCtx; alt: Alternative }) {
@@ -318,8 +350,9 @@ export function SpeedSection({ ctx, runs }: { ctx: WorkspaceCtx; runs: ScheduleR
       </Panel>}
       <Panel title={t("Thời gian và chất lượng theo thuật toán", "Time and quality by algorithm")}>
         <Table>
-          <TableHeader><TableRow><TableHead>{t("Thuật toán", "Algorithm")}</TableHead><TableHead className={N}>{t("Có lịch / lần chạy", "Schedules / runs")}</TableHead><TableHead className={N}>{t("Thời gian / lần", "Time / run")}</TableHead><TableHead className={N}>{t("Đạt lịch tốt nhất sau", "Best found after")}</TableHead><TableHead className={N}>{t("Điểm tốt nhất", "Best score")}</TableHead><TableHead className={N}>{t("Điểm trung vị", "Median score")}</TableHead><TableHead className={N}>{t("Đơn trễ", "Late orders")}</TableHead><TableHead>{t("Trạng thái", "Status")}</TableHead></TableRow></TableHeader>
+          <TableHeader><TableRow><TableHead>{t("Thuật toán", "Algorithm")}</TableHead><TableHead className={N}>{t("Có lịch / lần chạy", "Schedules / runs")}</TableHead><TableHead className={N}>{t("Thời gian / lần", "Time / run")}</TableHead><TableHead className={N}>{t("Đạt lịch tốt nhất sau", "Best found after")}</TableHead><TableHead className={N}>{t("Điểm tốt nhất", "Best score")}</TableHead><TableHead className={N}>{t("Điểm trung vị", "Median score")}</TableHead><TableHead className={N}>{t("Đơn trễ", "Late orders")}</TableHead><TableHead className={N}>{t("Cách tối ưu", "Optimality gap")}</TableHead><TableHead>{t("Trạng thái", "Status")}</TableHead></TableRow></TableHeader>
           <TableBody>{groups.map((g) => {
+            const gap = g.best ? optimalityGap(g.best.run) : null;
             const scores = g.ok.map((run) => ctx.byId.get(run.id)).filter((alt): alt is Alternative => Boolean(alt)).map((alt) => score(alt, ctx.weights, ctx.policy));
             return <TableRow key={g.algorithm}>
               <TableCell className="font-semibold">{algorithmInfo(g.algorithm).label}</TableCell>
@@ -329,11 +362,12 @@ export function SpeedSection({ ctx, runs }: { ctx: WorkspaceCtx; runs: ScheduleR
               <TableCell className={N}>{g.best ? fmtScore(score(g.best, ctx.weights, ctx.policy), ctx.policy) : "—"}</TableCell>
               <TableCell className={N}>{scores.length ? fmtScore([median(scores.map((pair) => pair[0]))!, median(scores.map((pair) => pair[1]))!], ctx.policy) : "—"}</TableCell>
               <TableCell className={N}>{g.best ? `${g.best.late} / ${ctx.nOrders}` : "—"}</TableCell>
+              <TableCell className={N} title={t("Chênh giữa điểm của lịch và cận dưới solver chứng minh được; 0% = tối ưu", "Distance between the schedule's score and the bound the solver proved; 0% = optimal")}>{gapText(gap)}</TableCell>
               <TableCell className="text-xs text-muted-foreground">{g.statuses.join(", ")}</TableCell>
             </TableRow>;
           })}</TableBody>
         </Table>
-        <Hint>{t("Thời gian là thời gian thuật toán chạy trên worker (tính cả dựng mô hình). “Điểm trung vị” là trung vị điểm (tầng 1 · tầng 2) qua các seed có lịch; càng thấp càng tốt.", "Time is the algorithm's run time on the worker (including model building). “Median score” is the median score (tier 1 · tier 2) across seeds that produced a schedule; lower is better.")}</Hint>
+        <Hint>{t("Thời gian là thời gian thuật toán chạy trên worker (tính cả dựng mô hình). “Điểm trung vị” là trung vị điểm (tầng 1 · tầng 2) qua các seed có lịch; càng thấp càng tốt. “Cách tối ưu” chỉ có khi CP-SAT chứng minh được cận dưới cho toàn bài toán: không lịch nào tốt hơn quá mức đó.", "Time is the algorithm's run time on the worker (including model building). “Median score” is the median score (tier 1 · tier 2) across seeds that produced a schedule; lower is better. “Optimality gap” only shows when CP-SAT proved a bound for the whole problem: no schedule can be better by more than that.")}</Hint>
       </Panel>
     </div>
   );
@@ -377,7 +411,7 @@ export function DecisionPanel({ ctx, alt, entries, onSave, onChangeOption, note 
       {entries.length ? (
         <div className="mt-5">
           <Table>
-            <TableHeader><TableRow><TableHead>{t("Thời điểm", "Time")}</TableHead><TableHead>{t("Phương án", "Option")}</TableHead><TableHead>{t("Chính sách", "Policy")}</TableHead><TableHead className={N}>{t("Đơn trễ", "Late orders")}</TableHead><TableHead className={N}>{t("Thiếu tồn", "Shortfall")}</TableHead><TableHead className={N}>{t("Ca-máy", "Machine-shifts")}</TableHead><TableHead>{t("Lý do", "Reason")}</TableHead><TableHead>{t("Người chốt", "Committed by")}</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>{t("Thời điểm", "Time")}</TableHead><TableHead>{t("Phương án", "Option")}</TableHead><TableHead>{t("Chính sách", "Policy")}</TableHead><TableHead className={N}>{t("Đơn trễ", "Late orders")}</TableHead><TableHead className={N}>{t("Thiếu tồn", "Shortfall")}</TableHead><TableHead className={N}>{t("Ca máy mở", "Machine shifts")}</TableHead><TableHead>{t("Lý do", "Reason")}</TableHead><TableHead>{t("Người chốt", "Committed by")}</TableHead></TableRow></TableHeader>
             <TableBody>{[...entries].reverse().map((entry) => (
               <TableRow key={entry.at + entry.runId}>
                 <TableCell>{formatDateTime(entry.at)}</TableCell>
@@ -403,14 +437,14 @@ export function RankingTable({ ctx, current, onPick }: { ctx: WorkspaceCtx; curr
   const sorted = [...ctx.alts].sort((a, b) => compareScore(a, b, ctx.weights, ctx.policy));
   return (
     <Table>
-      <TableHeader><TableRow><TableHead>{t("Phương án", "Option")}</TableHead><TableHead className={N}>{t("Hạng", "Rank")}</TableHead><TableHead className={N}>{t("Điểm", "Score")}</TableHead><TableHead className={N}>{t("Đơn trễ", "Late orders")}</TableHead><TableHead className={N}>{t("Thiếu tồn", "Shortfall")}</TableHead><TableHead className={N}>{t("Chi phí vận hành", "Operating cost")}</TableHead><TableHead className={N}>{t("Ca-máy", "Machine-shifts")}</TableHead><TableHead className={N}>{t("Rảnh (phút)", "Idle (min)")}</TableHead><TableHead>{t("Lô cuối xong", "Last lot done")}</TableHead><TableHead className={N}>{t("Thời gian chạy", "Run time")}</TableHead><TableHead>{t("Trạng thái", "Status")}</TableHead></TableRow></TableHeader>
+      <TableHeader><TableRow><TableHead>{t("Phương án", "Option")}</TableHead><TableHead className={N}>{t("Hạng", "Rank")}</TableHead><TableHead className={N}>{t("Điểm", "Score")}</TableHead><TableHead className={N}>{t("Đơn trễ", "Late orders")}</TableHead><TableHead className={N}>{t("Thiếu tồn", "Shortfall")}</TableHead><TableHead className={N}>{t("Chi phí vận hành", "Operating cost")}</TableHead><TableHead className={N}>{t("Ca máy mở", "Machine shifts")}</TableHead><TableHead className={N}>{t("Rảnh", "Idle")}</TableHead><TableHead>{t("Lô cuối xong", "Last lot done")}</TableHead><TableHead className={N}>{t("Thời gian chạy", "Run time")}</TableHead><TableHead>{t("Trạng thái", "Status")}</TableHead></TableRow></TableHeader>
       <TableBody>{sorted.map((alt, index) => (
         <TableRow key={alt.id} data-state={alt.id === current ? "selected" : undefined} tabIndex={0} className="cursor-pointer" onClick={() => onPick(alt.id)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onPick(alt.id); } }}>
           <TableCell className="font-semibold">{alt.label}{ctx.list.name[alt.id] && <span className="block text-xs font-normal text-muted-foreground">{t("đề xuất", "recommended")}: {ctx.list.name[alt.id]}</span>}{ctx.list.dominatedBy[alt.id] && <span className="block text-xs font-normal text-muted-foreground">{t("kém hơn", "dominated by")} “{ctx.displayName(ctx.list.dominatedBy[alt.id])}”</span>}</TableCell>
           <TableCell className={N}>{index + 1}</TableCell>
           <TableCell className={cn(N, index === 0 && "font-semibold text-success")}>{fmtScore(score(alt, ctx.weights, ctx.policy), ctx.policy)}</TableCell>
           <TableCell className={N}>{alt.late}</TableCell><TableCell className={N}>{fmtN(alt.metrics.safety_shortfall ?? 0)}</TableCell><TableCell className={N}>{fmtN(opsCost(alt, ctx.weights))}</TableCell>
-          <TableCell className={N}>{alt.shifts.size}</TableCell><TableCell className={N}>{fmtN(alt.metrics.idle_minutes ?? 0)}</TableCell><TableCell>{formatClock(ctx.origin, alt.metrics.makespan ?? 0)}</TableCell>
+          <TableCell className={N}>{alt.shifts.size}</TableCell><TableCell className={N}>{hours(alt.metrics.idle_minutes ?? 0)}</TableCell><TableCell>{formatClock(ctx.origin, alt.metrics.makespan ?? 0)}</TableCell>
           <TableCell className={N}>{fmtSeconds(runSeconds(alt.run))}</TableCell><TableCell className="text-xs text-muted-foreground">{solverStatusLabel(alt.run.solver_status)}</TableCell>
         </TableRow>
       ))}</TableBody>

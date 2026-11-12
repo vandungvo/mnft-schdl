@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { EmptyState, PageHeader } from "@/components/blocks";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { DecisionBar } from "@/components/decision/desk-chrome";
-import { GenerateDialog } from "@/components/decision/generate-dialog";
+import { GenerateDialog, type Preset } from "@/components/decision/generate-dialog";
 import { DecisionPanel, type WorkspaceCtx } from "@/components/decision/sections";
 import { useI18n } from "@/components/i18n-provider";
 import { BtpSection } from "@/components/master-data/btp";
@@ -117,6 +117,8 @@ export interface WorkspaceEmbed {
   onCommitted?: () => void;
   /** Banner content shown above the tabs (e.g. stale inputs). */
   notice?: ReactNode;
+  /** Runs before this minute are fixed (a reschedule keeps what already ran): shaded on the Gantt chart. */
+  frozenUntil?: number | null;
 }
 
 export function ScenarioWorkspace({ id, embed }: { id: string; embed?: WorkspaceEmbed }) {
@@ -127,6 +129,8 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
   const { params, set } = useScenarioUrl(Boolean(embed));
   const { entries, append } = useDecisionLog(id);
   const [generateOpen, setGenerateOpen] = useState(false);
+  const [generatePreset, setGeneratePreset] = useState<Preset | undefined>(undefined);
+  const openGenerate = useCallback((preset?: Preset) => { setGeneratePreset(preset); setGenerateOpen(true); }, []);
   const [peekId, setPeekId] = useState<string | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [pendingReplace, setPendingReplace] = useState<{ file: string; input: unknown } | null>(null);
@@ -311,7 +315,7 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
 
   const body = (
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4">
-        {embed ? embed.header({ openGenerate: () => setGenerateOpen(true), canGenerate: data.is_ready, pending: pending.length,
+        {embed ? embed.header({ openGenerate: () => openGenerate(), canGenerate: data.is_ready, pending: pending.length,
           snapshot: snapshots.length <= 1 && !staleSnapshot ? null : <SnapshotPill snapshots={snapshots} hash={snapshot?.hash ?? null} revision={data.revision} stale={staleSnapshot} onChange={(hash) => set({ snap: hash.slice(0, 12), run: null, cmp: null })} /> }) : (
         <PageHeader back={{ href: "/scenarios", label: t("Kịch bản", "Scenarios") }} crumb={formatInputName(data.name)} title={formatInputName(data.name)}
           meta={<>
@@ -344,16 +348,17 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
           <div className="sticky top-12 z-30 -mx-4 border-b bg-background/90 px-4 backdrop-blur md:-mx-6 md:px-6 lg:-mx-8 lg:px-8">
             {/* Fade on the right on narrow screens: tells the user the tab row scrolls. */}
             <div className="overflow-x-auto [mask-image:linear-gradient(to_right,black_85%,transparent)] [scrollbar-width:none] lg:[mask-image:none]">
-              <TabsList variant="line" className="h-10">
+              <TabsList variant="line" className="h-10 w-full justify-start [&>button]:flex-none">
                 {embed ? <>
                   {/* Host workflow first, numbered like steps (GitHub PR / Linear object page: one tab row, no separate stepper);
                       reference views after the divider. */}
                   <TabsTrigger value={embed.before.value} className="px-2.5">{step(1, embed.before.value)}{embed.before.label}</TabsTrigger>
                   <TabsTrigger value="options" className="px-2.5">{step(2, "options")}{t("Phương án", "Options")}{pending.length ? <Loader2 className="ml-1 size-3.5 animate-spin text-primary" /> : alts.length > 0 && tabCount(alts.length)}</TabsTrigger>
-                  <TabsTrigger value="schedule" className="px-2.5">{t("Xem lịch & so sánh", "Schedule & compare")}</TabsTrigger>
-                  <TabsTrigger value="decide" className="px-2.5">{step(3, "decide")}{t("Chốt", "Commit")}</TabsTrigger>
-                  <TabsTrigger value={embed.after.value} className="px-2.5">{step(4, embed.after.value)}{embed.after.label}</TabsTrigger>
-                  <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+                  <TabsTrigger value="schedule" className="px-2.5">{step(3, "schedule")}{t("Xem lịch & so sánh", "Schedule & compare")}</TabsTrigger>
+                  <TabsTrigger value="decide" className="px-2.5">{step(4, "decide")}{t("Chốt", "Commit")}</TabsTrigger>
+                  <TabsTrigger value={embed.after.value} className="px-2.5">{step(5, embed.after.value)}{embed.after.label}</TabsTrigger>
+                  {/* Reference views are not steps: set apart on the right. */}
+                  <span className="mx-1 h-5 w-px bg-border lg:ml-auto" aria-hidden />
                   <TabsTrigger value="analysis" className="px-2.5 text-muted-foreground">{t("Phân tích", "Analysis")}</TabsTrigger>
                   <TabsTrigger value="history" className="px-2.5 text-muted-foreground">{t("Lịch sử", "History")}</TabsTrigger>
                 </> : <>
@@ -392,7 +397,7 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
 
           <TabsContent value="options" className="min-w-0"><h2 className="sr-only">{t("Phương án", "Options")}</h2>
             <OptionsView ctx={ctx} policy={policy} onPolicy={(value) => set({ policy: value, run: null })} current={current?.id ?? null} decided={decided}
-              loading={detailsLoading || runs.isLoading} onPick={pick} onGenerate={() => setGenerateOpen(true)} canGenerate={data.is_ready} />
+              loading={detailsLoading || runs.isLoading} onPick={pick} onGenerate={() => openGenerate()} onThorough={() => openGenerate("thorough")} canGenerate={data.is_ready} />
           </TabsContent>
 
           <TabsContent value="schedule" forceMount={editing ? true : undefined} className="min-w-0 data-[state=inactive]:hidden"><h2 className="sr-only">{t("Lịch & so sánh", "Schedule & compare")}</h2>
@@ -400,7 +405,7 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
               <ScheduleEditor key={editing.id} ctx={ctx} base={editing} onCancel={() => set({ edit: null })}
                 onSaved={(runId) => { set({ edit: null, run: runId, cmp: editing.id }); showToast(t("Đã lưu bản sửa thành phương án mới; đang so với bản gốc.", "The edit is saved as a new option, compared with the original."), "success"); }}
                 onQueued={(runId) => { set({ edit: null, tab: "options", run: runId, cmp: null }, "push"); toTabTop(); showToast(t("Đang tối ưu phần còn lại. Kết quả hiện trong tab Phương án khi xong; bạn vẫn làm việc tiếp được.", "Optimising the rest. The result appears under Options when done; you can keep working."), "info"); }} />
-            ) : <ScheduleView ctx={ctx} current={current} compare={compare} deliveries={deliveries} onEdit={canEdit ? editRun : undefined}
+            ) : <ScheduleView ctx={ctx} current={current} compare={compare} deliveries={deliveries} onEdit={canEdit ? editRun : undefined} frozenUntil={embed?.frozenUntil}
               onPick={(runId) => set({ run: runId, cmp: compareId === runId ? null : params.get("cmp") })} onCompare={(runId) => set({ cmp: runId ?? "none" })} />}
           </TabsContent>
 
@@ -418,7 +423,7 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
           </TabsContent>
 
           <TabsContent value="analysis" className="min-w-0"><h2 className="sr-only">{t("Phân tích", "Analysis")}</h2>
-            <AnalysisView ctx={ctx} runs={detailRuns} current={current?.id ?? null} onPick={pick} truncatedAt={groupRuns.length >= MAX_DETAILS ? MAX_DETAILS : null}
+            <AnalysisView ctx={ctx} runs={detailRuns} current={current?.id ?? null} onPick={pick} truncatedAt={groupRuns.length >= MAX_DETAILS ? MAX_DETAILS : null} decisions={entries}
               matrix={(runs.data?.length ?? 0) > 0 && <RunMatrix runs={runs.data!} snapshotHash={snapshot?.hash ?? null} recommended={new Set(list.keys)} decidedId={decided}
                 onOpen={(run) => (byId.has(run.id) ? pick(run.id) : router.push(`/runs/${run.id}`))} />} />
           </TabsContent>
@@ -470,7 +475,7 @@ export function ScenarioWorkspace({ id, embed }: { id: string; embed?: Workspace
           onSchedule={(runId) => { setPeekId(null); set({ tab: "schedule", run: runId, cmp: compareId === runId ? null : params.get("cmp") }, "push"); toTabTop(); }}
           onCompare={(runId) => { setPeekId(null); set({ tab: "schedule", cmp: runId }, "push"); toTabTop(); }}
           onCommit={(runId) => commitFlow(runId)} onEdit={canEdit && !editing ? (runId) => { setPeekId(null); editRun(runId); } : undefined} />
-        <GenerateDialog datasetId={id} schemaVersion={input.schema_version} open={generateOpen} onClose={() => setGenerateOpen(false)} />
+        <GenerateDialog datasetId={id} schemaVersion={input.schema_version} open={generateOpen} preset={generatePreset} onClose={() => setGenerateOpen(false)} />
         <ConfirmDialog open={pendingReplace !== null} title={t("Thay toàn bộ dữ liệu bằng file này?", "Replace all data with this file?")}
           description={t(`File “${pendingReplace?.file}”: ${replaceSummary}. Dữ liệu được kiểm tra trước khi ghi; nếu hợp lệ sẽ tạo revision ${data.revision + 1}. Lần chạy cũ giữ snapshot riêng.`, `File “${pendingReplace?.file}”: ${replaceSummary}. The data is validated before writing; if valid it becomes revision ${data.revision + 1}. Earlier runs keep their own snapshots.`)}
           confirmLabel={t("Thay dữ liệu", "Replace data")} pending={replace.isPending} onCancel={() => setPendingReplace(null)} onConfirm={() => replace.mutate(pendingReplace!.input)} />

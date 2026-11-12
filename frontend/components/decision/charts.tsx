@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useI18n } from "@/components/i18n-provider";
 import { fmtN, fmtSeconds, opsCost, type Alternative, type HistoryPoint, type Shortlist } from "@/lib/decision";
+import { formatNumber } from "@/lib/format";
 
 function niceTicks(lo: number, hi: number, count: number): number[] {
   const span = Math.max(hi - lo, 1e-9);
@@ -51,6 +52,9 @@ export function TradeoffChart({ alternatives, weights, list, current, displayNam
   const x0 = Math.max(0, minX - pad), x1 = maxX + pad;
   const y1 = Math.max(4, ...ys) * 1.12;
   const X = (v: number) => L + ((v - x0) / (x1 - x0)) * (W - L - R);
+  // Under 1 % apart, label the cost axis relative to the cheapest schedule: the chart stretches any gap to full width.
+  const relative = minX > 0 && (maxX - minX) / maxX < 0.01;
+  const xLabel = (v: number) => (relative ? `+${formatNumber(((v - minX) / minX) * 100, { maximumFractionDigits: 2 })}%` : fmtN(v));
   const Y = (v: number) => T + (1 - v / y1) * (H - T - B);
   const ordered = [...alternatives].sort((a, b) => Number(Boolean(list.name[a.id])) - Number(Boolean(list.name[b.id])));
   const placed: Array<[number, number]> = [];
@@ -65,9 +69,9 @@ export function TradeoffChart({ alternatives, weights, list, current, displayNam
   return (
     <div ref={ref} className="w-full max-w-[960px]">
     <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} className="viz block h-auto w-full" role="group" aria-label={t("Đồ thị đánh đổi giữa chi phí vận hành và thiếu tồn an toàn", "Trade-off between operating cost and safety-stock shortfall")}>
-      {niceTicks(x0, x1, narrow ? 3 : 6).map((v) => <g key={`x${v}`}><line x1={X(v)} x2={X(v)} y1={T} y2={H - B} className="grid-line" /><text x={X(v)} y={H - B + 16} textAnchor="middle" className="tick">{fmtN(v)}</text></g>)}
+      {niceTicks(x0, x1, narrow ? 3 : 6).map((v) => <g key={`x${v}`}><line x1={X(v)} x2={X(v)} y1={T} y2={H - B} className="grid-line" /><text x={X(v)} y={H - B + 16} textAnchor="middle" className="tick">{xLabel(v)}</text></g>)}
       {niceTicks(0, y1, 5).map((v) => <g key={`y${v}`}><line x1={L} x2={W - R} y1={Y(v)} y2={Y(v)} className="grid-line" /><text x={L - 8} y={Y(v) + 4} textAnchor="end" className="tick">{fmtN(v)}</text></g>)}
-      <text x={(L + W - R) / 2} y={H - 8} textAnchor="middle" className="axis">{t("Chi phí vận hành", "Operating cost")} →</text>
+      <text x={(L + W - R) / 2} y={H - 8} textAnchor="middle" className="axis">{relative ? t(`Chi phí vận hành, so với lịch rẻ nhất (${fmtN(minX)}) — chênh chưa tới 1%`, `Operating cost vs the cheapest schedule (${fmtN(minX)}) — under 1% apart`) : t("Chi phí vận hành", "Operating cost")} →</text>
       <text x={L + 8} y={H - B - 8} className="tick">↙ {t("tốt hơn", "better")}</text>
       <text x={14} y={(T + H - B) / 2} textAnchor="middle" className="axis" transform={`rotate(-90 14 ${(T + H - B) / 2})`}>{t("Thiếu tồn an toàn", "Safety-stock shortfall")} →</text>
       {list.front.length > 1 && <path d={path} className="front" />}

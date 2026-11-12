@@ -17,8 +17,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ApiError, apiErrorMessage, optimizeScheduleEdit, previewScheduleEdit, saveScheduleEdit } from "@/lib/api";
-import { fmtN, hours, opsCostOf, type Alternative } from "@/lib/decision";
-import { formatClock, formatDuration, productLabel, stageLabel } from "@/lib/format";
+import { activeShifts, fmtN, hours, opsCostOf, type Alternative } from "@/lib/decision";
+import { formatClock, formatDay, formatDuration, formatHour, itemLabel, nowMinute, productLabel, runLabel, stageLabel } from "@/lib/format";
 import type { ScheduleEditIssue, ScheduleEditRequest, ScheduleOperation, SchedulingInputV5 } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -189,11 +189,26 @@ export function ScheduleEditor({ ctx, base, onCancel, onSaved, onQueued }: {
   const locked = useMemo(() => new Set(plan.locked), [plan.locked]);
 
   const sel = selected ? opOf(selected) : null;
+  // Shifts the edit closes or opens: usually where its cost change comes from.
+  const shiftChanges = useMemo(() => {
+    if (!result?.operations.length) return { closed: [], opened: [] };
+    const key = (s: { machine: string; shift: string }) => `${s.machine}|${s.shift}`;
+    const before = activeShifts(input, base.run.operations), after = activeShifts(input, result.operations);
+    const was = new Set(before.map(key)), is = new Set(after.map(key));
+    const name = (s: { machine: string; start: number; end: number }) => `${s.machine} ${formatHour(ctx.origin, s.start)}–${formatHour(ctx.origin, s.end)} ${formatDay(ctx.origin, s.start)}`;
+    return { closed: before.filter((s) => !is.has(key(s))).map(name), opened: after.filter((s) => !was.has(key(s))).map(name) };
+  }, [result, input, base, ctx.origin]);
+  const delta = result?.metrics ? {
+    late: (result.metrics.total_tardiness ?? 0) - (base.metrics.total_tardiness ?? 0),
+    cost: opsCostOf(result.metrics, ctx.weights) - opsCostOf(base.metrics, ctx.weights),
+    shortfall: (result.metrics.safety_shortfall ?? 0) - (base.metrics.safety_shortfall ?? 0),
+  } : null;
   return (
     <div className="grid min-w-0 gap-4">
       <EditorBar
         title={<>{t("Đang sửa", "Editing")} <b>{ctx.displayName(base.id)}</b></>}
         dirty={dirty} canUndo={state.past.length > 0} canRedo={state.future.length > 0} canSave={canSave}
+        summary={dirty ? <EditSummary checking={preview.isFetching} valid={result?.valid ?? null} delta={delta} /> : null}
         compact={compact} onCompact={setCompact}
         onUndo={undo} onRedo={redo} onReset={() => { setState({ past: [], present: initial, future: [] }); setCompact(false); }}
         canOptimize={canOptimize} onOptimize={() => setOptimizeOpen(true)}
@@ -201,11 +216,18 @@ export function ScheduleEditor({ ctx, base, onCancel, onSaved, onQueued }: {
 
       <Impact ctx={ctx} base={base} metrics={result?.metrics ?? null} checking={dirty && preview.isFetching} />
       <Status dirty={dirty} loading={preview.isFetching && !result} error={preview.error} issues={result?.issues ?? []} valid={result?.valid ?? true} origin={ctx.origin} onSelect={setSelected} />
+      {dirty && result?.valid && (shiftChanges.closed.length > 0 || shiftChanges.opened.length > 0) && (
+        <p className="rounded-lg border bg-surface-2 px-3 py-2 text-sm">
+          {shiftChanges.closed.length > 0 && <>{t(`Bản sửa tắt ${shiftChanges.closed.length} ca`, `The edit closes ${shiftChanges.closed.length} shift(s)`)}: <b>{shiftChanges.closed.slice(0, 4).join("; ")}</b>{shiftChanges.closed.length > 4 ? "…" : ""}. </>}
+          {shiftChanges.opened.length > 0 && <>{t(`Mở thêm ${shiftChanges.opened.length} ca`, `Opens ${shiftChanges.opened.length} more shift(s)`)}: <b>{shiftChanges.opened.slice(0, 4).join("; ")}</b>{shiftChanges.opened.length > 4 ? "…" : ""}. </>}
+          {delta && delta.cost !== 0 && <span className={delta.cost < 0 ? "text-success" : "text-warning"}>{delta.cost < 0 ? t(`Chi phí vận hành giảm ${fmtN(-delta.cost)}.`, `Operating cost down ${fmtN(-delta.cost)}.`) : t(`Chi phí vận hành tăng ${fmtN(delta.cost)}.`, `Operating cost up ${fmtN(delta.cost)}.`)}</span>}
+        </p>
+      )}
 
       <div className="grid min-w-0 gap-4 2xl:grid-cols-[minmax(0,1fr)_340px]">
         <Panel flush className="min-w-0">
           <ScheduleGantt operations={operations} input={ctx.input} origin={ctx.origin} horizon={base.run.horizon_minutes}
-            compare={dirty ? { operations: base.run.operations, label: t("bản gốc", "the original") } : null}
+            compare={dirty ? { operations: base.run.operations, label: t("bản gốc", "the original"), original: true } : null}
             edit={{ selected, changed, locked, onSelect: setSelected, onDrop, canDrop: (lot, machine) => eligible(lot).includes(machine) }} />
         </Panel>
         <div className="grid content-start gap-4">
@@ -261,14 +283,15 @@ export function ScheduleEditor({ ctx, base, onCancel, onSaved, onQueued }: {
 
 /* ---------- pieces ---------- */
 
-function EditorBar({ title, dirty, canUndo, canRedo, canSave, canOptimize, compact, onCompact, onUndo, onRedo, onReset, onCancel, onSave, onOptimize }: {
-  title: ReactNode; dirty: boolean; canUndo: boolean; canRedo: boolean; canSave: boolean; canOptimize: boolean; compact: boolean; onCompact: (value: boolean) => void;
+function EditorBar({ title, summary, dirty, canUndo, canRedo, canSave, canOptimize, compact, onCompact, onUndo, onRedo, onReset, onCancel, onSave, onOptimize }: {
+  title: ReactNode; summary: ReactNode; dirty: boolean; canUndo: boolean; canRedo: boolean; canSave: boolean; canOptimize: boolean; compact: boolean; onCompact: (value: boolean) => void;
   onUndo: () => void; onRedo: () => void; onReset: () => void; onCancel: () => void; onSave: () => void; onOptimize: () => void;
 }) {
   const { t } = useI18n();
   return (
     <div className="sticky top-[6.5rem] z-20 flex flex-wrap items-center gap-2 rounded-lg border border-primary/40 bg-popover/95 px-3 py-2 shadow-float backdrop-blur" role="toolbar" aria-label={t("Sửa lịch", "Schedule editing")}>
       <span className="mr-auto min-w-0 truncate text-sm">{title}</span>
+      {summary && <span className="order-last basis-full border-t pt-1.5">{summary}</span>}
       <div className="flex items-center gap-1">
         <Button size="icon" variant="ghost" className="size-8" disabled={!canUndo} onClick={onUndo} aria-label={t("Hoàn tác", "Undo")} title={t("Hoàn tác (Ctrl Z)", "Undo (Ctrl Z)")}><Undo2 /></Button>
         <Button size="icon" variant="ghost" className="size-8" disabled={!canRedo} onClick={onRedo} aria-label={t("Làm lại", "Redo")} title={t("Làm lại (Ctrl Shift Z)", "Redo (Ctrl Shift Z)")}><Redo2 /></Button>
@@ -285,6 +308,22 @@ function EditorBar({ title, dirty, canUndo, canRedo, canSave, canOptimize, compa
   );
 }
 
+/** The edit's effect in one line, kept in the sticky toolbar so it stays in view while dragging bars below. */
+function EditSummary({ checking, valid, delta }: { checking: boolean; valid: boolean | null; delta: { late: number; cost: number; shortfall: number } | null }) {
+  const { t } = useI18n();
+  if (checking && !delta) return <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><Loader2 className="size-3.5 animate-spin" />{t("Đang kiểm tra…", "Checking…")}</span>;
+  const part = (label: string, value: number, show: (v: number) => string) => value === 0 ? null
+    : <span key={label} className={value < 0 ? "text-success" : "text-warning"}>{label} {value > 0 ? "+" : "−"}{show(Math.abs(value))}</span>;
+  const parts = delta ? [part(t("Trễ", "Late"), delta.late, hours), part(t("Thiếu tồn", "Shortfall"), delta.shortfall, fmtN), part(t("Chi phí", "Cost"), delta.cost, fmtN)].filter(Boolean) : [];
+  return (
+    <span className={cn("flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs font-medium tabular-nums", checking && "opacity-60")} aria-live="polite">
+      {valid === false ? <span className="flex items-center gap-1 text-destructive"><AlertTriangle className="size-3.5" />{t("Chưa hợp lệ", "Not valid")}</span>
+        : valid ? <span className="flex items-center gap-1 text-success"><CheckCircle2 className="size-3.5" />{t("Hợp lệ", "Valid")}</span> : null}
+      {parts.length ? parts : valid ? <span className="text-muted-foreground">{t("KPI như bản gốc", "Same KPIs as the original")}</span> : null}
+    </span>
+  );
+}
+
 /** What the edit does to the figures the ranking uses, against the original (live, like a what-if panel). */
 function Impact({ ctx, base, metrics, checking }: { ctx: WorkspaceCtx; base: Alternative; metrics: Record<string, number> | null; checking: boolean }) {
   const { t } = useI18n();
@@ -295,7 +334,7 @@ function Impact({ ctx, base, metrics, checking }: { ctx: WorkspaceCtx; base: Alt
     { label: t("Tổng trễ", "Total lateness"), before: m0.total_tardiness ?? 0, after: metrics?.total_tardiness ?? null, show: hours },
     { label: t("Thiếu tồn an toàn", "Safety shortfall"), before: m0.safety_shortfall ?? 0, after: metrics?.safety_shortfall ?? null, show: (v) => `${fmtN(v)} ${t("sp", "units")}` },
     { label: t("Chi phí vận hành", "Operating cost"), before: opsCostOf(m0, ctx.weights), after: metrics ? opsCostOf(metrics, ctx.weights) : null, show: fmtN },
-    { label: t("Ca-máy bật", "Machine-shifts"), before: m0.activated_shifts ?? base.shifts.size, after: metrics?.activated_shifts ?? null, show: fmtN },
+    { label: t("Ca máy mở", "Machine shifts open"), before: m0.activated_shifts ?? base.shifts.size, after: metrics?.activated_shifts ?? null, show: fmtN },
   ];
   return (
     <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5" aria-live="polite">
@@ -386,8 +425,8 @@ function RunPanel({ op, original, origin, horizon, plan, eligible, clock, onClos
   const value = draft ?? clock.toInput(floor ?? op.block_start);
   const moved = original && (original.machine !== op.machine || original.block_start !== op.block_start);
   return (
-    <Panel title={<span className="flex items-center justify-between gap-2"><span>{t("Lượt", "Run")} {op.lot}</span><Button size="icon" variant="ghost" className="size-7" onClick={onClose} aria-label={t("Bỏ chọn", "Deselect")}><X /></Button></span>}
-      description={`${stageLabel(op.stage)}${op.item ? ` · ${productLabel(op.item)}` : ""} · ${formatClock(origin, op.block_start)} → ${formatClock(origin, op.end)} (${formatDuration(op.end - op.block_start)})`}>
+    <Panel title={<span className="flex items-center justify-between gap-2"><span>{runLabel(op.lot, op.item)} <span className="font-normal text-muted-foreground">({op.lot})</span></span><Button size="icon" variant="ghost" className="size-7" onClick={onClose} aria-label={t("Bỏ chọn", "Deselect")}><X /></Button></span>}
+      description={`${stageLabel(op.stage)}${op.item ? ` · ${itemLabel(op.item)}` : ""} · ${formatClock(origin, op.block_start)} → ${formatClock(origin, op.end)} (${formatDuration(op.end - op.block_start)})`}>
       <div className="grid gap-4">
         <Button size="sm" variant={locked ? "default" : "outline"} aria-pressed={locked} onClick={onLock} className="justify-start">
           {locked ? <Lock /> : <LockOpen />}{locked ? t("Đã khoá — giữ nguyên khi tối ưu", "Locked — kept when optimising") : t("Khoá lượt này (L)", "Lock this run (L)")}
@@ -456,7 +495,7 @@ function ChangesPanel({ log, changes, onSelect }: { log: string[]; changes: Arra
 }
 
 const BUDGETS: Array<[number, [string, string]]> = [[30, ["30 giây", "30 s"]], [120, ["2 phút", "2 min"]], [300, ["5 phút", "5 min"]]];
-const FREEZE: Array<[string, [string, string]]> = [["none", ["Không", "None"]], ["24", ["24 giờ đầu", "First 24 h"]], ["48", ["48 giờ đầu", "First 48 h"]], ["custom", ["Tới…", "Until…"]]];
+const FREEZE: Array<[string, [string, string]]> = [["none", ["Không", "None"]], ["now", ["Tới bây giờ", "Until now"]], ["24", ["24 giờ đầu", "First 24 h"]], ["48", ["48 giờ đầu", "First 48 h"]], ["custom", ["Tới…", "Until…"]]];
 
 /** "Optimise the rest": what stays, what CP-SAT may change, how long it may take. */
 function OptimizeDialog({ open, onClose, base, request, plan, operations, origin, clock, canSaveEdit, onQueued }: {
@@ -465,12 +504,15 @@ function OptimizeDialog({ open, onClose, base, request, plan, operations, origin
 }) {
   const { t } = useI18n();
   const [keepEdited, setKeepEdited] = useState(true);
-  const [freeze, setFreeze] = useState("none");
+  // While the period is running, what already happened (before now) is kept unless the planner says otherwise.
+  const now = Math.ceil(nowMinute(origin) / 15) * 15;
+  const running = now > 0 && now < base.run.horizon_minutes;
+  const [freeze, setFreeze] = useState(running ? "now" : "none");
   const [until, setUntil] = useState(() => clock.toInput(1440));
   const [budget, setBudget] = useState(120);
   const [label, setLabel] = useState("");
   const [saveEdit, setSaveEdit] = useState(false);
-  const freezeUntil = freeze === "none" ? null : freeze === "custom" ? Math.max(0, clock.fromInput(until)) : Number(freeze) * 60;
+  const freezeUntil = freeze === "none" ? null : freeze === "now" ? now : freeze === "custom" ? Math.max(0, clock.fromInput(until)) : Number(freeze) * 60;
   const edited = new Set([...plan.moved, ...Object.keys(plan.notBefore)]);
   const kept = new Set([...plan.locked, ...(keepEdited ? edited : []), ...operations.filter((op) => freezeUntil != null && op.block_start < freezeUntil).map((op) => op.lot)]);
   const free = operations.length - kept.size;
@@ -504,7 +546,7 @@ function OptimizeDialog({ open, onClose, base, request, plan, operations, origin
           </label>
           <Group label={t("Vùng giữ nguyên (lượt bắt đầu trước mốc này không đổi)", "Frozen zone (runs starting before this stay)")}>
             <ToggleGroup type="single" variant="outline" size="sm" value={freeze} onValueChange={(value) => value && setFreeze(value)} className="flex-wrap justify-start">
-              {FREEZE.map(([value, text]) => <ToggleGroupItem key={value} value={value} className="px-2.5 text-xs">{t(...text)}</ToggleGroupItem>)}
+              {FREEZE.filter(([value]) => value !== "now" || running).map(([value, text]) => <ToggleGroupItem key={value} value={value} className="px-2.5 text-xs">{t(...text)}</ToggleGroupItem>)}
             </ToggleGroup>
             {freeze === "custom" && <Input type="datetime-local" step={900} className="w-auto" aria-label={t("Giữ nguyên tới", "Frozen until")} min={clock.toInput(0)} max={clock.toInput(base.run.horizon_minutes)} value={until} onChange={(event) => setUntil(event.target.value)} />}
             {freezeUntil != null && <span className="text-xs text-muted-foreground">{t(`Giữ nguyên trước ${formatClock(origin, freezeUntil)}`, `Frozen before ${formatClock(origin, freezeUntil)}`)}</span>}

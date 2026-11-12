@@ -43,10 +43,18 @@
   --maint: #8a96a3;
   --on-light: #1b2430;
   --on-dark: #ffffff;
-  --p-f-silver: #7fa7c9;
-  --p-f-black: #3e4a63;
-  --p-r-silver: #86bfb2;
-  --p-r-black: #6e4e70;
+  /* Product colours: hue = product line (F blue, R orange), lightness = finish (silver light, black dark).
+     Semi-finished items shared by a line (F_CAST, F_MACH…) take the line's middle tone, so no stripes are needed. */
+  --p-f-silver: #93c0ea;
+  --p-f: #4b86c5;
+  --p-f-black: #1f4a80;
+  --p-r-silver: #f3be8c;
+  --p-r: #d9813f;
+  --p-r-black: #8f4317;
+  --p-shared: #7b8794;
+  /* "Colour by" status / priority on the Gantt. */
+  --st-ok: #6fae86;
+  --st-none: #c5ccd5;
   --chart-1: #2a78d6;
   --chart-2: #eb6834;
   --chart-3: #1baf7a;
@@ -108,8 +116,15 @@
   --setup: #56626f;
   --maint: #7c8896;
   --on-light: #10161c;
-  --p-f-black: #6a7fa8;
-  --p-r-black: #9a74a0;
+  --p-f-silver: #a9cdf0;
+  --p-f: #5d97d6;
+  --p-f-black: #2f5f9e;
+  --p-r-silver: #f5c79c;
+  --p-r: #e0904f;
+  --p-r-black: #b0592a;
+  --p-shared: #6b7785;
+  --st-ok: #3f8a5b;
+  --st-none: #3b4651;
   --chart-1: #3987e5;
   --chart-2: #d95926;
   --chart-3: #199e70;
@@ -253,7 +268,26 @@
   .viz .g-ship { stroke: var(--success); }
   .viz .g-ship-dot, .viz .g-ship-label { fill: var(--success); }
   .viz .g-ship-label { font-size: 10px; font-weight: 650; }
-  .viz .g-ship.is-late { stroke: var(--warning); }
-  .viz .g-ship-dot.is-late, .viz .g-ship-label.is-late { fill: var(--warning); }
+  .viz .g-ship.is-late { stroke: var(--destructive); }
+  .viz .g-ship-dot.is-late, .viz .g-ship-label.is-late { fill: var(--destructive); }
+  .viz .g-ship-hit { cursor: pointer; }
+  .viz .g-ship-hit:focus { outline: none; }
+  .viz .g-ship-hit:focus-visible .g-ship-dot, .viz .g-ship-hit.is-focus .g-ship-dot { stroke: var(--foreground); stroke-width: 2; }
+  .viz .g-ship-hit.is-focus .g-ship-label { text-decoration: underline; }
+  .viz .g-now { stroke: var(--destructive); stroke-width: 1.6; }
+  .viz .g-now-label { fill: var(--destructive); font-size: 10.5px; font-weight: 700; }
+  .viz .g-frozen { fill: var(--foreground); fill-opacity: 0.05; }
+  .viz .g-frozen-edge { stroke: var(--muted-foreground); stroke-dasharray: 3 3; }
+  .viz .g-frozen-label { fill: var(--muted-foreground); font-size: 10.5px; font-weight: 600; }
+  .viz .g-cmp { fill: none; stroke: var(--warning); stroke-width: 1.4; stroke-dasharray: 3 2; pointer-events: none; }
+  .viz .g-util { fill: var(--muted-foreground); font-size: 10.5px; }
+  .viz .g-util.is-high { fill: var(--warning); font-weight: 650; }
+  .viz .o-window { fill: var(--shift); }
+  .viz .o-late { fill: var(--destructive); fill-opacity: 0.16; }
+  .viz .o-due { stroke: var(--foreground); stroke-width: 1.4; }
+  .viz .o-row { cursor: pointer; }
+  .viz .o-row:focus { outline: none; }
+  .viz .o-row:hover .o-hover, .viz .o-row:focus-visible .o-hover, .viz .o-row.is-focus .o-hover { fill: var(--primary); fill-opacity: 0.06; }
+  .viz .o-hover { fill: transparent; }
   .hatch-maint { background: repeating-linear-gradient(45deg, var(--maint) 0 2px, var(--setup) 2px 5px); }
 }
