@@ -34,11 +34,12 @@ Explanation sẽ được bổ sung theo [implementation plan](docs/_product/imp
 | `backend/` | FastAPI, engine OR-Tools, Alembic migrations |
 | `frontend/` | Giao diện Next.js |
 | `models/` | Tám phương pháp lập lịch dùng để đánh giá, input chuẩn (`models/input/`) và kết quả chạy (`models/runs/`) — xem [models/README.md](models/README.md) |
-| `research/` | Mã nghiên cứu ngoài sản phẩm: `experiment/` (mô hình tồn bán thành phẩm), `notebooks/` (Colab/Kaggle chạy CP-SAT ngân sách dài), `legacy/` (POC cũ) — xem [research/README.md](research/README.md) |
+| `research/` | Mã nghiên cứu ngoài sản phẩm: `notebooks/` (Colab/Kaggle chạy CP-SAT ngân sách dài), `demo_page/` (dựng trang demo HTML nộp GVHD), `optional_stock/` (thử nghiệm sản xuất dự trữ, không phát triển tiếp), `legacy/` (POC và thí nghiệm cũ, chỉ tham khảo) — xem [research/README.md](research/README.md) |
 | `dataset/` | Dữ liệu benchmark và bộ wheel-factory, mỗi nguồn có `SOURCE.md` |
 | `references/` | Ghi chú trích dẫn và PDF bài báo (`references/pdfs/`) |
-| `report/` | Báo cáo đồ án: bản nộp ở gốc, `progress/`, `demo/`, `figures/`, tài liệu phân tích theo chủ đề |
-| `docs/` | Tài liệu đặc tả sản phẩm (SRS, use case, kế hoạch triển khai) |
+| `report/` | Báo cáo đồ án: bản nộp ở gốc, `progress/`, `slides/`, `demo/`, `figures/`, tài liệu phân tích theo chủ đề |
+| `docs/` | Tài liệu sản phẩm. Đang đúng với mã: `_product/factory-periods.md`, `_product/manual-editing.md`, `_product/improvement-plan.md` (kế hoạch hiện hành). Chưa cập nhật từ 09/2026 (mô hình 4 công đoạn): `_product/implementation-plan.md`, `production-scheduling/` (SRS, use case), `_shared/project-profile.md` |
+| `scripts/` | `dev.ps1` — chạy backend + frontend local bằng một lệnh |
 
 ## Chạy bằng Docker Compose
 
@@ -91,7 +92,7 @@ Khi database chưa có master data, backend tự kiểm tra và import `models/i
 ## Kiểm tra chất lượng
 
 ```powershell
-python -m pytest backend/tests models/tests -q
+python -m pytest backend/tests models/tests research/optional_stock -q
 python -m unittest research.notebooks.test_cp_sat_cold_notebook
 cd frontend
 npm.cmd ci

@@ -58,7 +58,6 @@ Chỉ mượn mẫu, không sao chép giao diện.
 - `SectionHeading`, `FilterBar`, `Panel`, `StatTile`, `EmptyState`, `FormStep`.
 - `Breadcrumbs` (`components/breadcrumbs.tsx`) — suy từ URL; trang tự đặt tên đoạn động.
 - `CommandPaletteProvider` (`components/command-palette.tsx`) — trang, kịch bản (desk/dữ liệu), 6 lần chạy gần nhất, hành động (tạo lần chạy, nhập JSON, đổi theme, đổi ngôn ngữ); tìm không dấu ("ban dieu do").
-- `ScenarioCard` — một kịch bản = cửa vào desk, kèm số lịch khả thi/đang giải/thất bại, quyết định đã chốt gần nhất và "việc tiếp theo".
 - Desk: `DeskProgress` (stepper dính, có trạng thái ✓/đang giải), `DecisionBar` (thanh quyết định dính đáy), `Section` (số bước → dấu ✓ khi xong).
 
 **Trạng thái & truy cập**: focus ring `ring-ring` mọi phần tử tương tác; `aria-current` cho nav/step; palette dùng `combobox`/`listbox`/`option` + `aria-activedescendant`; tab lọc dùng `aria-pressed`; mọi chuỗi qua `t(vi, en)` / `tr(vi, en)`.

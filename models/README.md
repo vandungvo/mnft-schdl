@@ -15,7 +15,7 @@ Thư mục này chứa **hai phiên bản mô hình lập lịch**, mỗi phiên
 | Lịch máy | Theo ca | Theo ca; lò nhiệt luyện chạy 24/7 |
 | Mục tiêu | Một tầng: tổng có trọng số | Hai tầng: mức phục vụ trước, chi phí vận hành sau |
 | Mã engine | `common/*.py` | `common/stage_runs/` |
-| Ai dùng | `backend/` và các đợt chạy tháng 9 (18–19/09) | Dataset nhỏ 5 công đoạn (30/09) |
+| Ai dùng | Nhóm *Nâng cao* của `backend/` (kịch bản JSON 4 công đoạn, kế hoạch tổng hợp v4) và các đợt chạy tháng 9 (18–19/09). Không còn là luồng chính | **Luồng chính của sản phẩm**: nhà máy → kỳ lập lịch biên dịch ra schema 5 (`stage_runs/prepare.py`), sửa lịch bằng tay (`stage_runs/manual.py`), và mọi đợt chạy từ 30/09 |
 | Tài liệu quy ước | [input/README.md](input/README.md) | `dataset/wheel-factory-small/SOURCE.md` |
 | Kết quả đã lưu | [runs/v1/](runs/v1/) | [runs/v2/](runs/v2/) |
 
@@ -43,7 +43,6 @@ Thư mục này chứa **hai phiên bản mô hình lập lịch**, mỗi phiên
 | `run_all.py` | cả hai | Chạy nhiều phương pháp, nhiều seed trên một input, sinh bảng so sánh |
 | `input/` | v1 | Input mặc định và bản CSV để đọc. `backend/` tham chiếu cứng `input/wheel_factory.json`, không di chuyển |
 | `runs/` | cả hai | Mọi đợt chạy đã lưu, chia `v1/`, `v2/`, `archive/`. Danh mục: [runs/README.md](runs/README.md) |
-| `optional_stock/` | riêng | Thử nghiệm độc lập về sản xuất dự trữ (xem dưới) |
 | `tests/` | xem dưới | Kiểm thử |
 
 Vì sao mã v1 vẫn nằm trực tiếp trong `common/`: `backend/` import `models.common.evaluate`, `models.common.experiment` và `models.common.instance`, và `backend/Dockerfile` chép nguyên thư mục này. Đổi đường dẫn gói phải sửa cả backend.
@@ -54,12 +53,10 @@ Vì sao mã v1 vẫn nằm trực tiếp trong `common/`: `backend/` import `mod
 |---|---|---:|---|
 | `tests/test_contract.py` | v1 | 21 | Instance nhỏ giải chính xác, lịch cố tình phá để thử validator |
 | `tests/test_reserve_capacity.py` | v1 | 17 | Lô dự trữ, lượt bán thành phẩm tuỳ chọn, ca đóng được |
-| `tests/test_stage_runs.py` | v2 | 20 | Engine v2 trên dataset nhỏ |
-| `tests/test_optional_stock.py` | riêng | 6 | Thử nghiệm `optional_stock/` |
+| `tests/test_stage_runs.py` | v2 | 23 | Engine v2 trên dataset nhỏ |
+| `tests/test_manual_edits.py` | v2 | 8 | Sửa lịch bằng tay và tối ưu phần còn lại (`stage_runs/manual.py`) |
 
-### `optional_stock/`
-
-Thử nghiệm riêng cho chính sách sản xuất dự trữ nhằm lấp công suất trống. Nó có model CP-SAT hai tầng, instance demo và kết quả riêng (`optional_stock/results/`), không dùng `common/` và không nằm trong bảng xếp hạng tám phương pháp vì thay đổi tập quyết định và hàm mục tiêu. Ý tưởng làm trước sau đó đã được đưa vào cả v1 (lô dự trữ) và v2 (phương án làm trước).
+Thử nghiệm độc lập về sản xuất dự trữ (`optional_stock`, 20/09) không dùng `common/` và không nằm trong bảng xếp hạng, nên đã chuyển sang [`research/optional_stock/`](../research/optional_stock/README.md) cùng test của nó. Ý tưởng làm trước sau đó đã được đưa vào cả v1 (lô dự trữ) và v2 (phương án làm trước).
 
 ## Tám phương pháp
 
@@ -78,7 +75,7 @@ Thử nghiệm riêng cho chính sách sản xuất dự trữ nhằm lấp côn
 
 ## Chạy
 
-Chạy từ gốc `D:\mnft-schdl` với Python 3.13:
+Chạy từ gốc repository với Python 3.13:
 
 ```powershell
 python -m pip install -r models/requirements.txt

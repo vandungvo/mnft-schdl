@@ -1,5 +1,7 @@
 # Thí nghiệm: dòng nguyên liệu qua tồn bán thành phẩm
 
+> **Trạng thái: đã được thay thế — chỉ tham khảo.** Thí nghiệm lập tay này (09/2026) là bước dò đường cho mô hình tồn bán thành phẩm. Ý tưởng đã được hiện thực trong engine: schema 4 của `models/common/` và schema 5 của `models/common/stage_runs/`. Các câu bên dưới nói `models/` "vẫn theo mô hình cũ" mô tả thời điểm viết, không còn đúng. Chuyển từ `research/experiment/` vào đây ngày 14/11/2026.
+
 Thư mục này dành cho thí nghiệm với mô hình mới, trong đó nguyên liệu của mọi công đoạn sau lấy từ **tồn bán thành phẩm (BTP)** theo mã sản phẩm và công đoạn, còn lô giữ danh tính ở lượt QC. Căn cứ:
 
 - [problem_requirements.md](../../report/problem-requirements/problem_requirements.md): A09, A10, R12, mục 4.3.3.
@@ -10,7 +12,7 @@ Thư mục này tách khỏi `models/`. Mã và dữ liệu trong `models/` vẫ
 ## Cấu trúc
 
 ```text
-research/experiment/
+research/legacy/btp_experiment/
   README.md
   check_schedule.py       kiểm một lịch với dữ liệu và tính KPI (không giải bài toán)
   plot_gantt.py           vẽ biểu đồ Gantt của một lịch (matplotlib), ra .png và .svg
@@ -22,7 +24,7 @@ research/experiment/
     gantt_manual_schedule.png / .svg   biểu đồ Gantt của lịch lập tay
 ```
 
-Kiểm tra lịch: `python research/experiment/check_schedule.py [lịch.json] [dữ liệu.json]`. Script kiểm lượt chạy, lịch ca và downtime, không chồng máy, setup, tồn bán thành phẩm tại mọi sự kiện, khuôn và bảo trì, giao hàng, tồn thành phẩm. Tôi đã thử 8 lỗi cố ý (cắt giờ nghỉ, bỏ bảo trì, tồn âm, setup sai, chồng máy, trước release, thiếu QC, đè downtime) và script bắt được cả 8.
+Kiểm tra lịch: `python research/legacy/btp_experiment/check_schedule.py [lịch.json] [dữ liệu.json]`. Script kiểm lượt chạy, lịch ca và downtime, không chồng máy, setup, tồn bán thành phẩm tại mọi sự kiện, khuôn và bảo trì, giao hàng, tồn thành phẩm. Tôi đã thử 8 lỗi cố ý (cắt giờ nghỉ, bỏ bảo trì, tồn âm, setup sai, chồng máy, trước release, thiếu QC, đè downtime) và script bắt được cả 8.
 
 `standard_case.json` dùng cấu trúc riêng (`shifts`, `molds`, `inventory.btp`, `lots[].type`...), **khác** cấu trúc của `models/input/wheel_factory.json`. Hiện chưa có bộ đọc nào cho file này.
 

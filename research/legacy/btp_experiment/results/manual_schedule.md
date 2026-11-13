@@ -3,7 +3,7 @@
 **Cách lập:** lập tay theo kinh nghiệm điều độ, **không dùng solver hay thuật toán tối ưu**. Đây là một lịch hợp lệ, chưa chứng minh là tốt nhất.
 
 - Dữ liệu: [standard_case.json](../data/standard_case.json). Lịch dạng máy đọc được: [manual_schedule.json](manual_schedule.json).
-- Kiểm tra độc lập: `python research/experiment/check_schedule.py` (không giải bài toán, chỉ kiểm ràng buộc và tính KPI).
+- Kiểm tra độc lập: `python research/legacy/btp_experiment/check_schedule.py` (không giải bài toán, chỉ kiểm ràng buộc và tính KPI).
 - Thời gian ghi kèm số phút từ t = 0 (T2 06:00). T2 = thứ Hai, T3 = thứ Ba.
 
 ## Các quy tắc kinh nghiệm đã dùng

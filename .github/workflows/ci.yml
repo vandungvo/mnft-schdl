@@ -23,7 +23,7 @@ jobs:
             backend/requirements*.txt
             models/requirements.txt
       - run: python -m pip install -r backend/requirements-dev.txt -r models/requirements.txt
-      - run: python -m pytest backend/tests models/tests -q
+      - run: python -m pytest backend/tests models/tests research/optional_stock -q
       - run: python -m unittest research.notebooks.test_cp_sat_cold_notebook -v
 
   frontend:

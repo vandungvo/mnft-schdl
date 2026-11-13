@@ -1,6 +1,6 @@
 import unittest
 
-from models.optional_stock.model import (
+from .model import (
     build_demo_instance,
     solve_phase1,
     solve_phase2,

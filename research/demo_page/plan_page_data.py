@@ -1,6 +1,6 @@
 """Extract page data for scheduling-plan.html from one models/run_all comparison run.
 
-    python research/experiment/plan_page_data.py <comparison_dir> <out.json>
+    python research/demo_page/plan_page_data.py <comparison_dir> <out.json>
 
 For every method: the best valid seed (rows, shifts, deliveries, KPI -- same
 layout as the page's DATA entries) plus a `speed` record over all seeds

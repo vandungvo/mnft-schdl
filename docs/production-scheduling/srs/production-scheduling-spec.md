@@ -8,6 +8,8 @@ links: []
 
 # production-scheduling — Software Requirements Specification
 
+> **Chưa cập nhật từ 09/2026.** Tài liệu này mô tả mô hình 4 công đoạn và tiến độ tại thời điểm viết; luồng chính của sản phẩm nay là nhà máy → sổ đơn hàng → kỳ lập lịch trên mô hình 5 công đoạn (xem `docs/_product/factory-periods.md`, `docs/_product/manual-editing.md`). Kế hoạch hiện hành và danh sách chỗ lệch: `docs/_product/improvement-plan.md` (mục 2.5, gói việc D1).
+
 ## 1. Scope
 
 Tầng 2 của pipeline lập lịch: **Detailed Scheduling**, horizon 2 tuần. Nhận đầu vào là 1 lần chạy Production Planning (Tầng 1, aggregate theo tháng/quý) đã hoàn tất, sinh lịch chi tiết theo ngày/ca cho từng công đoạn đúc→CNC→sơn→kiểm tra chất lượng của mọi đơn hàng trong kỳ, đảm bảo lịch hợp lệ về mặt vật lý (dòng nguyên liệu giữa các công đoạn qua tồn bán thành phẩm, công suất máy, machine eligibility, changeover, lô tối thiểu, chu kỳ bảo trì khuôn) và tối ưu hoá đa mục tiêu (makespan, tardiness, changeover time, idle time, thiếu hụt tồn kho an toàn). Không bao gồm: chạy lại lịch cho kịch bản what-if/đơn gấp/máy hỏng (thuộc feature `explanation` — counterfactual), giải thích kết quả (thuộc feature `explanation`), CRUD dữ liệu chủ (thuộc feature `master-data`), lập kế hoạch tháng/quý (thuộc feature `production-planning`).

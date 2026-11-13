@@ -14,9 +14,9 @@ Chi phí đúc/CNC của lô WIP đầu kỳ là chi phí đã phát sinh nên k
 Chạy từ gốc repository:
 
 ```powershell
-python -m models.optional_stock.run
+python -m research.optional_stock.run
 ```
 
-Kết quả nằm trong `models/optional_stock/results/<timestamp>/`: `REPORT.md`, `gantt.html`, `results.json`, `schedule.csv`, input và lịch tầng 1. Hai kịch bản chỉ khác chi phí lưu kho: kịch bản thấp phải chọn lô dự trữ có lợi; kịch bản cao phải để công suất rảnh.
+Kết quả nằm trong `research/optional_stock/results/<timestamp>/`: `REPORT.md`, `gantt.html`, `results.json`, `schedule.csv`, input và lịch tầng 1. Hai kịch bản chỉ khác chi phí lưu kho: kịch bản thấp phải chọn lô dự trữ có lợi; kịch bản cao phải để công suất rảnh.
 
 Đây là thí nghiệm có kiểm soát, chưa thay thế engine đầy đủ. Setup cố định theo lô/công đoạn; chưa có setup phụ thuộc trình tự, khuôn, bảo trì, downtime hoặc tái lập lịch.

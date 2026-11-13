@@ -4,9 +4,18 @@ Mã phục vụ thử nghiệm và tham khảo, **không** nằm trong sản ph�
 
 | Thư mục | Nội dung | Trạng thái |
 |---|---|---|
-| [`experiment/`](experiment/README.md) | Thí nghiệm mô hình tồn bán thành phẩm theo công đoạn, tách khỏi `models/`, không dùng chung kết quả | Đang dùng |
-| `notebooks/` | Notebook Colab/Kaggle tự chứa (engine + dataset nhúng sẵn) chạy CP-SAT không hint trên bộ `wheel-factory-2weeks` với ngân sách dài | Đang dùng |
-| `legacy/` | Script POC và mô hình cũ trước khi có `backend/`, `frontend/`, `models/`; `legacy/dashboard/` là dashboard tĩnh đã được `frontend/` thay thế | Chỉ tham khảo |
+| `notebooks/` | Notebook Colab/Kaggle tự chứa (engine + dataset nhúng sẵn) chạy CP-SAT không hint trên bộ `wheel-factory-2weeks` với ngân sách dài | Đang dùng (có test trong CI) |
+| `demo_page/` | Công cụ dựng trang demo HTML tự chứa nộp GVHD (`report/demo/`): `plan_page_data.py` rút dữ liệu từ một đợt `models/run_all` / `models/run_long`, `scheduling-plan.html` là khuôn trang | Đang dùng |
+| [`optional_stock/`](optional_stock/README.md) | Thử nghiệm độc lập (20/09/2026) về sản xuất dự trữ để lấp công suất trống: model CP-SAT hai tầng, instance demo, kết quả và test riêng; không dùng `models/common/`. Ý tưởng đã vào engine (lô dự trữ ở v1, phương án làm trước ở v2) | Không phát triển tiếp (còn test trong CI) |
+| `legacy/` | Script POC và mô hình cũ trước khi có `backend/`, `frontend/`, `models/`; `legacy/dashboard/` là dashboard tĩnh đã được `frontend/` thay thế; [`legacy/btp_experiment/`](legacy/btp_experiment/README.md) là thí nghiệm lập tay về tồn bán thành phẩm, đã được engine schema 4/5 thay thế | Chỉ tham khảo |
+
+## Lệnh chạy
+
+```powershell
+python research/demo_page/plan_page_data.py models/runs/v2/comparison/<run_id> <out.json>   # dữ liệu cho trang demo
+python -m research.optional_stock.run                                                        # thử nghiệm sản xuất dự trữ
+python -m pytest research/optional_stock -q
+```
 
 ## Notebook
 

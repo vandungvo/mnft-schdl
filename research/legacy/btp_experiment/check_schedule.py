@@ -4,7 +4,7 @@ Không giải bài toán, chỉ đọc lịch (danh sách lượt chạy) rồi 
 lượt chạy, lịch ca/downtime, không chồng máy, setup, tồn bán thành phẩm (mọi sự kiện),
 khuôn/bảo trì, giao hàng, tồn thành phẩm.
 
-Dùng:  python research/experiment/check_schedule.py [schedule.json] [data.json]
+Dùng:  python research/legacy/btp_experiment/check_schedule.py [schedule.json] [data.json]
 """
 import io
 import json
@@ -12,8 +12,8 @@ import math
 import sys
 from fractions import Fraction
 
-sched_path = sys.argv[1] if len(sys.argv) > 1 else "research/experiment/results/manual_schedule.json"
-data_path = sys.argv[2] if len(sys.argv) > 2 else "research/experiment/data/standard_case.json"
+sched_path = sys.argv[1] if len(sys.argv) > 1 else "research/legacy/btp_experiment/results/manual_schedule.json"
+data_path = sys.argv[2] if len(sys.argv) > 2 else "research/legacy/btp_experiment/data/standard_case.json"
 d = json.load(io.open(data_path, encoding="utf-8"))
 sc = json.load(io.open(sched_path, encoding="utf-8"))
 

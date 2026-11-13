@@ -8,6 +8,8 @@ links:
 
 # Project Profile
 
+> **Chưa cập nhật từ 09/2026.** Tài liệu này mô tả mô hình 4 công đoạn và tiến độ tại thời điểm viết; luồng chính của sản phẩm nay là nhà máy → sổ đơn hàng → kỳ lập lịch trên mô hình 5 công đoạn (xem `docs/_product/factory-periods.md`, `docs/_product/manual-editing.md`). Kế hoạch hiện hành và danh sách chỗ lệch: `docs/_product/improvement-plan.md` (mục 2.5, gói việc D1).
+
 > Bối cảnh cấp dự án (domain, người dùng & thuật ngữ). Chỉ tạo section khi có nội dung thật; mỗi
 > mục kèm ngày ghi.
 

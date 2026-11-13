@@ -1,6 +1,6 @@
 """Vẽ biểu đồ Gantt của một lịch (mặc định: lịch lập tay của ca chuẩn).
 
-Dùng:  python research/experiment/plot_gantt.py [schedule.json] [data.json] [out_prefix]
+Dùng:  python research/legacy/btp_experiment/plot_gantt.py [schedule.json] [data.json] [out_prefix]
 Ra:    <out_prefix>.png và <out_prefix>.svg
 """
 import io
@@ -13,9 +13,9 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 from matplotlib.patches import Patch
 
-sched_path = sys.argv[1] if len(sys.argv) > 1 else "research/experiment/results/manual_schedule.json"
-data_path = sys.argv[2] if len(sys.argv) > 2 else "research/experiment/data/standard_case.json"
-out_prefix = sys.argv[3] if len(sys.argv) > 3 else "research/experiment/results/gantt_manual_schedule"
+sched_path = sys.argv[1] if len(sys.argv) > 1 else "research/legacy/btp_experiment/results/manual_schedule.json"
+data_path = sys.argv[2] if len(sys.argv) > 2 else "research/legacy/btp_experiment/data/standard_case.json"
+out_prefix = sys.argv[3] if len(sys.argv) > 3 else "research/legacy/btp_experiment/results/gantt_manual_schedule"
 
 sc = json.load(io.open(sched_path, encoding="utf-8"))
 d = json.load(io.open(data_path, encoding="utf-8"))
