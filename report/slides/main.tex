@@ -1,12 +1,12 @@
 \input{preamble.tex}
-\graphicspath{{figures/}{../figures/}{../figures/tien_do_2/}}
+\graphicspath{{figures/}{figures/en/}{../figures/}}
 
-\title[Tác nhân lập lịch sản xuất hợp lý]{Xây dựng tác nhân lập lịch sản xuất tạo ra lịch hợp lý,\\ứng dụng trong ngành sản xuất linh kiện\\[2pt]{\normalsize Trường hợp nghiên cứu: sản xuất bánh xe}}
+\title[Reasonable production scheduling agent]{Building a Production Scheduling Agent that Produces Reasonable Schedules,\\Applied to Component Manufacturing\\[2pt]{\normalsize Case study: alloy wheel production}}
 \author[Võ Văn Dũng]{Võ Văn Dũng (2570708)}
-\institute[HCMUT]{Trường Đại học Bách khoa -- ĐHQG TP.HCM}
-\date[11/2026]{TP. Hồ Chí Minh, tháng 11/2026}
-\newcommand{\course}{Đồ án môn học CO5103 -- Hệ thống thông tin quản lý}
-\newcommand{\supervisor}{PGS.TS Võ Thị Ngọc Châu}
+\institute[HCMUT]{Ho Chi Minh City University of Technology - VNU-HCM}
+\date[11/2026]{Ho Chi Minh City, November 2026}
+\newcommand{\course}{Course project CO5103 - Management Information Systems}
+\newcommand{\supervisor}{Assoc. Prof. Dr. Võ Thị Ngọc Châu}
 \newcommand{\emails}{\texttt{dung.vovan@hcmut.edu.vn}}
 
 \begin{document}
@@ -25,9 +25,9 @@
   \vspace{0.5em}
   {\footnotesize\course\par}
   \vspace{0.5em}
-  {\small\textbf{Giảng viên hướng dẫn: \supervisor}\par}
+  {\small\textbf{Supervisor: \supervisor}\par}
   \vspace{0.3em}
-  {\small\textbf{Học viên: \insertauthor}\par}
+  {\small\textbf{Student: \insertauthor}\par}
   \vspace{0.4em}
   {\scriptsize\emails\par}
   \vspace{0.4em}
@@ -37,365 +37,756 @@
 \end{frame}
 }
 
-\begin{frame}{Nội dung}
+\begin{frame}{Outline}
 \tableofcontents
 \end{frame}
 
 % =====================================================================
-\section{Bài toán}
+\section{Introduction}
 
-\begin{frame}{Bối cảnh và phát biểu bài toán}
-\framesubtitle{Lập lịch sản xuất ở nhà máy linh kiện vẫn nằm trong các file Excel rời rạc}
+\begin{frame}{Context and problem statement}
+\framesubtitle{Production scheduling in component plants still lives in scattered Excel files}
 \begin{columns}[T]
 \begin{column}{0.47\textwidth}
-\begin{block}{Hiện trạng}
+\begin{block}{Current situation}
 \scriptsize
 \begin{itemize}\setlength{\itemsep}{0.25em}
-  \item Đơn hàng, tồn kho, tình trạng máy nằm ở \textbf{nhiều file Excel}, lệch phiên bản giữa các bộ phận.
-  \item Logic xếp lịch nằm trong kinh nghiệm cá nhân: \textbf{``hộp đen''} với ban lãnh đạo.
-  \item Đơn gấp chen ngang phải dò và sửa tay; khó chuẩn hoá, khó mở rộng.
-  \item Nhiều ràng buộc cùng lúc: máy điểm nghẽn, setup theo trình tự, khuôn và bảo trì,
-        cỡ lô, tồn kho, ca đã mở phải được tận dụng.
+  \item Orders, stock and machine status sit in \textbf{many Excel files}, out of sync between departments.
+  \item The scheduling logic lives in personal experience: a \textbf{``black box''} for management.
+  \item A rush order or a breakdown means searching and editing by hand; hard to standardise or scale.
+  \item Many constraints at once: bottleneck machines, sequence-dependent setups, molds and maintenance,
+        lot sizes, stock levels, and opened shifts that should be used well.
+  \item Shop scheduling is \textbf{NP-hard}: a planner can only check a few alternatives by hand.
 \end{itemize}
 \end{block}
 \end{column}
 \begin{column}{0.49\textwidth}
-\begin{block}{Tác nhân lập lịch cần}
+\begin{block}{The scheduling agent must}
 \scriptsize
 \begin{enumerate}\setlength{\itemsep}{0.25em}
-  \item Tự động sinh lịch tối ưu hoặc gần tối ưu từ đơn hàng và ràng buộc thực tế.
-  \item Tạo \textbf{lịch hợp lý}: tuân thủ đủ ràng buộc vật lý/nghiệp vụ, cân đối có căn cứ giữa
-        hạn giao, hiệu suất máy, tồn kho, để lãnh đạo \textbf{tin dùng mà không phải rà tay lại}.
-  \item Phản ứng với gián đoạn (đơn gấp, dừng máy): giải lại và so với lịch gốc.
-  \item Tận dụng máy trong mỗi ca đã bật, giảm lãng phí nhân công và điện.
+  \item Generate optimal or near-optimal schedules automatically from orders and real constraints.
+  \item Produce \textbf{reasonable schedules}: every physical and business rule respected, with a justified
+        balance between due dates, machine efficiency and stock, so managers \textbf{trust them without
+        re-checking by hand}.
+  \item React to disruptions (rush orders, machine stops): replan and compare with the original plan.
+  \item Use machines well inside every opened shift, cutting wasted labour and energy.
 \end{enumerate}
 \end{block}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Phạm vi: dây chuyền vành xe 5 công đoạn}
-\framesubtitle{Rút gọn từ quy trình thực tế 19 công đoạn của một nhà máy vành hợp kim nhôm}
+\begin{frame}{Scope: a five-stage wheel production line}
+\framesubtitle{Condensed from the 19 operations of a real aluminium alloy wheel process}
 \centering
 \begin{tikzpicture}[font=\scriptsize,
-  st/.style={draw=bkblue,fill=bkblue!8,rounded corners=2pt,align=center,minimum height=1.35cm,text width=1.95cm},
+  st/.style={draw=bkblue,fill=bkblue!8,rounded corners=2pt,align=center,minimum height=1.35cm,text width=2.08cm},
   bn/.style={st,draw=bkorange,fill=bkorange!15,thick},
   inv/.style={align=center,font=\tiny,text=bkgray,inner sep=1pt},
   a/.style={-{Stealth[length=4pt]},bkblue,thick},
   pt/.style={draw=bkblue,fill=bkblue!3,rounded corners=2pt,align=center,minimum height=1.0cm},
-  node distance=0.85cm]
-  \node[st] (c) {\textbf{Đúc}\\CAST\_1, CAST\_2\\lượt 16 vành\\4 khuôn dùng chung};
-  \node[bn,right=of c] (h) {\textbf{Nhiệt luyện}\\HT\_1, HT\_2\\mẻ 24 vành, 8 giờ\\\textbf{điểm nghẽn}};
-  \node[st,right=of h] (m) {\textbf{Gia công CNC}\\CNC\_1, CNC\_2\\lượt 20 vành};
-  \node[st,right=of m] (p) {\textbf{Sơn}\\PAINT\_1, lượt 25\\setup bạc$\to$đen 12',\\đen$\to$bạc 24'};
-  \node[st,right=of p] (q) {\textbf{Thử nghiệm}\\\textbf{\& đóng gói}\\QC\_1, lượt 20};
-  \foreach \x/\y in {c/h,h/m,m/p,p/q} {\draw[a] (\x) -- node[inv,above=1pt]{kho\\BTP} (\y);}
+  node distance=0.62cm]
+  \node[st] (c) {\textbf{Casting}\\CAST\_1, CAST\_2\\runs of 16\\4 shared molds};
+  \node[bn,right=of c] (h) {\textbf{Heat}\\\textbf{treatment}\\HT\_1, HT\_2\\loads of 24, 8 h\\\textbf{bottleneck}};
+  \node[st,right=of h] (m) {\textbf{CNC}\\\textbf{machining}\\CNC\_1, CNC\_2\\runs of 20};
+  \node[st,right=of m] (p) {\textbf{Painting}\\PAINT\_1, runs of 25\\{\tiny silver$\to$black 12'}\\{\tiny black$\to$silver 24'}};
+  \node[st,right=of p] (q) {\textbf{Test}\\\textbf{\& packing}\\QC\_1\\runs of 20};
+  \foreach \x/\y in {c/h,h/m,m/p,p/q} {\draw[a] (\x) -- node[inv,above=1pt]{WIP\\buffer} (\y);}
   % planning tier
-  \node[pt,text width=3.0cm,below=1.0cm of c.south west,anchor=north west] (o) {\textbf{Đơn hàng tháng/quý}\\mã, số lượng, hạn giao, ưu tiên};
-  \node[pt,text width=3.3cm,right=0.8cm of o] (pl) {\textbf{Tầng kế hoạch}\\tổng hợp nhu cầu theo kỳ 2 tuần\\(Hax \& Meal, 1975)};
-  \node[pt,text width=4.2cm,fill=bkblue!20,right=0.8cm of pl] (sc) {\textbf{Tầng lập lịch (trọng tâm đồ án)}\\lượt nào chạy trên máy nào, lúc nào,\\theo thứ tự nào};
+  \node[pt,text width=3.0cm,below=1.0cm of c.south west,anchor=north west] (o) {\textbf{Monthly/quarterly orders}\\code, quantity, due date, priority};
+  \node[pt,text width=3.3cm,right=0.8cm of o] (pl) {\textbf{Planning tier}\\aggregate demand per 2-week period\\(Hax \& Meal, 1975)};
+  \node[pt,text width=4.2cm,fill=bkblue!20,right=0.8cm of pl] (sc) {\textbf{Scheduling tier (focus of the project)}\\which run on which machine, when,\\in which order};
   \draw[a] (o)--(pl); \draw[a] (pl)--(sc);
-  \draw[a,dashed] (sc.north) -- node[inv,right=2pt]{xếp lịch cho dây chuyền} (sc.north |- c.south);
+  \draw[a,dashed] (sc.north) -- node[inv,left=2pt]{schedules the line} (sc.north |- c.south);
 \end{tikzpicture}
 \vspace{0.4em}
 
-\scriptsize 2 dòng sản phẩm (bánh trước F, bánh sau R) $\times$ 2 màu (bạc, đen) $\cdot$ 3 ca/ngày, lò nhiệt luyện chạy 24/7 $\cdot$
-dừng máy theo kế hoạch $\cdot$ tồn an toàn, sức chứa kho $\cdot$ thông số là \textbf{ước tính có ghi giả định}, không phải số đo của nhà máy.
+\scriptsize 2 product lines (front wheel F, rear wheel R) $\times$ 2 colours (silver, black) $\cdot$ 3 shifts/day, furnaces run 24/7 $\cdot$
+planned machine stops $\cdot$ safety stock, warehouse caps $\cdot$ out of scope: live machine data (MES/IoT), deployment in a real plant.
+\end{frame}
+
+\begin{frame}{Objectives and contributions}
+\begin{columns}[T]
+\begin{column}{0.49\textwidth}
+\begin{block}{Specific objectives}
+\scriptsize
+\begin{enumerate}\setlength{\itemsep}{0.2em}
+  \item Model the line as an extended \textbf{flexible job shop}: shifts, shared molds, changeovers, stage lots, stock, deliveries.
+  \item Generate schedules by \textbf{combining several algorithms}; check every schedule with an \textbf{independent validator}.
+  \item Present options on the \textbf{service / cost trade-off} so management chooses on explicit grounds.
+  \item Replan after rush orders and breakdowns while keeping what has already run.
+  \item Maximise machine utilisation inside opened shifts.
+  \item Evaluate on business datasets; prepare public benchmarks.
+\end{enumerate}
+\end{block}
+\end{column}
+\begin{column}{0.47\textwidth}
+\begin{exampleblock}{Contributions}
+\scriptsize
+\begin{itemize}\setlength{\itemsep}{0.3em}
+  \item \textbf{Method}: a combined pipeline that places each algorithm where the experiments show it works.
+  \item \textbf{Evidence}: 10 methods on 2 datasets; the service level of the 2-week set \textbf{proven optimal};
+        measured effect of the utilisation objective.
+  \item \textbf{Information system}: the planner's whole cycle, from factory set-up to commit, execution and rescheduling;
+        91-page user guide, narrated demo video.
+  \item \textbf{Course requirements}: 32 references, 17-row comparison table, benchmark survey, reproducible run records.
+\end{itemize}
+\end{exampleblock}
+\end{column}
+\end{columns}
 \end{frame}
 
 % =====================================================================
-\section{Cơ sở lý thuyết và nghiên cứu liên quan}
+\section{Background and related work}
 
-\begin{frame}{Cơ sở lý thuyết}
-\framesubtitle{Flexible job-shop có mở rộng thực tế, đa mục tiêu, nhiều nhóm phương pháp giải}
+\begin{frame}{Theoretical background}
+\framesubtitle{A flexible job shop with real-world extensions, several objectives and several families of methods}
 \begin{columns}[T]
 \begin{column}{0.48\textwidth}
-\begin{block}{Lớp bài toán}
+\begin{block}{Problem class}
 \scriptsize
 \begin{itemize}\setlength{\itemsep}{0.2em}
-  \item \textbf{FJSP}: chọn máy trong tập máy đủ điều kiện \emph{và} xếp thứ tự; NP-khó
-        (Dauzère-Pérès et al., 2024). Mọi sản phẩm cùng thứ tự công đoạn $\Rightarrow$ gần
+  \item \textbf{FJSP}: choose a machine among the eligible ones \emph{and} sequence the work; NP-hard
+        (Dauzère-Pérès et al., 2024). All products follow the same stage order $\Rightarrow$ close to a
         \textbf{hybrid flow shop} (Ruiz \& Vázquez-Rodríguez, 2010).
-  \item Mở rộng cần có: setup phụ thuộc trình tự (Allahverdi, 2015), tài nguyên phụ (khuôn),
-        lô/mẻ theo công đoạn, lịch ca, tồn kho và giao hàng.
+  \item Extensions: sequence-dependent setups (Allahverdi, 2015), molds, stage lots, shifts, stock, deliveries.
 \end{itemize}
 \end{block}
 \vspace{-0.3em}
-\begin{block}{Đa mục tiêu}
+\begin{block}{Multiple objectives}
 \scriptsize
 \begin{itemize}\setlength{\itemsep}{0.2em}
-  \item Tổng có trọng số (cho phép bù trừ) $\cdot$ thứ tự ưu tiên (lexicographic) $\cdot$
-        \textbf{Pareto}: tập lịch không bị trội = \textbf{đường đánh đổi}, sinh bằng \textbf{ràng buộc $\varepsilon$}.
-  \item Khi trọng số là \emph{chính sách quản lý}, đưa phương án cho người quản lý chọn.
+  \item Weighted sum (allows compensation) $\cdot$ lexicographic priority $\cdot$
+        \textbf{Pareto}: the non-dominated set = the \textbf{trade-off curve}, generated with \textbf{$\varepsilon$-constraints}.
+  \item Weights are a \emph{management policy} $\Rightarrow$ offer options to choose from.
 \end{itemize}
 \end{block}
 \end{column}
 \begin{column}{0.49\textwidth}
 \scriptsize
-\textbf{Các nhóm phương pháp}\par\vspace{0.2em}
+\textbf{Families of methods}\par\vspace{0.2em}
 \begin{tabular}{@{}L{1.75cm}L{2.0cm}L{2.85cm}@{}}
 \toprule
-Nhóm & Đại diện & Đặc điểm\\
+Family & Examples & Characteristics\\
 \midrule
-Luật điều độ & FIFO, EDD, SPT & tức thì, dễ hiểu; không nhìn xa\\
-Metaheuristic & SA, GA & mở rộng tốt; phụ thuộc seed\\
-Quy hoạch ràng buộc & OR-Tools CP-SAT & ràng buộc phức tạp, có \textbf{cận dưới}; chậm khi lớn\\
-Lai CP + tìm kiếm & CP-LNS, warm start & CP trên bài toán con\\
-Phân rã thời gian & rolling horizon & giải kỳ dài; không thấy xa\\
-Học máy & DRL, GNN & nhanh sau huấn luyện; khó giải thích\\
+Dispatching rules & FIFO, EDD, SPT & instant, easy to explain; myopic\\
+Metaheuristics & SA, GA & scale well; seed dependent\\
+Constraint programming & OR-Tools CP-SAT & complex constraints, proves \textbf{lower bounds}; slow when large\\
+Hybrid CP + search & CP-LNS, warm start & CP on sub-problems\\
+Time decomposition & rolling horizon & long horizons; cannot see far ahead\\
+Machine learning & DRL, GNN & fast once trained; hard to explain\\
 \bottomrule
 \end{tabular}
 \vspace{0.4em}
 
-\textbf{Tái lập lịch} (Vieira et al., 2003) và \textbf{diễn giải} (đường găng, độ nhạy, phản thực,
-XAI cho vận trù học) là lớp hỗ trợ tin tưởng lịch.
+\textbf{Rescheduling} (Vieira et al., 2003) and \textbf{explanation} (critical path, sensitivity, counterfactuals,
+XAI for operations research) are the layer that supports trust in the schedule.
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Bảng đối sánh nghiên cứu liên quan}
-\framesubtitle{32 tài liệu, 16 tài liệu 2024--2026; trích bảng đối sánh 17 dòng}
+\begin{frame}{Comparison with related studies}
+\framesubtitle{32 references, 16 of them from 2024-2026; excerpt of the 17-row comparison table}
 \centering\tiny
 \setlength{\tabcolsep}{3pt}
 \renewcommand{\arraystretch}{1.08}
 \begin{tabular}{@{}L{2.95cm}L{1.9cm}L{2.85cm}L{2.85cm}L{1.55cm}L{1.45cm}@{}}
 \toprule
-Nghiên cứu & Bài toán & Phương pháp & Ràng buộc đặc thù & Diễn giải & Gián đoạn\\
+Study & Problem & Method & Specific constraints & Explanation & Disruptions\\
 \midrule
-Wang \& Chen 2024 (ESWA) & JSP bán dẫn & GA + hậu xử lý XAI & không & có (sau giải) & không\\
-Mehdiyev et al.\ 2024 & JSP & dự đoán quy trình + NSGA-II & không & phản thực & what-if\\
-Cheng et al.\ 2024 (IEEE Access) & FJSP + khuôn & MODE đa mục tiêu & máy--khuôn, setup khuôn & không & không\\
-Ghaleb et al.\ 2021 (JMS) & FJSP động & GA lai & suy giảm máy, bảo trì & không & thời gian thực\\
-Lan \& Berkhout 2025 (PyJobShop) & FJSP/JSP/RCPSP & CP-SAT, CP Optimizer & tổng quát & không & không\\
-Song et al.\ 2023 (IEEE TII) & FJSP & GNN + DRL & không & không & --\\
-Li et al.\ 2025 (ICLR) & FJSP kỳ dài & rolling horizon + học máy & không đặc thù & không & --\\
-Echeverria et al.\ 2025 (ESWA) & FJSP động & CP + học sâu & không đặc thù & không & có\\
-Nguyễn Hồng Phúc et al.\ 2026 & FJSP + thuê ngoài & mô hình toán + GA & tăng ca, thuê ngoài & không & --\\
+Wang \& Chen 2024 (ESWA) & JSP, semiconductors & GA + XAI post-processing & none & yes (after solving) & no\\
+Mehdiyev et al.\ 2024 & JSP & process prediction + NSGA-II & none & counterfactual & what-if\\
+Cheng et al.\ 2024 (IEEE Access) & FJSP + molds & multi-objective MODE & machine-mold, mold setup & no & no\\
+Ghaleb et al.\ 2021 (JMS) & dynamic FJSP & hybrid GA & machine degradation, maintenance & no & real time\\
+Lan \& Berkhout 2025 (PyJobShop) & FJSP/JSP/RCPSP & CP-SAT, CP Optimizer & generic & no & no\\
+Song et al.\ 2023 (IEEE TII) & FJSP & GNN + DRL & none & no & -\\
+Li et al.\ 2025 (ICLR) & long-horizon FJSP & rolling horizon + learning & not specific & no & -\\
+Echeverria et al.\ 2025 (ESWA) & dynamic FJSP & CP + deep learning & not specific & no & yes\\
+Nguyễn Hồng Phúc et al.\ 2026 & FJSP + outsourcing & math model + GA & overtime, outsourcing & no & -\\
 \midrule
-\textbf{Đề tài này} & \textbf{FJSP 5 công đoạn, 2 tầng} & \textbf{kết hợp} luật + SA/GA + CP-LNS + CP-SAT $\varepsilon$, lọc Pareto, \textbf{người chọn} &
-  \textbf{ca, setup trình tự, khuôn + bảo trì, lô theo công đoạn, tồn BTP, tồn an toàn, sức chứa kho} &
-  \textbf{đánh đổi, so 2 lịch, lý giải} & \textbf{đơn gấp, dừng máy biết trước}\\
+\textbf{This project} & \textbf{5-stage FJSP, two tiers} & \textbf{combined} rules + SA/GA + CP-LNS + CP-SAT, Pareto filter, \textbf{human choice} &
+  \textbf{shifts, sequence setups, molds + maintenance, stage lots, WIP stock, safety stock, warehouse caps} &
+  \textbf{trade-offs, compare 2 schedules, why late} & \textbf{rush orders, breakdowns, replan from a cut-off}\\
 \bottomrule
 \end{tabular}
 \vspace{0.5em}
 
 \begin{columns}[T]
 \begin{column}{0.48\textwidth}
-\scriptsize \textbf{Khoảng trống 1.} Đa số chọn \emph{một} thuật toán rồi so với các thuật toán khác;
-thực nghiệm cho thấy mỗi thuật toán mạnh ở một vùng.
+\scriptsize \textbf{Gap 1.} Most studies pick \emph{one} algorithm and compare it with others;
+our experiments show each algorithm is strong in a different region.
 \end{column}
 \begin{column}{0.48\textwidth}
-\scriptsize \textbf{Khoảng trống 2.} Đa số trả về \emph{một} lịch theo hàm mục tiêu cố định; trọng số giao hàng/chi phí
-là quyết định quản lý, đổi theo từng kỳ.
+\scriptsize \textbf{Gap 2.} Most return \emph{one} schedule for a fixed objective; the weights between delivery and
+cost are a management decision that changes from period to period.
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Dữ liệu benchmark và dữ liệu thực nghiệm}
-\framesubtitle{Benchmark công khai chỉ kiểm tra được lõi job-shop $\Rightarrow$ tự xây thêm dữ liệu nghiệp vụ}
+\begin{frame}{Related software and public benchmark data}
+\framesubtitle{Existing tools record or optimise in a closed way; public benchmarks only test the job-shop core}
 \begin{columns}[T]
-\begin{column}{0.5\textwidth}
-\scriptsize
-\textbf{Bộ dữ liệu công khai (đã tải, kèm giấy phép)}\par\vspace{0.2em}
-\begin{tabular}{@{}L{2.7cm}L{1.3cm}L{2.9cm}@{}}
+\begin{column}{0.56\textwidth}
+\tiny
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}L{2.05cm}L{2.35cm}L{1.35cm}L{1.25cm}@{}}
 \toprule
-Bộ & Quy mô & Vai trò\\
+Software & How schedules are built & Trade-off options & Independent check\\
 \midrule
-Taillard ta01--ta80 & 80 inst. & lõi job-shop (makespan)\\
-OR-Library, Lawrence & 82 inst. & như trên\\
-Deliktaş et al.\ 2024 & 43 inst. & chọn máy, setup theo họ SP\\
-Mota et al.\ 2020 & 3 tệp & tham số thời gian/năng lượng\\
+Excel (current practice) & by hand, from experience & no & no\\
+ERP module (e.g.\ Odoo Manufacturing) & work orders against work-centre capacity & no & no\\
+Commercial APS (e.g.\ Opcenter APS, Asprova) & finite-capacity scheduling, interactive Gantt; licensed & not assessed & not assessed\\
+Libraries (Timefold, PyJobShop) & metaheuristics or CP on a model in code & to program & to program\\
+\midrule
+\textbf{This project (PlanWise)} & \textbf{rules $\to$ multi-seed SA $\to$ warm-started CP-SAT} & \textbf{Pareto + policy} & \textbf{every schedule}\\
+\bottomrule
+\end{tabular}
+\vspace{0.3em}
+
+{\tiny Commercial and open-source rows summarise their public descriptions; they were not tested.\par}
+\end{column}
+\begin{column}{0.41\textwidth}
+\tiny
+\begin{tabular}{@{}L{2.35cm}L{0.95cm}L{1.95cm}@{}}
+\toprule
+Public dataset & Size & Role\\
+\midrule
+Taillard ta01-ta80 & 80 inst. & job-shop core (makespan)\\
+OR-Library, Lawrence & 82 inst. & same\\
+Deliktaş et al.\ 2024 & 43 inst. & machine choice, family setups\\
+Mota et al.\ 2020 & 3 files & time/energy parameters\\
 \bottomrule
 \end{tabular}
 \vspace{0.4em}
 
-Cổng dữ liệu mở: data.gov (chỉ số vĩ mô), data.gov.vn (chưa có), Kaggle (3 ứng viên chưa kiểm chứng):
-\textbf{không bộ nào có đủ ca, khuôn dùng chung, tồn BTP, giao hàng theo đơn}.
-\end{column}
-\begin{column}{0.46\textwidth}
-\scriptsize
-\textbf{Hai bộ dữ liệu tự xây (sinh bằng chương trình có tham số)}\par\vspace{0.2em}
-\begin{tabular}{@{}lrr@{}}
-\toprule
- & Bộ 3 ngày & Bộ 2 tuần\\
-\midrule
-Đơn hàng & 4 & 24\\
-Số vành & 108 & 980\\
-Lượt sản xuất & 42 & 269\\
-Máy / khuôn & 8 / 4 & 8 / 4\\
-\bottomrule
-\end{tabular}
-\vspace{0.4em}
-\begin{itemize}\setlength{\itemsep}{0.15em}
-  \item Bộ 3 ngày có \textbf{lịch xếp tay} để so với cách làm thủ công.
-  \item Bộ 2 tuần: nghỉ Chủ nhật, 2 đợt bảo trì máy, 2 đơn gấp, khách nhận hàng đúng giờ hẹn.
-  \item Bộ sinh tự kiểm tra đủ hàng cho mọi đơn, tải máy không vượt công suất.
-\end{itemize}
+\scriptsize Open-data portals: data.gov (macro indicators), data.gov.vn (none), Kaggle (3 unverified candidates):
+\textbf{none has shifts, shared molds, WIP stock and order-based deliveries together} $\Rightarrow$ business-realistic datasets built in the project.
 \end{column}
 \end{columns}
 \end{frame}
 
 % =====================================================================
-\section{Giải pháp đề xuất}
+\section{Proposed solution}
 
-\begin{frame}{Ý tưởng: không chọn một thuật toán duy nhất}
-\framesubtitle{Bằng chứng thực nghiệm buộc thay đổi hướng so với báo cáo sơ bộ (chỉ dùng CP-SAT)}
+\begin{frame}{Idea: do not rely on a single algorithm}
+\framesubtitle{Experimental evidence changed the direction of the preliminary report (CP-SAT only)}
 \begin{columns}[T]
 \begin{column}{0.5\textwidth}
-\begin{alertblock}{CP-SAT nguyên khối không bền}
+\begin{alertblock}{Monolithic CP-SAT is not robust}
 \scriptsize
 \begin{itemize}\setlength{\itemsep}{0.2em}
-  \item Bộ 3 ngày (42 lượt, 30\,s): lịch \textbf{kém nhất}, còn 1 đơn trễ.
-  \item Bộ 2 tuần (269 lượt): \textbf{12 giờ, 8 luồng vẫn không tìm được lịch nào}.
+  \item 3-day set (42 runs, 30\,s): the \textbf{worst} schedule, one order still late.
+  \item 2-week set (269 runs): \textbf{12 hours on 8 threads without finding any schedule}.
 \end{itemize}
 \end{alertblock}
 \vspace{-0.2em}
-\begin{exampleblock}{Nhưng mỗi thuật toán mạnh ở một vùng}
+\begin{exampleblock}{But each algorithm is strong somewhere}
 \scriptsize
 \begin{itemize}\setlength{\itemsep}{0.2em}
-  \item Luật điều độ: lịch hợp lệ tức thì (269 lượt trong 0,22\,s).
-  \item CP-LNS tốt và nhanh nhất ở bộ 3 ngày; SA tốt nhất ở bộ 2 tuần.
-  \item CP-SAT \textbf{khởi đầu từ lịch tốt} cải thiện sau 37\,s và cho lịch tốt nhất.
+  \item Dispatching rules: a valid schedule instantly (269 runs in 0.22\,s).
+  \item CP-LNS is best and fastest on the 3-day set; SA is best on the 2-week set.
+  \item CP-SAT \textbf{started from a good schedule} improves after 37\,s and gives the best schedule.
 \end{itemize}
 \end{exampleblock}
 \end{column}
 \begin{column}{0.46\textwidth}
-\begin{block}{Giải pháp gồm 3 phần}
+\begin{block}{The solution has three parts}
 \scriptsize
 \begin{enumerate}\setlength{\itemsep}{0.35em}
-  \item \textbf{Danh mục thuật toán phối hợp}: mỗi thuật toán làm phần nó giỏi nhất; lịch của bước trước
-        là điểm xuất phát cho bước sau.
-  \item \textbf{Bộ kiểm tra lịch độc lập}: mọi lịch, kể cả lịch xếp tay, đều phải qua.
-  \item \textbf{Người lập kế hoạch chọn} trên đường đánh đổi theo chính sách của kỳ, ghi lý do;
-        được sửa tay rồi cho máy tối ưu phần còn lại.
+  \item \textbf{A coordinated portfolio of algorithms}: each does what it is best at; the schedule of one step
+        is the starting point of the next.
+  \item \textbf{An independent schedule validator}: every schedule, hand-made ones included, must pass it.
+  \item \textbf{The planner chooses} on the trade-off curve under the period's policy and records why;
+        they can edit by hand and let the solver optimise the rest.
 \end{enumerate}
 \end{block}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Quy trình giải pháp lập lịch kết hợp}
-\framesubtitle{Bộ sinh lịch kết hợp $\to$ kiểm tra $\to$ lọc Pareto $\to$ người chọn, sửa và chốt}
+\begin{frame}{The combined scheduling pipeline}
+\framesubtitle{Combined schedule generator $\to$ validation $\to$ Pareto filter $\to$ the planner chooses, edits and commits}
 \centering
 \begin{tikzpicture}[font=\scriptsize,
   b/.style={draw=bkblue,fill=bkblue!8,rounded corners=2pt,align=center,minimum height=1.05cm,text width=2.25cm},
   h/.style={b,draw=bkorange,fill=bkorange!12},
   a/.style={-{Stealth[length=4pt]},bkblue,thick}, node distance=0.42cm]
-  \node[b] (in) {\textbf{Nhà máy + sổ đơn hàng}\\$\to$ kỳ lập lịch 2 tuần};
-  \node[b,right=0.55cm of in] (b1) {\textbf{B1 Luật điều độ}\\FIFO, EDD, SPT\\lịch nền tức thì};
-  \node[b,right=of b1] (b2) {\textbf{B2 Tìm kiếm}\\SA, GA, CP-LNS\\từ lịch luật tốt nhất};
-  \node[b,right=of b2,text width=3.2cm] (b3) {\textbf{B3 CP-SAT khởi đầu từ lịch tốt nhất} + ràng buộc $\varepsilon$
-     $\Rightarrow$ các điểm trên đường đánh đổi; có \textbf{cận dưới}};
-  \node[b,below=0.95cm of b3,text width=3.2cm] (b4) {\textbf{B4 Bộ kiểm tra độc lập}\\dựng lại lịch từ đầu vào,\\loại mọi vi phạm};
-  \node[b,left=of b4] (b5) {\textbf{B5 Lọc không bị trội}\\+ xếp hạng theo\\chính sách};
-  \node[h,left=of b5] (b6) {\textbf{B6 Người lập kế hoạch}\\xem, so sánh, chốt\\kèm lý do};
-  \node[h,left=0.55cm of b6] (b7) {\textbf{B7 Sửa tay, khoá}\\CP-SAT tối ưu\\phần còn lại};
+  \node[b] (in) {\textbf{Factory + order book}\\$\to$ 2-week planning period};
+  \node[b,right=0.55cm of in] (b1) {\textbf{S1 Rules}\\FIFO, EDD, SPT\\instant baseline};
+  \node[b,right=of b1] (b2) {\textbf{S2 Search}\\SA on many seeds\\(GA, CP-LNS)};
+  \node[b,right=of b2,text width=3.2cm] (b3) {\textbf{S3 CP-SAT warm-started from the best schedule} (+ $\varepsilon$-constraints)
+     $\Rightarrow$ points on the trade-off curve; proves a \textbf{lower bound}};
+  \node[b,below=0.95cm of b3,text width=3.2cm] (b4) {\textbf{S4 Validator} (independent)\\rebuilds the schedule from the inputs,\\rejects any violation};
+  \node[b,left=of b4] (b5) {\textbf{S5 Pareto filter}\\+ ranking under\\the policy};
+  \node[h,left=of b5] (b6) {\textbf{S6 The planner}\\views and compares,\\commits with a reason};
+  \node[h,left=0.55cm of b6] (b7) {\textbf{S7 Hand edits}\\lock runs, CP-SAT\\optimises the rest};
   \draw[a] (in)--(b1); \draw[a] (b1)--(b2); \draw[a] (b2)--(b3);
   \draw[a] (b3)--(b4); \draw[a] (b4)--(b5); \draw[a] (b5)--(b6);
   \draw[a] (b6)--(b7);
-  \draw[a,dashed] (b7.south) -- ++(0,-0.35) -| node[pos=0.25,below,font=\tiny]{phương án mới cũng phải qua kiểm tra} (b4.south);
-  \draw[a,dashed] (b1.south) -- ++(0,-0.4) node[below,font=\tiny,align=center,text=bkgray]{lịch dự phòng\\nếu bước sau hết giờ};
+  \draw[a,dashed] (b7.south) -- ++(0,-0.35) -| node[pos=0.25,below,font=\tiny]{new options must pass validation too} (b4.south);
+  \draw[a,dashed] (b1.south) -- ++(0,-0.4) node[below,font=\tiny,align=center,text=bkgray]{fallback schedule\\if a later step runs out of time};
   \begin{scope}[on background layer]
-    \node[fit=(b1)(b3),draw=gray!60,dashed,inner sep=5pt,label={[font=\tiny]above:bộ sinh lịch kết hợp: lịch bước trước làm điểm xuất phát cho bước sau}] {};
+    \node[fit=(b1)(b3),draw=gray!60,dashed,inner sep=5pt,label={[font=\tiny]above:combined generator (``Hybrid''): each step starts from the previous step's best schedule}] {};
   \end{scope}
 \end{tikzpicture}
 \vspace{0.3em}
 
-\scriptsize Biến thể kỳ dài: B3' CP-SAT \textbf{cuốn chiếu} (cửa sổ 4 ngày, bước 2 ngày, $\le$60 lượt).
-Đóng góp: \textbf{ghép thành quy trình, đặt mỗi thuật toán đúng chỗ theo bằng chứng thực nghiệm}.
+\scriptsize Long-horizon variant: S3' \textbf{rolling-horizon} CP-SAT (4-day window, 2-day step, $\le$60 runs).
+Contribution: \textbf{assembling the pipeline and placing each algorithm where the experiments show it works}.
 \end{frame}
 
-\begin{frame}{Mô hình hoá}
-\framesubtitle{FJSP 5 công đoạn trên OR-Tools CP-SAT, mục tiêu hai tầng}
+\begin{frame}{Production process and experimental data}
+\framesubtitle{Parameters are documented estimates from a real 19-operation process, not plant measurements}
+\begin{columns}[T]
+\begin{column}{0.53\textwidth}
+\tiny
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}L{1.25cm}L{1.55cm}L{0.95cm}L{3.0cm}@{}}
+\toprule
+Stage & Machines & Run size & Time per run, changeovers\\
+\midrule
+Casting & CAST\_1, CAST\_2, 4 shared molds & 16 & 74 / 82 min (F / R); mold 60 min; mold service 30 min after 48 / 40 pours\\
+Heat treatment & HT\_1, HT\_2 (24/7) & 24 & 480 min per rack\\
+CNC machining & CNC\_1, CNC\_2 & 20 & 148 / 168 min; F $\leftrightarrow$ R 18 min\\
+Painting & PAINT\_1 & 25 & 40 min + 120 min curing; silver$\to$black 12, black$\to$silver 24 min\\
+Test \& packing & QC\_1 & 20 & 35 min; product change 4 min\\
+\bottomrule
+\end{tabular}
+\vspace{0.3em}
+
+\scriptsize 3 shifts/day, break 12:00-12:30, a run never crosses a shift or the break; 4 products share semi-finished items until painting.
+\end{column}
+\begin{column}{0.44\textwidth}
+\tiny
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}L{1.7cm}L{1.55cm}L{2.0cm}@{}}
+\toprule
+ & 3-day set & 2-week set\\
+\midrule
+Orders, wheels & 4, 108 & 24, 980\\
+Rush orders & 1 & 2 (one per week)\\
+Production runs & 42 (29 + 13 build-ahead) & 269 (240 + 29 build-ahead)\\
+Machine stops & CNC\_2 30 min & CNC\_2 4 h, HT\_2 8 h\\
+Opening stock & safety met & 2 products below safety\\
+Deliveries & when a lot is done & only at the agreed time\\
+Bottleneck load & 28\% & 56\%\\
+Manual reference & hand-made schedule & -\\
+\bottomrule
+\end{tabular}
+\vspace{0.3em}
+
+\scriptsize A generator checks that every order can be supplied and no stage exceeds capacity. A third set, the
+\textbf{demo plant} (156 orders), serves the user guide and the video.
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Modelling}
+\framesubtitle{Five-stage FJSP on OR-Tools CP-SAT with a two-tier objective}
 \begin{columns}[T]
 \begin{column}{0.58\textwidth}
 \scriptsize
-\textbf{Ràng buộc (đã cài đặt)}\par\vspace{0.15em}
+\textbf{Constraints (implemented)}\par\vspace{0.15em}
 \begin{tabular}{@{}L{1.95cm}L{6.0cm}@{}}
 \toprule
-Trình tự công đoạn & 5 công đoạn, thời gian chờ chuyển (sấy sơn 120')\\
-Máy & 1 việc/lúc; chỉ chạy trên máy đủ điều kiện\\
-Setup & phụ thuộc cặp sản phẩm liền kề (bạc$\to$đen 12', đen$\to$bạc 24')\\
-Lô / mẻ & 16 / 24 / 20 / 25 / 20 theo công đoạn, nối qua kho BTP\\
-Khuôn & dùng chung giữa máy đúc, bảo trì theo chu kỳ\\
-Ca làm việc & 3 ca/ngày, máy chỉ chạy trong ca đã mở; lò 24/7\\
-Dừng máy & khung bảo trì theo kế hoạch\\
-Giao hàng, kho & hạn giao có trọng số ưu tiên; tồn an toàn, sức chứa kho\\
-Làm trước & tuỳ chọn: tận dụng ca trống cho đơn dài hạn\\
+Stage sequence & 5 stages, transfer times (paint curing 120')\\
+Machines & one job at a time; only on eligible machines\\
+Setups & depend on the pair of consecutive items (silver$\to$black 12', black$\to$silver 24')\\
+Lots / batches & 16 / 24 / 20 / 25 / 20 per stage, linked through WIP buffers\\
+Molds & shared by the casting machines, cyclic maintenance\\
+Shifts & 3 shifts/day, machines only run in opened shifts; furnaces 24/7\\
+Machine stops & planned maintenance windows\\
+Delivery, stock & priority-weighted due dates; safety stock, warehouse caps\\
+Build-ahead & optional: use idle shifts for long-dated orders\\
+Incidents & keep what ran before a cut-off, replan the future\\
 \bottomrule
 \end{tabular}
 \end{column}
 \begin{column}{0.39\textwidth}
-\begin{block}{Mục tiêu: điểm = tầng 1 $\cdot$ tầng 2}
+\begin{block}{Objective: score = tier 1 $\cdot$ tier 2}
 \scriptsize
-\textbf{Tầng 1 -- mức phục vụ}: trễ có trọng số ưu tiên đơn + thiếu tồn an toàn\par\vspace{0.2em}
-\textbf{Tầng 2 -- chi phí vận hành}: thời gian không tạo sản phẩm trong ca đã mở (chờ, setup, bảo trì)
-+ số ca mở + làm trước + tồn dư\par\vspace{0.2em}
-So tầng 1 trước; nhỏ hơn là tốt hơn.
+\textbf{Tier 1 - service}: priority-weighted lateness + safety-stock shortfall\par\vspace{0.2em}
+\textbf{Tier 2 - operating cost}: non-productive time inside opened shifts (idle, setup, maintenance)
++ shifts opened + build-ahead + surplus stock\par\vspace{0.2em}
+Tier 1 is compared first; lower is better.
 \end{block}
 \vspace{-0.2em}
-\begin{block}{CP-SAT và thước đo chung}
+\begin{block}{CP-SAT and a common yardstick}
 \scriptsize
-Mỗi lượt là một \textbf{biến khoảng thời gian}, \textbf{không chồng lấn} trên từng máy; bộ giải nhận
-\textbf{lịch gợi ý} và cho \textbf{cố định} một phần biến (nền của B3, B7).
-Mọi thuật toán dùng chung dữ liệu, hàm mục tiêu, bộ kiểm tra.
+Each run is an \textbf{interval variable}, \textbf{no overlap} on each machine; the solver accepts a
+\textbf{hint schedule} and can \textbf{fix} part of the variables (the basis of S3 and S7).
+All algorithms share the data, the objective and the validator.
 \end{block}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Kiểm tra độc lập, lọc phương án và chính sách}
-\framesubtitle{Không tin cờ ``hợp lệ'' do thuật toán tự báo; chính sách đổi thứ tự ưu tiên, không đổi trọng số}
+\begin{frame}{Validation, option filtering and policies}
+\framesubtitle{Never trust an algorithm's own ``valid'' flag; a policy changes the priority order, not the weights}
 \begin{columns}[T]
 \begin{column}{0.44\textwidth}
-\begin{block}{B4 Bộ kiểm tra lịch độc lập}
+\begin{block}{S4 Independent schedule validator}
 \scriptsize
 \begin{itemize}\setlength{\itemsep}{0.2em}
-  \item Dựng lại lịch từ dữ liệu đầu vào: trình tự, máy, khuôn, setup, bảo trì, ca.
-  \item Lượng BTP và thành phẩm \textbf{tại mọi thời điểm}; trần kho; phân bổ hàng về đơn.
-  \item Kiểm thử tự động gồm cả \textbf{lịch cố tình làm sai} để chắc chắn bộ kiểm tra bắt được lỗi.
+  \item Rebuilds the schedule from the input data: sequence, machines, molds, setups, maintenance, shifts.
+  \item WIP and finished stock \textbf{at every moment}; warehouse caps; allocation of goods to orders.
+  \item Automated tests include \textbf{deliberately broken schedules} to make sure every error is caught.
 \end{itemize}
 \end{block}
 \vspace{-0.2em}
-\begin{block}{B5 Lọc lịch không bị trội}
+\begin{block}{S5 Keep the non-dominated schedules}
 \scriptsize
-Giữ lịch không bị lịch nào hơn ở cả 3 mặt: \textbf{trễ hạn, thiếu tồn an toàn, chi phí vận hành}.
-Phương án được đặt tên theo điểm mạnh và ghi rõ thuật toán sinh ra nó.
+Keep the schedules no other schedule beats on all three axes: \textbf{lateness, safety-stock shortfall,
+operating cost}. Options are named after their strength and show which algorithm built them.
 \end{block}
 \end{column}
 \begin{column}{0.52\textwidth}
 \scriptsize
-\textbf{Chính sách của kỳ (người lập kế hoạch chọn)}\par\vspace{0.2em}
+\textbf{Policy of the period (chosen by the planner)}\par\vspace{0.2em}
 \begin{tabular}{@{}L{1.8cm}L{2.6cm}L{2.4cm}@{}}
 \toprule
-Chính sách & Cách so & Khi nào dùng\\
+Policy & How schedules are compared & When to use\\
 \midrule
-\textbf{Giao hàng trước} (mặc định) & trễ, thiếu tồn xét trước; bằng nhau mới xét chi phí & kỳ có đơn gấp, khách quan trọng\\
+\textbf{Service first} (default) & lateness and shortfall first; cost only breaks ties & periods with rush orders or key customers\\
 \addlinespace
-\textbf{Cân bằng} & cộng mọi thành phần theo trọng số & kỳ bình thường\\
+\textbf{Balanced} & one weighted sum of all terms & normal periods\\
 \addlinespace
-\textbf{Chi phí trước} & chi phí vận hành trước; trễ, tồn để phân định & đơn có thể lùi, cần tiết kiệm nhân công\\
+\textbf{Cost first} & operating cost first; lateness and stock break ties & orders can slip, labour must be saved\\
 \bottomrule
 \end{tabular}
 \vspace{0.5em}
 
-Cùng một tập lịch được \textbf{xếp hạng lại tức thì} khi đổi chính sách, không phải giải lại.
-Người lập kế hoạch thấy rõ: \emph{muốn được thêm cái gì thì phải trả bằng cái gì} -- đó cũng là một cách diễn giải.
+The same set of schedules is \textbf{re-ranked instantly} when the policy changes; nothing is solved again.
+The planner sees clearly \emph{what each gain costs}, itself a form of explanation.
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{The production method: Hybrid (rules $\to$ multi-seed SA $\to$ CP-SAT)}
+\framesubtitle{What the product runs for a 2-week period; each step only replaces the previous result when it is better}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\tiny
+\begin{tabular}{@{}L{1.25cm}L{5.4cm}@{}}
+\toprule
+Step & What it does\\
+\midrule
+1. Rules & FIFO, EDD, SPT; keep the best: a valid fallback in under a second.\\
+2. SA, many seeds & one process per seed, 40\% of the budget (max 90\,s); guided moves pull forward the runs that feed late orders; halfway, the weaker seeds restart from the best one.\\
+3. CP-SAT & starts from the best SA schedule with \textbf{every variable hinted}; 2 complete-search workers keep the bound, the others run LNS; cuts operating cost.\\
+\bottomrule
+\end{tabular}
+\vspace{0.5em}
+
+\scriptsize\textbf{Engine changes that made it work} (2-week set)\par\vspace{0.1em}
+\tiny
+\begin{itemize}\setlength{\itemsep}{0.05em}
+  \item Decoder: 13 $\to$ \textbf{30 schedules/s} (identical schedules, checked by digest).
+  \item CP-SAT first schedule from EDD: 47\,s $\to$ \textbf{3.6\,s}.
+  \item CP-SAT 120\,s from the same SA schedule: tier 2 81,081 $\to$ \textbf{49,751}.
+\end{itemize}
+\end{column}
+\begin{column}{0.47\textwidth}
+\scriptsize\textbf{Whole pipeline on the 2-week set (8 cores)}\par\vspace{0.2em}
+\tiny
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Budget & Late & Tier 2 & Shifts\\
+\midrule
+60\,s (``Quick'') & \good{0} & 98,567-100,566 & 91\\
+180\,s (``Balanced'') & \good{0} & 55,078-59,074 & 60-64\\
+540\,s & \good{0} & 44,729 & 53\\
+\midrule
+CP-SAT + EDD hint, 180\,s & \bad{5} & EDD kept & 95\\
+\bottomrule
+\end{tabular}
+\vspace{0.4em}
+\scriptsize
+\begin{itemize}\setlength{\itemsep}{0.1em}
+  \item Tier 1 = 160 in every run; the CP-SAT bound proves it \textbf{optimal}.
+  \item Utilisation in opened shifts: 56-58\% (180\,s), \textbf{64.9\%} (540\,s).
+  \item Without the non-productive-time term: 85-89 shifts, still 0 late $\Rightarrow$ the term saves
+        \textbf{25-30 machine-shifts}.
+  \item Multi-core: a ``whole machine'' result, not a one-thread comparison.
+\end{itemize}
 \end{column}
 \end{columns}
 \end{frame}
 
 % =====================================================================
-\section{Kết quả thực nghiệm}
+\section{The information system}
 
-\begin{frame}{Bộ 3 ngày: giải pháp kết hợp tạo đường đánh đổi}
-\framesubtitle{42 lượt; thuật toán riêng lẻ 30\,s, 3 seed; bước B3: CP-SAT từ lịch tốt nhất, $\varepsilon\in\{2,4,8\}$, 60\,s}
+\begin{frame}{System description: data layers and period life cycle}
+\framesubtitle{Data split by how often it changes; every period follows the same cycle}
+\centering
+\includegraphics[width=0.66\linewidth]{en/period_lifecycle.png}\par
+\vspace{0.2em}
+\tiny
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{0.95}
+\begin{tabular}{@{}L{2.1cm}L{9.5cm}L{2.0cm}@{}}
+\toprule
+Layer & Content & Changes\\
+\midrule
+\textbf{Factory set-up} & stages, products, machines, changeovers, molds, calendar, policies; each save = immutable \textbf{version} with an effective date & a few times a year\\
+\textbf{Order book} & product, quantity, due date, priority, customer; Excel/CSV import with preview & continuously\\
+\textbf{Planning period} & orders from the book, opening stock projected from the last committed schedule, exceptions, policy & every period\\
+Derived data & lots, runs per stage, stock allocation, machine availability: compiled automatically & never typed in\\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+\begin{frame}{Actors, use cases and requirements}
+\framesubtitle{Planner (operator role) changes data and decides; manager (reader role) reads everything}
+\begin{columns}[T]
+\begin{column}{0.53\textwidth}
+\centering
+\includegraphics[width=\linewidth]{en/use_cases.png}
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{block}{14 functional requirements (all done)}
+\tiny
+\begin{itemize}\setlength{\itemsep}{0.05em}
+  \item Versioned factory set-up; order book with import preview; period preparation and load check.
+  \item 10 algorithms with presets Quick / Balanced / Thorough; every schedule validated and reproducible.
+  \item Pareto filter + policy ranking; Gantt chart, two-schedule comparison, why late.
+  \item Hand edits + optimise the rest; commit only with a reason; work orders.
+  \item Reschedule from a cut-off; what-if variants; close and roll over; analysis and audit log.
+\end{itemize}
+\end{block}
+\vspace{-0.2em}
+\begin{block}{Non-functional requirements}
+\tiny
+\textbf{Correctness}: validator on every schedule $\cdot$ \textbf{performance}: rules $<$1\,s, Hybrid 60/180/600\,s in background workers
+$\cdot$ \textbf{reproducibility}: input snapshot + hash $\cdot$ \textbf{reliability}: idempotency keys $\cdot$ \textbf{security}: API keys with roles
+$\cdot$ \textbf{traceability}: audit log $\cdot$ \textbf{usability}: bilingual, shortcuts $\cdot$ \textbf{maintainability}: 130 tests, CI.
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Architecture and data design}
+\framesubtitle{Three tiers: Next.js frontend, FastAPI backend with a job queue, Python scheduling engine; SQLite}
+\centering
+\includegraphics[width=0.72\linewidth]{en/architecture.png}\par
+\vspace{0.2em}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\tiny
+\begin{itemize}\setlength{\itemsep}{0.1em}
+  \item \textbf{60 REST endpoints} under \texttt{/api/v1}, OpenAPI docs, one stable error envelope.
+  \item Solver jobs run in background workers; the API returns at once and the frontend polls progress.
+\end{itemize}
+\end{column}
+\begin{column}{0.48\textwidth}
+\tiny
+\begin{itemize}\setlength{\itemsep}{0.1em}
+  \item \textbf{24 tables}: a period pins its factory version and compiles into a scenario; runs, operations and decisions refer to it.
+  \item Decisions are append-only; every change is written to the audit log.
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Generating options: what happens behind the button}
+\framesubtitle{Each run is stored with its input snapshot before solving, so it can always be reproduced}
+\begin{columns}[T]
+\begin{column}{0.56\textwidth}
+\centering
+\includegraphics[width=\linewidth]{en/sequence_generate.png}
+\end{column}
+\begin{column}{0.42\textwidth}
+\scriptsize
+\begin{itemize}\setlength{\itemsep}{0.35em}
+  \item The planner picks a preset; the frontend creates one run per algorithm with an \textbf{idempotency key}.
+  \item The API stores the run (\textbf{QUEUED}, input snapshot + hash) and returns immediately.
+  \item A worker runs the engine: rules $\to$ SA seeds $\to$ CP-SAT, then the \textbf{independent validator} and scoring.
+  \item Operations, metrics and the validation result are saved; status \textbf{SUCCEEDED} (or FAILED with the reason).
+  \item The frontend keeps the \textbf{non-dominated} options and ranks them under the period's policy.
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Planning desk: choosing a policy and an option}
+\framesubtitle{Demo plant ``Riverside Alloy Wheels'', period of weeks 48-49 (23 November - 6 December 2026)}
+\begin{columns}[T]
+\begin{column}{0.58\textwidth}
+\centering
+\includegraphics[width=\linewidth]{options.png}
+\end{column}
+\begin{column}{0.4\textwidth}
+\scriptsize
+\begin{itemize}\setlength{\itemsep}{0.35em}
+  \item Policy of the period: \textbf{service first}, balanced, cost first; options re-ranked instantly.
+  \item Only \textbf{non-dominated} options are recommended, named after their strength
+        (``Protects priority orders'', ``Least shortfall'', ``Lowest cost'').
+  \item Each card shows on-time count, lateness, shortfall, operating cost and \textbf{the algorithm that built it}.
+  \item ``What really differs'' says in one sentence where the options are equal and where they differ.
+  \item A trade-off chart (cost $\leftrightarrow$ shortfall) shows every schedule; grey dots are dominated.
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Planning desk: the detailed schedule}
+\framesubtitle{Gantt chart by machine: shifts opened, setups, mold maintenance, 8-hour furnace loads, deliveries}
+\begin{columns}[T]
+\begin{column}{0.62\textwidth}
+\centering
+\includegraphics[width=\linewidth]{schedule.png}
+\end{column}
+\begin{column}{0.36\textwidth}
+\scriptsize
+\begin{itemize}\setlength{\itemsep}{0.35em}
+  \item Key figures: on time, total lateness, shortfall, operating cost, machine-shifts, idle and setup time.
+  \item Zoom from the whole period to single shifts; colour by product, \textbf{lateness} or priority.
+  \item Compare with a second option: shifts opened only in one schedule, moved runs, a metric-by-metric
+        ``what you gain and lose'' table.
+  \item Order view, machine-load heat map, deliveries and closing stock against safety levels.
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Explaining the schedule: why is this order late?}
+\framesubtitle{Causes a planner can act on, stated in plain sentences, with the supply chain of the order}
+\begin{columns}[T]
+\begin{column}{0.6\textwidth}
+\centering
+\includegraphics[width=\linewidth]{why_late.png}
+\end{column}
+\begin{column}{0.38\textwidth}
+\scriptsize
+\begin{itemize}\setlength{\itemsep}{0.35em}
+  \item \textbf{Longest wait} at a stage and why: the machine was busy with named runs, time fell outside open
+        shifts, or shifts stayed closed (open one or move the run).
+  \item \textbf{Bottleneck}: share of shift time the stage used while the order was open (here heat treatment, 100\%).
+  \item \textbf{Competition}: runs of later orders that went first at the last stage.
+  \item \textbf{Physics}: released too late for its own processing time.
+  \item Stage-by-stage table of the lot that finished last; one click to edit by hand.
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{The planner in the loop}
+\framesubtitle{Edit an option by hand, lock what must stay, let CP-SAT optimise the rest}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+\centering
+\includegraphics[width=\linewidth]{editor.png}\par
+\vspace{0.2em}
+{\tiny Moving one machining run to CNC lathe 2: valid, 60 cost units cheaper, 2.9\,h more late in total.\par}
+\end{column}
+\begin{column}{0.47\textwidth}
+\begin{block}{Hand edits}
+\scriptsize
+\begin{itemize}\setlength{\itemsep}{0.15em}
+  \item Drag runs on the Gantt chart, or change machine, order or earliest start (keyboard too).
+  \item Every change is \textbf{rebuilt with the same scheduling rules}, validated independently and
+        \textbf{scored live} against the original; problems are explained in plain words.
+  \item A valid edit is saved as a \textbf{new option}, ranked and committed like solver options.
+\end{itemize}
+\end{block}
+\vspace{-0.2em}
+\begin{block}{Optimise the rest}
+\scriptsize
+\begin{itemize}\setlength{\itemsep}{0.15em}
+  \item Lock runs, keep edits, freeze the first 24/48\,h; CP-SAT LNS only on unlocked runs
+        (30\,s to 5 min, background), \textbf{never worse} than the edit.
+  \item 2-week set, 130/240 runs locked, 30\,s: cost \good{$-$1,370}, one shift fewer.
+\end{itemize}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{Execution and disruptions}
+\framesubtitle{Commit with a reason, issue work orders, replan the rest of the period after an incident}
+\centering
+\includegraphics[width=0.7\linewidth]{incident_close.png}\par
+\vspace{0.3em}
+\begin{columns}[T]
+\begin{column}{0.48\textwidth}
+\scriptsize
+\begin{itemize}\setlength{\itemsep}{0.15em}
+  \item \textbf{Commit}: a reason is mandatory; the append-only decision log keeps run, data snapshot, policy and figures.
+  \item \textbf{Work orders} per day and machine, CSV export, printable sheets for shift supervisors.
+\end{itemize}
+\end{column}
+\begin{column}{0.48\textwidth}
+\scriptsize
+\begin{itemize}\setlength{\itemsep}{0.15em}
+  \item \textbf{Incident} (breakdown, rush order): pick a cut-off; what ran before stays fixed, stock, molds and busy
+        machines are taken as of then $\Rightarrow$ a reschedule version: generate, compare, commit.
+  \item \textbf{Close \& roll over}: delivered orders leave the book, closing stock becomes the next opening stock.
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% =====================================================================
+\section{Testing and evaluation}
+
+\begin{frame}{Testing: unit tests and functional tests}
+\framesubtitle{130 automated tests run by CI on every push; 12 functional test cases on the demo plant}
+\begin{columns}[T]
+\begin{column}{0.53\textwidth}
+\tiny
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}L{2.65cm}rL{3.6cm}@{}}
+\toprule
+Test suite & Tests & What is checked\\
+\midrule
+models: five-stage engine & 23 & every method valid; broken schedules rejected (overlap, setup, mold, maintenance, WIP, break)\\
+models: shared rules & 21 & stock events, transfer lags, shared WIP pools\\
+models: build-ahead & 17 & idle shifts first, caps by long-dated demand\\
+models: speed & 11 & faster decoder gives identical schedules; Hybrid never worse than the best rule\\
+models: hand edits & 8 & locked runs kept, the rest never worse\\
+backend: API & 32 & API-key roles, audit, idempotency, retries, decisions need a reason\\
+backend: factories & 11 & import, commit, reschedule, variant, roll-over, versions\\
+backend: input contract & 7 & unknown products, timing, horizon\\
+\bottomrule
+\end{tabular}
+\end{column}
+\begin{column}{0.44\textwidth}
+\tiny
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lL{3.7cm}l@{}}
+\toprule
+ID & Functional test case & Result\\
+\midrule
+TC-01 & factory version effective from a future date & \good{Pass}\\
+TC-02 & order import with new, updated, invalid rows & \good{Pass}\\
+TC-03 & roll over a closed period (opening = closing stock) & \good{Pass}\\
+TC-04 & generate options with the Balanced preset & \good{Pass}\\
+TC-05 & switch the policy: instant re-ranking & \good{Pass}\\
+TC-06 & compare with the EDD schedule & \good{Pass}\\
+TC-07 & explanation of a late order & \good{Pass}\\
+TC-08 & hand edit, then optimise the rest & \good{Pass}\\
+TC-09 & commit refused without a reason & \good{Pass}\\
+TC-10 & print the work orders of a day & \good{Pass}\\
+TC-11 & reschedule from a cut-off & \good{Pass}\\
+TC-12 & close the period & \good{Pass}\\
+\bottomrule
+\end{tabular}
+\vspace{0.3em}
+
+\scriptsize Every exported schedule passed the validator (16/16 long runs, 18/18 on the 3-day set).
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}{3-day set: the combined solution builds the trade-off curve}
+\framesubtitle{42 runs; single algorithms 30\,s, 3 seeds; step S3: CP-SAT from the best schedule, $\varepsilon\in\{2,4,8\}$, 60\,s}
 \begin{columns}[T]
 \begin{column}{0.56\textwidth}
 \centering
 \begin{tikzpicture}
 \begin{axis}[width=\linewidth,height=5.4cm,
-  xlabel={\scriptsize Chi phí vận hành (tầng 2)},ylabel={\scriptsize Thiếu tồn an toàn (vành)},
+  xlabel={\scriptsize Operating cost (tier 2)},ylabel={\scriptsize Safety-stock shortfall (wheels)},
   xmin=4000,xmax=20500,ymin=0,ymax=11.5,
   tick label style={font=\tiny},
   xtick={6000,10000,14000,18000},
@@ -408,7 +799,7 @@ Người lập kế hoạch thấy rõ: \emph{muốn được thêm cái gì th�
   {(10564,2) (14397,2) (15843,2) (11440,6) (17938,8) (17904,10)};
 \addplot[only marks,mark=square*,mark size=2pt,color=bkorange] coordinates {(6356,8)};
 \addplot[thick,dashed,mark=*,mark size=2.6pt,color=bkgreen] coordinates {(9034,2) (8310,4) (6110,8)};
-\legend{thuật toán riêng lẻ,lịch xếp tay,giải pháp kết hợp (B3)}
+\legend{single algorithms,hand-made schedule,combined solution (S3)}
 \begin{scope}[font=\tiny]
   \node[anchor=south,yshift=1pt] at (axis cs:10900,2) {CP-LNS};
   \node[anchor=south,yshift=1pt] at (axis cs:14397,2) {SA};
@@ -416,10 +807,10 @@ Người lập kế hoạch thấy rõ: \emph{muốn được thêm cái gì th�
   \node[anchor=west,xshift=2pt] at (axis cs:11440,6) {CP-SAT+EDD};
   \node[anchor=west,xshift=2pt] at (axis cs:17938,8) {FIFO};
   \node[anchor=west,xshift=2pt] at (axis cs:17904,10) {EDD/SPT};
-  \node[anchor=south,yshift=2pt,text=bkorange] at (axis cs:6356,8) {Xếp tay};
-  \node[anchor=north,yshift=-2pt,text=bkgreen,font=\tiny\bfseries] at (axis cs:9034,2) {Giữ tồn tốt nhất};
-  \node[anchor=west,xshift=3pt,text=bkgreen,font=\tiny\bfseries] at (axis cs:8310,4) {Trung gian};
-  \node[anchor=north west,yshift=-2pt,text=bkgreen,font=\tiny\bfseries] at (axis cs:5600,8) {Tiết kiệm nhất};
+  \node[anchor=south,yshift=2pt,text=bkorange] at (axis cs:6356,8) {Hand-made};
+  \node[anchor=north,yshift=-2pt,text=bkgreen,font=\tiny\bfseries] at (axis cs:9034,2) {Best stock};
+  \node[anchor=west,xshift=3pt,text=bkgreen,font=\tiny\bfseries] at (axis cs:8310,4) {Middle};
+  \node[anchor=north west,yshift=-2pt,text=bkgreen,font=\tiny\bfseries] at (axis cs:5600,8) {Cheapest};
 \end{scope}
 \end{axis}
 \end{tikzpicture}
@@ -428,46 +819,46 @@ Người lập kế hoạch thấy rõ: \emph{muốn được thêm cái gì th�
 \tiny
 \begin{tabular}{@{}lrrr@{}}
 \toprule
-Phương án & Điểm & Thiếu & Ca-máy\\
+Option & Score & Short & Shifts\\
 \midrule
-\textbf{Giữ tồn tốt nhất} ($\varepsilon\le2$) & 40 $\cdot$ 9.034 & 2 & 10\\
-Trung gian ($\varepsilon\le4$) & 80 $\cdot$ 8.310 & 4 & 10\\
-\textbf{Tiết kiệm nhất} ($\varepsilon\le8$) & 160 $\cdot$ 6.110 & 8 & 7\\
+\textbf{Best stock} ($\varepsilon\le2$) & 40 $\cdot$ 9,034 & 2 & 10\\
+Middle ($\varepsilon\le4$) & 80 $\cdot$ 8,310 & 4 & 10\\
+\textbf{Cheapest} ($\varepsilon\le8$) & 160 $\cdot$ 6,110 & 8 & 7\\
 \midrule
-CP-LNS (tốt nhất riêng lẻ) & 40 $\cdot$ 10.564 & 2 & 11\\
-Lịch xếp tay & 160 $\cdot$ 6.356 & 8 & 7\\
-CP-SAT nguyên khối & 8.410 $\cdot$ 24.067 & 2 & 19\\
+CP-LNS (best single) & 40 $\cdot$ 10,564 & 2 & 11\\
+Hand-made schedule & 160 $\cdot$ 6,356 & 8 & 7\\
+Monolithic CP-SAT & 8,410 $\cdot$ 24,067 & 2 & 19\\
 \bottomrule
 \end{tabular}
 \vspace{0.4em}
 \scriptsize
 \begin{itemize}\setlength{\itemsep}{0.15em}
-  \item 18/18 lần chạy hợp lệ; 3 lịch không bị trội \textbf{đều do B3 tạo ra}, kể cả so với lịch xếp tay.
-  \item So CP-LNS: cùng mức phục vụ, chi phí \good{$-$14\%}, bớt 1 ca-máy.
-  \item So lịch xếp tay: cùng phục vụ, cùng ca, chi phí \good{$-$4\%}.
-  \item Giảm thiếu tồn 8$\to$2 vành phải mở thêm 3 ca-máy, chi phí +48\%.
+  \item 18/18 runs valid; the 3 non-dominated schedules \textbf{all come from S3}, even against the hand-made one.
+  \item Versus CP-LNS: same service, cost \good{$-$14\%}, one machine-shift fewer.
+  \item Versus the hand-made schedule: same service, same shifts, cost \good{$-$4\%}.
+  \item Cutting shortfall from 8 to 2 wheels needs 3 more machine-shifts, cost +48\%.
 \end{itemize}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Bộ 2 tuần: chạy đến khi hội tụ}
-\framesubtitle{269 lượt, 24 đơn, 980 vành; SA/GA/CP-LNS dừng sau 600\,s không cải thiện, 3 seed; mọi lịch qua bộ kiểm tra}
+\begin{frame}{2-week set: running until convergence}
+\framesubtitle{269 runs, 24 orders, 980 wheels; SA/GA/CP-LNS stop after 600\,s without improvement, 3 seeds; every schedule validated}
 \centering\scriptsize
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{@{}lcrrrrr@{}}
 \toprule
-Phương pháp (số lần chạy hợp lệ) & Đơn trễ & Thiếu tồn & Điểm tốt nhất & Ca-máy & H.suất & Thời gian\\
+Method (valid runs) & Late orders & Shortfall & Best score & Shifts & Util. & Time\\
 \midrule
-\textbf{CP-SAT từ lịch SA (B3)} (1/1) & \good{0} & 8 & \textbf{160 $\cdot$ 35.016} & \textbf{46} & \textbf{73,6\%} & 24\,h\\
-SA (3/3) & 0 (3/3) & 8 & 160 $\cdot$ 73.495 & 73 & 47,3\% & 1,2--1,8\,h\\
-GA (3/3) & 0 (1/3) & 8 & 160 $\cdot$ 84.140 & 80 & 42,8\% & 0,5--1,3\,h\\
-CP-SAT cuốn chiếu (B3') (3/3) & 2 & 20 & 88.960 $\cdot$ 56.528 & 60 & 56,4\% & 1,7\,h\\
-EDD (1/1) & 5 & 28 & 323.465 $\cdot$ 104.894 & 95 & 35,9\% & $<$1\,s\\
-CP-LNS (3/3) & 5 & 28 & 323.465 $\cdot$ 101.816 & 93 & 37,0\% & 10--15'\\
-FIFO (1/1) & 5 & 14 & 365.305 $\cdot$ 105.032 & 95 & 35,8\% & $<$1\,s\\
-SPT (1/1) & 5 & 8 & 389.245 $\cdot$ 104.822 & 95 & 35,9\% & $<$1\,s\\
-CP-SAT nguyên khối (\bad{0/1}) & -- & -- & không tìm được lịch & -- & -- & 12\,h\\
+\textbf{CP-SAT from the SA schedule (S3)} (1/1) & \good{0} & 8 & \textbf{160 $\cdot$ 35,016} & \textbf{46} & \textbf{73.6\%} & 24\,h\\
+SA (3/3) & 0 (3/3) & 8 & 160 $\cdot$ 73,495 & 73 & 47.3\% & 1.2-1.8\,h\\
+GA (3/3) & 0 (1/3) & 8 & 160 $\cdot$ 84,140 & 80 & 42.8\% & 0.5-1.3\,h\\
+Rolling-horizon CP-SAT (S3') (3/3) & 2 & 20 & 88,960 $\cdot$ 56,528 & 60 & 56.4\% & 1.7\,h\\
+EDD (1/1) & 5 & 28 & 323,465 $\cdot$ 104,894 & 95 & 35.9\% & $<$1\,s\\
+CP-LNS (3/3) & 5 & 28 & 323,465 $\cdot$ 101,816 & 93 & 37.0\% & 10-15'\\
+FIFO (1/1) & 5 & 14 & 365,305 $\cdot$ 105,032 & 95 & 35.8\% & $<$1\,s\\
+SPT (1/1) & 5 & 8 & 389,245 $\cdot$ 104,822 & 95 & 35.9\% & $<$1\,s\\
+Monolithic CP-SAT (\bad{0/1}) & - & - & no schedule found & - & - & 12\,h\\
 \bottomrule
 \end{tabular}
 \vspace{0.6em}
@@ -476,22 +867,22 @@ CP-SAT nguyên khối (\bad{0/1}) & -- & -- & không tìm được lịch & -- &
 \begin{column}{0.48\textwidth}
 \scriptsize
 \begin{itemize}\setlength{\itemsep}{0.15em}
-  \item SA hết đơn trễ ở cả 3 seed (với 120\,s trước đây: còn 1 đơn trễ).
-  \item CP-LNS không cải thiện lịch EDD: mỗi vòng vẫn dựng mô hình đủ 269 lượt.
+  \item SA removes every late order for all 3 seeds (with 120\,s earlier: one order still late).
+  \item CP-LNS does not improve on EDD: each round still builds the model with all 269 runs.
 \end{itemize}
 \end{column}
 \begin{column}{0.48\textwidth}
 \scriptsize
 \begin{itemize}\setlength{\itemsep}{0.15em}
-  \item Cuốn chiếu: tầng 1 $-$72\% so EDD nhưng còn 2 đơn trễ (cửa sổ 4 ngày không thấy hạn ở xa).
-  \item So sánh \emph{giải pháp kết hợp với từng thành phần}, không phải so công bằng từng thuật toán.
+  \item Rolling horizon: tier 1 $-$72\% versus EDD but 2 orders late (a 4-day window cannot see far due dates).
+  \item This compares \emph{the combined solution with its components}, not each algorithm fairly.
 \end{itemize}
 \end{column}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Bộ 2 tuần: CP-SAT khởi đầu từ lịch SA}
-\framesubtitle{Mức phục vụ được chứng minh tối ưu; chi phí vận hành giảm 52\%}
+\begin{frame}{2-week set: CP-SAT warm-started from the SA schedule}
+\framesubtitle{Service level proven optimal; operating cost down 52\%}
 \begin{columns}[T]
 \begin{column}{0.52\textwidth}
 \centering
@@ -499,9 +890,9 @@ CP-SAT nguyên khối (\bad{0/1}) & -- & -- & không tìm được lịch & -- &
 \begin{axis}[width=\linewidth,height=5.5cm,ybar,bar width=16pt,
   ymin=0,ymax=85000,
   symbolic x coords={SA,10',1h,24h},xtick=data,
-  xticklabels={{Lịch SA\\(xuất phát)},{sau\\10 phút},{sau\\1 giờ},{sau\\24 giờ}},
+  xticklabels={{SA schedule\\(start)},{after\\10 min},{after\\1 hour},{after\\24 hours}},
   xticklabel style={align=center,font=\tiny},
-  ylabel={\scriptsize Chi phí vận hành (tầng 2)},
+  ylabel={\scriptsize Operating cost (tier 2)},
   tick label style={font=\tiny},scaled y ticks=false,
   nodes near coords,every node near coord/.append style={font=\tiny},
   grid=major,ymajorgrids=true,xmajorgrids=false,grid style={gray!20},
@@ -510,171 +901,79 @@ CP-SAT nguyên khối (\bad{0/1}) & -- & -- & không tìm được lịch & -- &
 \draw[dashed,thick,bkorange] (rel axis cs:0,0.2003) -- (rel axis cs:1,0.2003);
 \end{axis}
 \end{tikzpicture}\par
-{\tiny\textcolor{bkorange}{-\,-\,-} cận dưới của tầng 2 do CP-SAT chứng minh: 17.025\par}
+{\tiny\textcolor{bkorange}{-\,-\,-} tier-2 lower bound proven by CP-SAT: 17,025\par}
 \end{column}
 \begin{column}{0.45\textwidth}
 \scriptsize
 \begin{itemize}\setlength{\itemsep}{0.35em}
-  \item \textbf{Tầng 1 tối ưu đã chứng minh}: cận dưới cho thấy không lịch nào có tầng 1 $<$ 160 $\Rightarrow$
-        không thể vừa 0 đơn trễ vừa thiếu tồn an toàn $<$ 8 vành.
-  \item Tầng 2: 73.495 $\to$ 35.016 (\good{$-$52\%}); ca-máy 73 $\to$ \textbf{46};
-        hiệu suất máy trong ca đã bật 47\% $\to$ \textbf{74\%}. Còn khoảng cách 51\% tới cận dưới.
-  \item Cùng bộ giải: \textbf{không có lịch khởi đầu} $\to$ 12 giờ không có lời giải;
-        \textbf{có lịch khởi đầu} $\to$ cải thiện đầu tiên sau \textbf{37\,s}.
-  \item 24 giờ chỉ để kiểm tra giới hạn; mốc thực dụng là \textbf{10 phút} (tầng 2 đã $-$39\%).
+  \item \textbf{Tier 1 proven optimal}: the bound shows no schedule has tier 1 $<$ 160 $\Rightarrow$
+        zero late orders and a shortfall below 8 wheels cannot both be achieved.
+  \item Tier 2: 73,495 $\to$ 35,016 (\good{$-$52\%}); machine-shifts 73 $\to$ \textbf{46};
+        utilisation in opened shifts 47\% $\to$ \textbf{74\%}. A 51\% gap to the bound remains.
+  \item Same solver: \textbf{without a start schedule} $\to$ no solution in 12 hours;
+        \textbf{with one} $\to$ first improvement after \textbf{37\,s}.
+  \item 24 hours only probes the limit; the practical point is \textbf{10 minutes} (tier 2 already $-$39\%).
 \end{itemize}
 \vspace{0.2em}
-\begin{exampleblock}{Kết luận}
-\scriptsize Xác nhận cấu trúc kết hợp: SA/GA tìm lịch tốt ở quy mô lớn (B2), CP-SAT từ lịch đó giảm chi phí và cho cận (B3).
+\begin{exampleblock}{Conclusion}
+\scriptsize Confirms the combined structure: SA/GA find good schedules at scale (S2); CP-SAT from them cuts cost and gives a bound (S3).
 \end{exampleblock}
 \end{column}
 \end{columns}
 \end{frame}
 
-% =====================================================================
-\section{Hệ thống}
-
-\begin{frame}{Kiến trúc hệ thống thông tin lập lịch}
-\framesubtitle{Dữ liệu tách theo tần suất thay đổi: nhà máy có phiên bản, sổ đơn hàng, kỳ lập lịch}
-\centering
-\begin{tikzpicture}[font=\scriptsize,
-  b/.style={draw=bkblue,fill=bkblue!8,rounded corners=2pt,align=center,minimum height=1.0cm,text width=2.15cm},
-  d/.style={b,fill=white},
-  a/.style={-{Stealth[length=4pt]},bkblue,thick}, node distance=0.42cm]
-  \node[d] (f) {\textbf{Nhà máy} (có phiên bản)\\máy, khuôn, ca, setup, lô};
-  \node[d,below=0.35cm of f] (o) {\textbf{Sổ đơn hàng}\\đơn, hạn giao, ưu tiên};
-  \coordinate (fo) at ($(f.east)!0.5!(o.east)$);
-  \node[b,right=0.75cm of fo] (p) {\textbf{Kỳ lập lịch}\\biên dịch thành kịch bản 5 công đoạn};
-  \node[b,right=of p] (q) {\textbf{Hàng đợi bộ giải}\\9 thuật toán\\(OR-Tools CP-SAT)};
-  \node[b,right=of q] (v) {\textbf{Bộ kiểm tra}\\+ chấm điểm\\+ lọc Pareto};
-  \node[b,right=of v,fill=bkorange!15,draw=bkorange] (ui) {\textbf{Bàn điều độ}\\phương án, Gantt, so sánh, sửa tay};
-  \node[b,below=0.7cm of v,fill=bkorange!15,draw=bkorange,text width=2.6cm] (c) {\textbf{Chốt phương án}\\chính sách + lý do,\\nhật ký kiểm toán};
-  \draw[a] (f)--(p); \draw[a] (o)--(p); \draw[a] (p)--(q); \draw[a] (q)--(v); \draw[a] (v)--(ui);
-  \draw[a] (ui) |- (c);
-  \draw[a,dashed] (c.west) -| node[pos=0.25,below,font=\tiny]{tồn cuối kỳ đã chốt $\to$ tồn đầu kỳ sau} (p.south);
-  \begin{scope}[on background layer]
-    \node[fit=(p)(v)(c),draw=gray!60,dashed,inner sep=6pt,label={[font=\tiny]above:Backend FastAPI + SQLite (Alembic)}] (be) {};
-    \node[fit=(ui),draw=gray!60,dashed,inner sep=6pt,label={[font=\tiny]above:Frontend Next.js}] {};
-  \end{scope}
-\end{tikzpicture}
-\vspace{0.3em}
-
-\scriptsize Kế hoạch tổng hợp (nhu cầu, tồn kho, tải công suất theo công đoạn) $\cdot$ mỗi lần chạy lưu ảnh chụp đầu vào để tái lập
-$\cdot$ song ngữ Việt/Anh $\cdot$ CI (kiểm thử backend + models, build frontend), Docker.
-\end{frame}
-
-\begin{frame}{Bàn điều độ: chọn chính sách và phương án}
-\framesubtitle{Kết quả thật của đợt chạy dài trên bộ 2 tuần, 5 công đoạn}
-\begin{columns}[T]
-\begin{column}{0.56\textwidth}
-\centering
-\includegraphics[height=6.3cm]{d2_phuong_an_2tuan.png}
-\end{column}
-\begin{column}{0.42\textwidth}
-\scriptsize
-\begin{itemize}\setlength{\itemsep}{0.35em}
-  \item Chọn chính sách của kỳ: \textbf{giao hàng trước}, cân bằng, chi phí trước.
-  \item Trong 8 lịch đã sinh chỉ còn \textbf{1 phương án không bị trội}: CP-SAT từ lịch SA --
-        24/24 đơn đúng hạn, thiếu tồn 8 vành, 46 ca-máy.
-  \item Thẻ phương án ghi điểm mạnh, các chỉ số và \textbf{thuật toán sinh ra nó}.
-  \item Đồ thị đánh đổi chi phí vận hành $\leftrightarrow$ thiếu tồn an toàn; chấm xám là các lịch bị trội.
-  \item Bấm chấm để xem lịch đó; so 2 phương án theo từng chỉ số và từng ca-máy chênh lệch.
-\end{itemize}
-\end{column}
-\end{columns}
-\end{frame}
-
-\begin{frame}{Bàn điều độ: lịch chi tiết theo máy}
-\framesubtitle{Phương án đề xuất, 4 ngày đầu của kỳ 2 tuần}
-\centering
-\includegraphics[width=0.84\linewidth,trim=0 110 0 100,clip]{d3_gantt_2tuan.png}\par
-\vspace{0.2em}
-{\scriptsize Ca đang bật, giờ nghỉ, dừng máy, setup, bảo trì khuôn, mẻ nhiệt luyện 8 giờ (cam), lượt làm trước, mốc giao hàng.
-Kèm tồn BTP/thành phẩm đến cuối kỳ và mục ``vì sao xếp như vậy''.\par}
-\end{frame}
-
-\begin{frame}{Người lập kế hoạch trong vòng lặp}
-\framesubtitle{Sửa tay một phương án, khoá phần cần giữ, để CP-SAT tối ưu lại phần còn lại}
-\begin{columns}[T]
-\begin{column}{0.48\textwidth}
-\begin{block}{Sửa tay}
-\scriptsize
-\begin{itemize}\setlength{\itemsep}{0.2em}
-  \item Kéo-thả lượt sang máy/thời điểm khác trên Gantt, hoặc đổi máy, thứ tự, giờ sớm nhất (có đường bàn phím).
-  \item Mỗi thay đổi được \textbf{dựng lại theo cùng quy tắc xếp lịch}, kiểm tra độc lập và
-        \textbf{chấm điểm trực tiếp} so với bản gốc; lỗi hiện bằng lời thường.
-  \item Lượt không sửa giữ nguyên giờ cũ; bản sửa hợp lệ lưu thành \textbf{phương án mới}, được xếp hạng và chốt như phương án của bộ giải.
-\end{itemize}
-\end{block}
-\end{column}
-\begin{column}{0.48\textwidth}
-\begin{block}{Tối ưu phần còn lại}
-\scriptsize
-\begin{itemize}\setlength{\itemsep}{0.2em}
-  \item Khoá các lượt phải giữ, giữ các lượt đã sửa, đóng băng 24\,h / 48\,h đầu kỳ.
-  \item CP-SAT tìm kiếm lân cận lớn \textbf{chỉ trên các lượt chưa khoá}, chạy nền 30\,s -- 5 phút.
-  \item Bản sửa là phương án dự phòng: kết quả \textbf{không bao giờ kém hơn} bản sửa.
-\end{itemize}
-\end{block}
-\vspace{-0.2em}
-\begin{exampleblock}{Bộ 2 tuần}
-\scriptsize Khoá 130/240 lượt, chạy 30\,s: chi phí vận hành \good{$-$1.370}, bớt 1 ca-máy.
-\end{exampleblock}
-\end{column}
-\end{columns}
-\vspace{0.3em}
-\scriptsize Không cho sửa kỳ đã đóng; có hoàn tác/làm lại, cảnh báo khi rời trang chưa lưu, nhật ký thay đổi.
-\end{frame}
-
-% =====================================================================
-\section{Đánh giá và kết luận}
-
-\begin{frame}{Đối chiếu tiêu chí đánh giá}
+\begin{frame}{Evaluation against the success criteria}
 \centering\scriptsize
 \begin{tabular}{@{}L{4.3cm}L{9.6cm}@{}}
 \toprule
-Tiêu chí & Kết quả\\
+Criterion & Result\\
 \midrule
-Lịch hợp lệ 100\% & \good{Đạt}: mọi lịch được xuất đều qua bộ kiểm tra độc lập; lần chạy không có lịch được báo rõ, không xuất lịch giả\\
-Không trễ đơn trên bộ 2 tuần & \good{Đạt} (SA, GA, CP-SAT khởi đầu từ lịch SA)\\
-Chứng minh chất lượng lời giải & \good{Một phần}: tầng 1 tối ưu đã chứng minh trên bộ 2 tuần; tầng 2 còn khoảng cách 51\%\\
-Hiệu suất máy $\ge$ 90\% trong ca đã bật & \bad{Chưa đạt}: tăng từ 28--52\% lên \textbf{73,6\%}; tải tối thiểu thấp (ngay cả nhiệt luyện, công đoạn điểm nghẽn, chỉ 56--65\% ở bộ 2 tuần)
-  $\Rightarrow$ cần định nghĩa lại theo công đoạn điểm nghẽn\\
-Người lập kế hoạch chọn, sửa, chốt & \good{Đạt}: bàn điều độ trong sản phẩm, sửa tay + tối ưu phần còn lại, quyết định lưu CSDL kèm nhật ký\\
-Thời gian giải chấp nhận được & Bộ 3 ngày: vài giây -- 60\,s; bộ 2 tuần: bước CP-SAT khoảng 10 phút; trạng thái giải luôn hiển thị\\
-Diễn giải lịch (phụ trợ) & Một phần: đường đánh đổi, so 2 lịch, lý giải theo lịch; đường găng, độ nhạy \bad{chưa có}\\
-Chất lượng trên benchmark công khai & \bad{Chưa đánh giá} (Taillard, Lawrence, Deliktaş đã có dữ liệu)\\
+100\% valid schedules & \good{Met}: every exported schedule passes the independent validator; runs without a schedule are reported, never faked\\
+No late orders on the 2-week set & \good{Met} (SA, GA, CP-SAT from SA; the product's Hybrid at 60, 180 and 540\,s)\\
+Proven solution quality & \good{Partly}: tier 1 proven optimal on the 2-week set; tier 2 still 51\% from the bound\\
+Machine utilisation $\ge$ 90\% in opened shifts & \bad{Not met}: up from 28-52\% to \textbf{64.9\%} in 9 minutes and \textbf{73.6\%} after 24\,h; minimum load is low
+  (even heat treatment, the bottleneck, only 56-65\% on the 2-week set) $\Rightarrow$ redefine on the bottleneck stage\\
+Planner chooses, edits, commits & \good{Met}: planning desk in the product, hand edits + optimise the rest, decisions stored with an audit log\\
+Acceptable solving time & 3-day set: seconds to 60\,s; 2-week set: \textbf{0 late orders in 1 minute}, 3 minutes recommended; status always visible\\
+Disruptions & \good{Met}: replan from a cut-off after a breakdown or rush order; what-if variants\\
+Schedule explanation (supporting) & Partly: trade-off curve, two-schedule comparison, \textbf{why an order is late}, score by component; critical path and sensitivity \bad{not yet}\\
+Quality on public benchmarks & \bad{Not evaluated yet} (Taillard, Lawrence, Deliktaş data ready)\\
 \bottomrule
 \end{tabular}
 \end{frame}
 
-\begin{frame}{Giới hạn và kết luận}
-\small
+% =====================================================================
+\section{Conclusion}
+
+\begin{frame}{Conclusion}
 \begin{columns}[T]
 \begin{column}{0.48\textwidth}
-\begin{block}{Giới hạn}
+\begin{exampleblock}{Results achieved}
 \scriptsize
 \begin{itemize}\setlength{\itemsep}{0.2em}
-  \item Dữ liệu tổng hợp, mỗi quy mô một bộ, CP-SAT chạy 1 lần $\Rightarrow$ \textbf{thử nghiệm thăm dò}, chưa đủ kết luận thống kê.
-  \item Trọng số mục tiêu là giả định chính sách, chưa quy đổi từ chi phí thật (7 biến thể trọng số: thứ hạng đầu không đổi).
-  \item Chưa tái lập lịch khi sự cố phát sinh giữa chừng; chưa chạy benchmark công khai.
-  \item CP-LNS và cuốn chiếu còn yếu ở quy mô 269 lượt.
+  \item A five-stage FJSP model with shifts, shared molds, setups, stage lots, WIP, safety stock and deliveries.
+  \item No single algorithm is enough; \textbf{coordinating} rules $\to$ SA $\to$ warm-started CP-SAT beats every component
+        on both datasets, and the Hybrid method delivers it in minutes inside the product.
+  \item Independent validation + Pareto filtering + policies turn optimisation results into
+        \textbf{reasonable schedules managers can trust}.
+  \item A working MIS: versioned factory, order book, periods, hand edits, commit with a reason, rescheduling, audit trail.
 \end{itemize}
-\end{block}
+\end{exampleblock}
 \end{column}
 \begin{column}{0.48\textwidth}
-\begin{block}{Kết luận}
+\begin{block}{Limitations}
 \scriptsize
-\begin{itemize}\setlength{\itemsep}{0.2em}
-  \item Không thuật toán đơn lẻ nào đủ; \textbf{phối hợp} luật $\to$ SA/GA/LNS $\to$ CP-SAT khởi đầu nóng cho lịch trội hơn mọi thành phần trên cả 2 bộ.
-  \item Bộ kiểm tra độc lập + lọc Pareto + chính sách biến kết quả tối ưu thành \textbf{lịch hợp lý người quản lý tin dùng}.
-  \item Người lập kế hoạch giữ quyền quyết định: chọn, sửa, chốt có lý do.
+\begin{itemize}\setlength{\itemsep}{0.15em}
+  \item Synthetic data, one dataset per size, 2-4 runs per Hybrid configuration $\Rightarrow$ \textbf{exploratory}, not yet statistical.
+  \item Objective weights are policy assumptions (7 variants tried: the top rank does not change).
+  \item Rescheduling is triggered by the planner, not by live shop-floor data; CP-LNS and rolling horizon still weak at 269 runs.
 \end{itemize}
 \end{block}
 \vspace{-0.2em}
-\begin{block}{Hướng tiếp theo}
+\begin{block}{Future work}
 \scriptsize
-Benchmark Taillard/Lawrence (RPD) $\cdot$ tái lập lịch khi máy hỏng giữa kỳ $\cdot$ CP-LNS chỉ dựng các lượt được mở $\cdot$ đường găng, độ nhạy.
+Taillard/Lawrence benchmarks (RPD) $\cdot$ repeated runs for confidence intervals $\cdot$ CP-LNS building only the reopened runs $\cdot$
+critical path and sensitivity $\cdot$ utilisation criterion on the bottleneck stage $\cdot$ real plant data and MES connection.
 \end{block}
 \end{column}
 \end{columns}
@@ -683,9 +982,9 @@ Benchmark Taillard/Lawrence (RPD) $\cdot$ tái lập lịch khi máy hỏng gi�
 \begin{frame}[plain]
 \centering
 \vfill
-{\usebeamercolor[fg]{title}\Huge Cảm ơn cô đã lắng nghe!\par}
+{\usebeamercolor[fg]{title}\Huge Thank you for your attention!\par}
 \vspace{1em}
-{\large Hỏi đáp và góp ý\par}
+{\large Questions and feedback\par}
 \vfill
 \end{frame}
 

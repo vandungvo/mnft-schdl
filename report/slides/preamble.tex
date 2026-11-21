@@ -1,10 +1,10 @@
-% CO5103 Hệ thống thông tin quản lý - Đồ án, slide báo cáo
-% Template HCMUT (giống slide CO5135 Big Data). Build: pdflatex main.tex hai lần.
+% CO5103 Management Information Systems - course project, report slides (English)
+% HCMUT template (same as the CO5135 Big Data slides). Build: pdflatex main.tex, twice.
 \documentclass[aspectratio=169,11pt]{beamer}
 
-\usepackage[T5]{fontenc}          % T5 cho tiếng Việt
+\usepackage[T5]{fontenc}          % T5 keeps Vietnamese names (Võ Văn Dũng, ...) correct; covers English too
 \usepackage[utf8]{inputenc}
-\usepackage[vietnamese]{babel}
+\usepackage[english]{babel}
 \usepackage{lmodern}
 \usepackage{graphicx}
 \usepackage{booktabs}
@@ -14,7 +14,7 @@
 \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.17}
-\pgfkeys{/pgf/number format/.cd,use comma,1000 sep={.}}  % 10.564 ; 73,6
+\pgfkeys{/pgf/number format/.cd,use period,1000 sep={\mathord{,}}}  % 10,564 ; 73.6 (\mathord: no math space after the comma)
 
 % ---------------- Theme (HCMUT Beamer template) ----------------
 \usetheme{default}
@@ -80,6 +80,6 @@
 
 \usebackgroundtemplate{\includegraphics[width=\paperwidth,height=\paperheight]{figures/bg_frame.png}}
 
-% Tiện ích
+% Helpers
 \newcommand{\good}[1]{\textcolor{bkgreen}{\textbf{#1}}}
 \newcommand{\bad}[1]{\textcolor{bkorange}{\textbf{#1}}}
