@@ -27,6 +27,13 @@ services:
         value: "true"
       - key: MNFT_STANDARD_DATA_PATH
         value: /srv/models/input/wheel_factory.json
+      # Demo plant "Riverside Alloy Wheels" (English, 156 orders, Weeks 46-47 committed and
+      # closed, Weeks 48-49 ready to plan): copied into place on every fresh start, see
+      # backend/docker-entrypoint.sh. The sample factory is then not created.
+      - key: MNFT_SEED_DATABASE
+        value: /srv/backend/seed_data/riverside_demo.db
+      - key: MNFT_BOOTSTRAP_FACTORY
+        value: "false"
       - key: MNFT_CORS_ORIGINS
         value: '["https://mnft-frontend.onrender.com"]'
       - key: MNFT_SOLVER_MAX_CONCURRENT_JOBS
