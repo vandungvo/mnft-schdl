@@ -21,6 +21,12 @@ import { IssueList, LoadBars } from "./shared";
 
 type Section = "orders" | "opening" | "calendar" | "policy";
 
+/** System-written notes carry both languages as "vi ‖ en" (backend/app/periods.py); older notes are shown as stored. */
+function noteText(note: string, t: (vi: string, en: string) => string): string {
+  const [vi, en] = note.split(" ‖ ");
+  return en === undefined ? note : t(vi, en);
+}
+
 /** Everything that changes from one period to the next, edited as one draft and checked on save:
     the backend recompiles the period (lots, runs, calendars) and reports what is wrong in plain words. */
 export function PrepareView({ period, config, onSaved }: { period: PeriodDetail; config: FactoryConfig; onSaved: (period: PeriodDetail) => void }) {
@@ -72,7 +78,7 @@ export function PrepareView({ period, config, onSaved }: { period: PeriodDetail;
         <Panel title={errors.length ? t(`${errors.length} lỗi cần sửa trước khi lập lịch`, `${errors.length} errors to fix before scheduling`) : t("Kiểm tra đầu vào", "Input check")}
           description={period.compiled_revision !== period.revision && !errors.length ? undefined : period.dataset_id && errors.length ? t("Phương án hiện có vẫn dựa trên lần lưu hợp lệ gần nhất.", "Existing options still use the last valid save.") : undefined}>
           <IssueList issues={period.issues} onSelect={(issue) => setSection(issue.code.startsWith("STOCK") ? "opening" : issue.code.startsWith("RESERVE") ? "policy" : "orders")} />
-          {period.inputs.notes.length > 0 && <ul className="mt-3 grid gap-1 border-t pt-3 text-xs text-muted-foreground">{period.inputs.notes.map((note) => <li key={note}>• {note}</li>)}</ul>}
+          {period.inputs.notes.length > 0 && <ul className="mt-3 grid gap-1 border-t pt-3 text-xs text-muted-foreground">{period.inputs.notes.map((note) => <li key={note}>• {noteText(note, t)}</li>)}</ul>}
         </Panel>
         <Panel title={t("Tải công đoạn (ước tính, chưa tính setup)", "Stage load (estimate, setups excluded)")}><LoadBars load={period.load} config={config} /></Panel>
       </div>}

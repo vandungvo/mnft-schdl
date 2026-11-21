@@ -3,19 +3,20 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 
 import { isActive, NAV_GROUPS } from "@/lib/nav";
+import { useStoredPreference } from "@/lib/stored-preference";
 import { cn } from "@/lib/utils";
 import { useI18n } from "./i18n-provider";
+
+const NAV_ADVANCED_STATES = ["open", "closed"] as const;
 
 export function AppNavigation({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { t } = useI18n();
-  const [advanced, setAdvanced] = useState(() => {
-    try { return typeof window !== "undefined" && window.localStorage.getItem("planwise:nav-advanced") === "open"; } catch { return false; }
-  });
-  const toggle = () => { setAdvanced(!advanced); try { window.localStorage.setItem("planwise:nav-advanced", advanced ? "closed" : "open"); } catch { /* convenience only */ } };
+  const [navAdvanced, setNavAdvanced] = useStoredPreference("planwise:nav-advanced", "closed", NAV_ADVANCED_STATES);
+  const advanced = navAdvanced === "open";
+  const toggle = () => setNavAdvanced(advanced ? "closed" : "open");
   return (
     <nav aria-label={t("Điều hướng chính", "Main navigation")} className="grid gap-5">
       {NAV_GROUPS.map((group) => {

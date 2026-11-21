@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { importBookOrders } from "@/lib/api";
 import { csvRow, downloadText, fileToBase64, fmtLocal, issueText, priorityLabel } from "@/lib/factory";
 import type { FactoryConfig, OrderImportResult } from "@/lib/factory-types";
+import { getLocale } from "@/lib/locale";
 import { cn } from "@/lib/utils";
 
 type Source = { format: "csv" | "tsv" | "xlsx"; content: string; name: string };
@@ -26,12 +27,17 @@ const FIELD_LABEL: Record<string, [string, string]> = {
 
 export function downloadOrderTemplate(config: FactoryConfig | undefined) {
   const products = Object.keys(config?.products ?? { F_SILVER: null, R_BLACK: null });
-  const lines = [
+  // Headers and words in the UI language: the importer recognises both languages.
+  const lines = getLocale() === "en" ? [
+    csvRow(["Order", "Product", "Quantity", "Due date", "Due time", "Priority", "Pickup", "Customer", "Note"]),
+    csvRow(["PO-1001", products[0], 64, "06/10/2026", "16:00", "Normal", "At due", "Customer A", ""]),
+    csvRow(["PO-1002", products[products.length - 1], 28, "08/10/2026", "12:00", "Urgent", "At due", "Customer B", "Ship early if ready"]),
+  ] : [
     csvRow(["Mã đơn", "Sản phẩm", "Số lượng", "Hạn giao", "Giờ giao", "Ưu tiên", "Cách giao", "Khách hàng", "Ghi chú"]),
     csvRow(["PO-1001", products[0], 64, "06/10/2026", "16:00", "Thường", "Đúng hẹn", "Khách A", ""]),
     csvRow(["PO-1002", products[products.length - 1], 28, "08/10/2026", "12:00", "Gấp", "Đúng hẹn", "Khách B", "Giao sớm nếu xong"]),
   ];
-  downloadText("mau-don-hang.csv", lines.join("\n"));
+  downloadText(getLocale() === "en" ? "order-template.csv" : "mau-don-hang.csv", lines.join("\n"));
 }
 
 /** Excel/CSV/paste → preview with per-row problems → write. Nothing is stored until the planner confirms. */

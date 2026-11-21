@@ -53,6 +53,12 @@ from .models import (
 from .schemas import SchedulingInputV5
 
 ORDER_FIELDS = ("product", "quantity", "due", "priority", "pickup", "customer", "note")
+# Period notes are plain strings; system-written ones carry both languages, the UI shows one.
+NOTE_LANG_SEPARATOR = " ‖ "
+
+
+def bilingual(vi: str, en: str) -> str:
+    return f"{vi}{NOTE_LANG_SEPARATOR}{en}"
 
 
 def period_end(period: PlanningPeriod) -> date:
@@ -309,7 +315,12 @@ class PeriodService:
                 inputs.policy = source.inputs.get("policy") or config.default_policy
                 # Pull-ahead is not carried over: last period's long-term demand is
                 # this period's regular demand, so the old choice rarely still fits.
-                notes.append(f"Đầu kỳ dự kiến theo lịch đã chốt của {previous.name}.")
+                notes.append(
+                    bilingual(
+                        f"Đầu kỳ dự kiến theo lịch đã chốt của {previous.name}.",
+                        f"Opening stock projected from the committed schedule of {previous.name}.",
+                    )
+                )
         if payload.pull_orders:
             end = date.fromisoformat(payload.start_date.isoformat()) + timedelta(
                 days=days + config.lookahead_days
@@ -606,6 +617,7 @@ class PeriodService:
         known = {o.code for o in orders}
         orders += [o for o in payload.add_orders if o.code not in known]
         frozen = minute - offset
+        variant = f" · {source.variant_label}" if source.variant_label else ""
         inputs = PeriodInputs(
             orders=orders,
             opening=_opening_from(state, as_of=format_local(cutoff)),
@@ -615,11 +627,24 @@ class PeriodService:
             frozen_until=frozen,
             busy_until={m: end - offset for m, end in state.busy_until.items()},
             notes=[
-                f"Lập lại lịch từ {cutoff:%d/%m %H:%M} theo lịch đã chốt của {source.name}"
-                f"{' · ' + source.variant_label if source.variant_label else ''}.",
-                "Lượt đang chạy tại thời điểm cắt được coi là hoàn tất; "
-                "máy bận tới khi lượt kết thúc.",
-                "Phương án làm trước được tắt khi lập lại lịch; bật lại ở mục Chính sách nếu cần.",
+                bilingual(
+                    f"Lập lại lịch từ {cutoff:%d/%m %H:%M} theo lịch đã chốt của {source.name}"
+                    f"{variant}.",
+                    f"Rescheduled from {cutoff:%d/%m %H:%M} on the committed schedule of "
+                    f"{source.name}{variant}.",
+                ),
+                bilingual(
+                    "Lượt đang chạy tại thời điểm cắt được coi là hoàn tất; "
+                    "máy bận tới khi lượt kết thúc.",
+                    "Runs in progress at the cut-off count as done; "
+                    "their machine stays busy until they end.",
+                ),
+                bilingual(
+                    "Phương án làm trước được tắt khi lập lại lịch; "
+                    "bật lại ở mục Chính sách nếu cần.",
+                    "Build-ahead is switched off when rescheduling; "
+                    "turn it back on under Policy if needed.",
+                ),
             ],
         )
         label = payload.label or f"Lập lại từ {cutoff:%d/%m %H:%M}"
@@ -676,10 +701,11 @@ class PeriodService:
         }
         inputs = PeriodInputs.model_validate(period.inputs)
         mine = {o.code: o for o in inputs.orders}
+        known = set(mine) | self._dropped_by_reschedule(period)
         added = sorted(
             code
             for code, o in book.items()
-            if o.status == "open" and o.due < window and code not in mine
+            if o.status == "open" and o.due < window and code not in known
         )
         changed = []
         removed = []
@@ -694,6 +720,19 @@ class PeriodService:
             if fields:
                 changed.append(BookSyncChange(code=code, fields=fields))
         return BookSync(added=added, changed=changed, removed=sorted(removed))
+
+    def _dropped_by_reschedule(self, period: PlanningPeriod) -> set[str]:
+        """Orders a reschedule left out on purpose: delivered before its cut-off. The book
+        keeps them open until the period closes, so they must not come back as "new"."""
+        codes: set[str] = set()
+        current = period
+        while current.kind == "reschedule" and current.parent_id:
+            parent = self.session.get(PlanningPeriod, current.parent_id)
+            if parent is None:
+                break
+            codes |= {o.code for o in PeriodInputs.model_validate(parent.inputs).orders}
+            current = parent
+        return codes
 
     def apply_book_sync(self, period_id: str, expected_revision: int) -> PlanningPeriod:
         period = self._editable(period_id)

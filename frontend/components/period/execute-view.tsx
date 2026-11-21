@@ -185,7 +185,7 @@ function IncidentPanel({ period, config }: { period: PeriodDetail; config: Facto
   const mutation = useMutation({
     mutationFn: () => reschedulePeriod(period.id, {
       cutoff,
-      label: machine === ALL ? null : t(`Sự cố ${machine} ${fmtLocal(cutoff)}`, `${machine} incident ${fmtLocal(cutoff)}`),
+      label: machine === ALL ? t(`Lập lại từ ${fmtLocal(cutoff)}`, `Rescheduled from ${fmtLocal(cutoff)}`) : t(`Sự cố ${machine} ${fmtLocal(cutoff)}`, `${machine} incident ${fmtLocal(cutoff)}`),
       exceptions: machine === ALL ? [] : [{ id: `I${Date.now().toString(36).toUpperCase()}`, machine, start: cutoff, end: until, kind: "breakdown", note: note || null }],
       add_orders: [],
     }),

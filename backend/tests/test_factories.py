@@ -235,6 +235,8 @@ def test_commit_reschedule_variant_and_rollover(factory_client) -> None:
     assert child["inputs"]["frozen_until"] == 600
     assert set(child["inputs"]["busy_until"]) == set(state["busy_until"])
     assert len(child["inputs"]["orders"]) == 28 - len(state["delivered"])
+    # Orders delivered before the cut-off are still open in the book; they are not "new".
+    assert child["book_sync"] == {"added": [], "changed": [], "removed": []}
     # The replanned rest of the period is solvable as is.
     _run_and_commit(factory_client, child)
 

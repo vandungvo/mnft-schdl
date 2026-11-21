@@ -9,6 +9,7 @@ import { activeShifts, type Delivery } from "@/lib/decision";
 import { machineLoad, peggedOrders } from "@/lib/explain";
 import { formatClock, formatDay, formatDuration, formatHour, nowMinute, productLabel, runLabel, stageLabel } from "@/lib/format";
 import { plantOf } from "@/lib/plant";
+import { useStoredPreference } from "@/lib/stored-preference";
 import { cn } from "@/lib/utils";
 import type { AnySchedulingInput, ScheduleOperation } from "@/lib/types";
 
@@ -78,17 +79,6 @@ const PX_PER_DAY: Record<Exclude<Zoom, "fit">, number> = { day: 150, shift: 480,
 type ColorBy = "product" | "status" | "priority";
 const COLOR_MODES: ColorBy[] = ["product", "status", "priority"];
 
-/** A per-viewer preference kept in the browser (optional: storage may be blocked). */
-function useStored<T extends string>(key: string, fallback: T, allowed: readonly T[]): [T, (value: T) => void] {
-  const [value, setValue] = useState<T>(() => {
-    try {
-      const stored = typeof window !== "undefined" ? window.localStorage.getItem(key) : null;
-      return stored && allowed.includes(stored as T) ? (stored as T) : fallback;
-    } catch { return fallback; }
-  });
-  const set = (next: T) => { setValue(next); try { window.localStorage.setItem(key, next); } catch { /* per-viewer convenience only */ } };
-  return [value, set];
-}
 
 function useWidth() {
   const ref = useRef<HTMLDivElement>(null);
@@ -105,8 +95,8 @@ function useWidth() {
 
 export function ScheduleGantt({ operations, input, origin, horizon, deliveries, compare, edit, frozenUntil, focusOrder, onOrder }: Props) {
   const { t } = useI18n();
-  const [zoom, setZoom] = useStored<Zoom>("planwise:gantt-zoom", "fit", ZOOMS);
-  const [colorBy, setColorBy] = useStored<ColorBy>("planwise:gantt-color", "product", COLOR_MODES);
+  const [zoom, setZoom] = useStoredPreference<Zoom>("planwise:gantt-zoom", "fit", ZOOMS);
+  const [colorBy, setColorBy] = useStoredPreference<ColorBy>("planwise:gantt-color", "product", COLOR_MODES);
   const [showCompare, setShowCompare] = useState(true);
   const [drag, setDrag] = useState<{ op: ScheduleOperation; row: number; x0: number; y0: number; dx: number; dy: number } | null>(null);
   const [highlight, setHighlight] = useState<string | null>(null);
