@@ -727,6 +727,42 @@ $\cdot$ \textbf{traceability}: audit log $\cdot$ \textbf{usability}: bilingual, 
 \end{columns}
 \end{frame}
 
+\begin{frame}{Deployment and public demo}
+\framesubtitle{Two Docker services on Render, redeployed automatically on every push to \texttt{master}}
+\begin{columns}[T]
+\begin{column}{0.55\textwidth}
+\tiny
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}L{1.95cm}L{5.6cm}@{}}
+\toprule
+Web application & \textbf{\url{https://mnft-frontend.onrender.com}}\\
+REST API & \url{https://mnft-backend.onrender.com/api/v1/health}\\
+Source code & \url{https://github.com/vandungvo/mnft-schdl}\\
+Hosting & Render free plan, Singapore; Next.js frontend + FastAPI backend\\
+Demo data & English plant ``Riverside Alloy Wheels'': 156 orders, Weeks 46-47 committed and closed, Weeks 48-49 ready to plan\\
+Language & English by default, Vietnamese in the language menu\\
+\bottomrule
+\end{tabular}
+\end{column}
+\begin{column}{0.42\textwidth}
+\begin{block}{Other ways to run it}
+\scriptsize
+\begin{itemize}\setlength{\itemsep}{0.15em}
+  \item \textbf{Local}: one script starts backend and frontend; database created and migrated automatically.
+  \item \textbf{Docker Compose}: images for both services.
+  \item \textbf{CI}: tests, lint, type check and build on every push.
+\end{itemize}
+\end{block}
+\vspace{-0.2em}
+\begin{alertblock}{Free-plan limits}
+\scriptsize
+No persistent disk: the demo plant is restored from a bundled snapshot on every start, so changes are temporary.
+Solver runs capped at 120\,s on a small CPU share; first visit after a pause takes about a minute.
+\end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
 % =====================================================================
 \section{Testing and evaluation}
 
@@ -985,6 +1021,10 @@ critical path and sensitivity $\cdot$ utilisation criterion on the bottleneck st
 {\usebeamercolor[fg]{title}\Huge Thank you for your attention!\par}
 \vspace{1em}
 {\large Questions and feedback\par}
+\vspace{1.2em}
+{\small Live demo: \url{https://mnft-frontend.onrender.com}\par}
+\vspace{0.2em}
+{\small Source code: \url{https://github.com/vandungvo/mnft-schdl}\par}
 \vfill
 \end{frame}
 

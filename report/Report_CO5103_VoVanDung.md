@@ -20,7 +20,7 @@ I also thank the lecturers of the Master of Management Information Systems progr
 
 Many medium and large component plants in Vietnam still plan production in separate Excel files maintained by individual planners. Orders, stock and machine status are scattered across departments, rush orders are absorbed by hand, and management cannot see the reasoning behind a schedule. This project builds a production scheduling agent that produces **reasonable schedules** - schedules that respect every physical and business constraint of the plant and balance service against operating cost on explicit grounds - and delivers it as a working information system. The case study is an alloy wheel line with five stages (casting, heat treatment, CNC machining, painting, test and packing), modelled as a flexible job-shop scheduling problem with shifts, shared molds and their maintenance, sequence-dependent setups, stage-specific lots, work-in-progress buffers, safety stock and order deliveries.
 
-Experiments with eight single algorithms (FIFO, EDD, SPT, simulated annealing, a genetic algorithm, CP-SAT, CP-SAT with a hint, CP-LNS) showed that none is best everywhere: monolithic CP-SAT found no schedule for a two-week period even after 12 hours, while CP-SAT warm-started from a simulated-annealing schedule produced the best schedules and proved that the service level was optimal. The proposed solution therefore combines the algorithms in one pipeline (dispatching rules, multi-seed simulated annealing, warm-started CP-SAT), checks every schedule with an independent validator, filters the non-dominated options and lets the planner choose under an explicit policy, edit a schedule by hand and let the solver optimise the rest. On the two-week dataset, the product's Hybrid method reaches zero late orders within one minute and proves the service level optimal within minutes; after nine minutes it uses 53 machine-shifts instead of the 95 of the earliest-due-date rule. The system (FastAPI backend, Next.js frontend, SQLite database) also supports a versioned factory set-up, an order book with Excel import, planning periods, rescheduling after incidents, what-if variants, explanations of late orders and an audit trail.
+Experiments with eight single algorithms (FIFO, EDD, SPT, simulated annealing, a genetic algorithm, CP-SAT, CP-SAT with a hint, CP-LNS) showed that none is best everywhere: monolithic CP-SAT found no schedule for a two-week period even after 12 hours, while CP-SAT warm-started from a simulated-annealing schedule produced the best schedules and proved that the service level was optimal. The proposed solution therefore combines the algorithms in one pipeline (dispatching rules, multi-seed simulated annealing, warm-started CP-SAT), checks every schedule with an independent validator, filters the non-dominated options and lets the planner choose under an explicit policy, edit a schedule by hand and let the solver optimise the rest. On the two-week dataset, the product's Hybrid method reaches zero late orders within one minute and proves the service level optimal within minutes; after nine minutes it uses 53 machine-shifts instead of the 95 of the earliest-due-date rule. The system (FastAPI backend, Next.js frontend, SQLite database) also supports a versioned factory set-up, an order book with Excel import, planning periods, rescheduling after incidents, what-if variants, explanations of late orders and an audit trail. A public demonstration with an English sample plant runs at https://mnft-frontend.onrender.com.
 
 **Keywords:** production scheduling, flexible job shop, CP-SAT, simulated annealing, hybrid optimisation, multi-objective, decision support, management information system.
 
@@ -104,7 +104,7 @@ The problem is also hard in principle. Shop scheduling belongs to the NP-hard pr
 
 - **Methodological:** a combined scheduling pipeline in which each algorithm is placed where the experimental evidence shows it works, with an independent validator that makes schedules from different algorithms - and from people - comparable with the same yardstick.
 - **Empirical:** an evaluation of ten scheduling methods on two business datasets, including a proof that the service level of the two-week dataset is optimal and the measured effect of the machine-utilisation objective.
-- **Practical (information system):** a working web system that covers the planner's whole cycle - factory set-up, order book, period preparation, option generation, comparison, hand editing, commitment with an audit trail, execution and rescheduling - documented by a 91-page user guide and a narrated demo video.
+- **Practical (information system):** a working web system that covers the planner's whole cycle - factory set-up, order book, period preparation, option generation, comparison, hand editing, commitment with an audit trail, execution and rescheduling - documented by a 91-page user guide and a narrated demo video, and available as a public demonstration.
 - **For the course requirements:** a 17-row literature comparison, a survey of public benchmark data and open-data portals, and reproducible experiment records.
 
 ## 1.5. Structure of the report
@@ -497,9 +497,9 @@ Table: Non-functional requirements of the system
 | Reliability | Repeated or retried requests must not create duplicate runs | Idempotency key on run creation; retries keep the original snapshot and record their lineage |
 | Security | Only authorised users may change data | Bearer API keys with operator and reader roles; readers are limited to read requests |
 | Traceability | Every change can be traced to an actor and a time | Audit log of all changes; append-only decision log |
-| Usability | Planners work in their language and at their pace | Bilingual interface (English/Vietnamese), keyboard shortcuts, command palette, light/dark theme |
+| Usability | Planners work in their language and at their pace | Bilingual interface (English by default, Vietnamese), keyboard shortcuts, command palette, light/dark theme |
 | Maintainability | Changes must not break existing behaviour | 130 automated tests, continuous integration, typed frontend, database migrations |
-| Portability | The system runs on a laptop or a cloud host | One-command local start; Docker Compose; Render blueprint |
+| Portability | The system runs on a laptop or a cloud host | One-command local start; Docker Compose; public demo deployed on Render from a Blueprint |
 
 ### 4.8.5. System architecture
 
@@ -719,7 +719,20 @@ The system can be run in three ways:
 
 - **Local development:** one PowerShell script (`scripts/dev.ps1`) starts the backend and the frontend together; the database is created and migrated automatically, and a sample factory is bootstrapped when it is empty.
 - **Docker Compose:** `compose.yaml` builds images for the backend and the frontend; research code, run records and documents are excluded from the images.
-- **Cloud demo:** a Render blueprint (`render.yaml`) describes the services for a hosted demonstration; production mode requires an operator API key.
+- **Public demo on Render:** a Render Blueprint (`render.yaml`) creates the two services from the Git repository and redeploys them automatically on every push to the `master` branch (Table 23).
+
+Table: Public demonstration deployment
+
+| Item | Value |
+|---|---|
+| Web application | https://mnft-frontend.onrender.com |
+| REST API (health check) | https://mnft-backend.onrender.com/api/v1/health |
+| Source code | https://github.com/vandungvo/mnft-schdl |
+| Hosting | Render, free plan, Singapore region; two Docker services (Next.js frontend, FastAPI backend) |
+| Data | The English demonstration plant "Riverside Alloy Wheels - Plant 1": 156 orders, period "Weeks 46-47" committed and closed, period "Weeks 48-49" ready to plan |
+| Interface language | English by default; Vietnamese available from the language menu |
+
+The free plan has no persistent disk: the database is recreated on every deploy, restart or wake-up after 15 minutes of inactivity. The backend therefore ships a snapshot of the demonstration plant and copies it into place whenever it starts without a database, then runs the migrations; visitors can try every feature, and the demonstration returns to its initial state after the next restart. Solver runs are capped at 120 seconds and the instance has a small share of one CPU, so schedules are weaker than on a workstation (on the 2-week sample period, Hybrid with the Quick preset reached 22 of 24 orders on time instead of 24); the first visit after a pause takes about a minute while the services wake up.
 
 Continuous integration (GitHub Actions) runs the backend and engine tests, a notebook test, and the frontend lint, type check and build on every push and pull request. The deployment is at prototype level: it has not been installed in a real plant, and the hosted demo is meant for review rather than production use.
 
@@ -764,6 +777,7 @@ Over the semester the project achieved the following:
 - A **combined scheduling solution** - ten methods, a Hybrid production method (rules → multi-seed SA → warm-started CP-SAT), an independent validator, a Pareto filter and policy-based ranking - evaluated on two business datasets. On the two-week dataset it reaches zero late orders in about a minute and proves the service level optimal within minutes.
 - A working **management information system** with a versioned factory set-up, an order book with Excel import, planning periods, option comparison, hand editing with "optimise the rest", commitment with a reason and an audit trail, work orders, rescheduling after incidents, what-if variants and explanations of late orders.
 - **Documentation and evidence:** a literature review with 32 references, a survey of benchmark data, reproducible experiment records, 130 automated tests, a 91-page user guide and a narrated demo video.
+- **A public demonstration** at https://mnft-frontend.onrender.com with the English sample plant, deployed automatically from the source repository https://github.com/vandungvo/mnft-schdl.
 
 ## 6.2. Contributions
 
