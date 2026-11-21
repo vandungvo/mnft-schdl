@@ -1,0 +1,85 @@
+% CO5103 Hệ thống thông tin quản lý - Đồ án, slide báo cáo
+% Template HCMUT (giống slide CO5135 Big Data). Build: pdflatex main.tex hai lần.
+\documentclass[aspectratio=169,11pt]{beamer}
+
+\usepackage[T5]{fontenc}          % T5 cho tiếng Việt
+\usepackage[utf8]{inputenc}
+\usepackage[vietnamese]{babel}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+\pgfkeys{/pgf/number format/.cd,use comma,1000 sep={.}}  % 10.564 ; 73,6
+
+% ---------------- Theme (HCMUT Beamer template) ----------------
+\usetheme{default}
+\useinnertheme{circles}
+\setbeamertemplate{itemize items}[ball]
+\setbeamertemplate{enumerate items}[ball]
+\setbeamertemplate{navigation symbols}{}
+
+\definecolor{bkblue}{HTML}{1E4E79}
+\definecolor{bkmid}{HTML}{163A5B}
+\definecolor{bkdark}{HTML}{0F273C}
+\definecolor{bklight}{HTML}{3A9AD9}
+\definecolor{bkorange}{HTML}{C8742E}
+\definecolor{bkgreen}{HTML}{1F7A3A}
+\definecolor{bkgray}{HTML}{8A97A6}
+
+\setbeamercolor{structure}{fg=bkblue}
+\setbeamercolor{frametitle}{bg=bkblue,fg=white}
+\setbeamercolor{framesubtitle}{fg=white}
+\setbeamercolor{title}{fg=bkblue}
+\setbeamercolor{block title}{bg=bkblue,fg=white}
+\setbeamercolor{block body}{bg=bkblue!8}
+\setbeamercolor{block title alerted}{bg=bkorange,fg=white}
+\setbeamercolor{block body alerted}{bg=bkorange!10}
+\setbeamercolor{block title example}{bg=bkgreen,fg=white}
+\setbeamercolor{block body example}{bg=bkgreen!8}
+\setbeamerfont{frametitle}{size=\Large}
+\setbeamerfont{framesubtitle}{size=\scriptsize}
+\setbeamerfont{block title}{size=\small,series=\bfseries}
+\setbeamerfont{footnote}{size=\tiny}
+
+\makeatletter
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth,sep=0.35em,leftskip=0.3em]{frametitle}
+    \usebeamerfont{frametitle}\strut\insertframetitle\strut\par
+    \ifx\insertframesubtitle\@empty\else
+      {\usebeamerfont{framesubtitle}\insertframesubtitle\par}%
+    \fi
+  \end{beamercolorbox}
+}
+\makeatother
+
+\setbeamertemplate{footline}{%
+  \leavevmode\hbox{%
+  \begin{beamercolorbox}[wd=.38\paperwidth,ht=2.4ex,dp=1ex,left,leftskip=0.6em]{author in head/foot}%
+    \usebeamerfont{author in head/foot}\insertshortauthor\ (\insertshortinstitute)
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.31\paperwidth,ht=2.4ex,dp=1ex,center]{title in head/foot}%
+    \usebeamerfont{title in head/foot}\insertshorttitle
+  \end{beamercolorbox}%
+  \begin{beamercolorbox}[wd=.31\paperwidth,ht=2.4ex,dp=1ex,right,rightskip=0.6em]{date in head/foot}%
+    \usebeamerfont{date in head/foot}\insertshortdate\hspace{2em}\insertframenumber{} / \inserttotalframenumber
+  \end{beamercolorbox}}%
+  \vskip0pt%
+}
+\setbeamercolor{author in head/foot}{bg=bkdark,fg=white}
+\setbeamercolor{title in head/foot}{bg=bkmid,fg=white}
+\setbeamercolor{date in head/foot}{bg=bkblue,fg=white}
+\setbeamerfont{author in head/foot}{size=\tiny,series=\bfseries}
+\setbeamerfont{title in head/foot}{size=\tiny,series=\bfseries}
+\setbeamerfont{date in head/foot}{size=\tiny,series=\bfseries}
+
+\usebackgroundtemplate{\includegraphics[width=\paperwidth,height=\paperheight]{figures/bg_frame.png}}
+
+% Tiện ích
+\newcommand{\good}[1]{\textcolor{bkgreen}{\textbf{#1}}}
+\newcommand{\bad}[1]{\textcolor{bkorange}{\textbf{#1}}}
