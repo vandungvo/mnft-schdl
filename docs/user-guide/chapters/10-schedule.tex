@@ -1,0 +1,136 @@
+\chapter{Schedule \& compare}\label{ch:schedule}
+
+\ui{Schedule \& compare} shows one option in full detail: its figures, a Gantt chart of every run on every
+machine, the deliveries, and --- when you pick a second option --- exactly what changes between the two.
+
+\shot{schedule}{Schedule \& compare for the recommended option of ``Weeks 48-49''.}{schedule}
+
+\begin{callouts}
+  \item[1] \textbf{Option}: the schedule being viewed (recommended options first, then the others).
+  \item[2] \textbf{Compare with}: a second option to compare against, or \ui{no comparison}.
+  \item[3] \textbf{Edit this schedule by hand} (Chapter~\ref{ch:editing}). Next to it: which algorithm built the
+           option, the solver status and when it ran.
+  \item[4] \textbf{Figure tiles}: on time, total lateness, safety-stock shortfall, operating cost; \ui{4 more
+           figures} adds machine shifts open, idle time, setup and last required lot done.
+  \item[5] \textbf{View}: \ui{By machine} (Gantt), \ui{By order} (with the number of late orders), \ui{Machine
+           load}.
+  \item[6] \textbf{Colour by}: \ui{Product}, \ui{Lateness} or \ui{Priority}.
+  \item[7] \textbf{Zoom}: \ui{Fit} (whole period on one screen), \ui{Days}, \ui{Shifts}, \ui{Hours}. Your zoom
+           and colour choices are remembered in this browser.
+  \item[8] \textbf{Legend}, ending with the red diamond for a late delivery.
+\end{callouts}
+
+\section{Reading the Gantt chart}\label{sec:gantt}
+
+Each row is a machine, labelled with its code, stage and utilisation over the period (busy time including
+setup and maintenance, divided by rostered time). Time runs left to right; vertical lines separate days and
+a red \ui{Now} line marks the current time when it falls inside the period.
+
+\begin{itemize}
+  \item \textbf{Bars} are production runs. Furnace runs show their run number (01, 02, \dots). Bars in two
+        colours mark semi-finished stock shared by a product line (front or rear).
+  \item \textbf{Grey parts} of a bar are setup (changeover) and hatched parts are mold maintenance.
+  \item \textbf{Pale blue bands} behind the bars are the shifts the schedule opens. A shift is only opened when
+        a run needs it, which is how the schedule saves labour.
+  \item \textbf{Hatched beige columns} are rest days and holidays; machines on a 24/7 calendar have a
+        continuous band.
+  \item \textbf{The Deliveries row} at the bottom marks each order's delivery: green when on time, a red
+        diamond when late.
+\end{itemize}
+
+Hover a bar to see its details: run code, item, quantity, machine, shift, mold, start and end, setup time and
+the orders it serves. Click a bar to highlight its whole product line across stages; click a delivery to see
+the runs that feed that order. The arrow keys \kbd{\textleftarrow}\,\kbd{\textrightarrow} move between runs,
+and \kbd{?} lists all shortcuts.
+
+\shot{gantt_shifts}{Zoom \ui{Shifts}: individual shifts become visible; the tooltip details one casting run.}{gantt_shifts}
+
+\subsection{Colour modes}
+
+\begin{description}[style=nextline, leftmargin=1.2em, font=\bfseries\color{brand}]
+  \item[Product] Silver and black, front and rear in different colours (the default).
+  \item[Lateness] Red: the run feeds a late order; green: it feeds on-time orders; grey: not tied to an order
+        (build-ahead or reserve). This is the quickest way to see where lateness comes from.
+  \item[Priority] Shades from low to high priority of the orders a run serves.
+\end{description}
+
+\shot[0.92\linewidth]{gantt_lateness}{Colour by lateness: red runs feed late orders.}{gantt_lateness}
+
+\section{Comparing two options}\label{sec:compare}
+
+Pick an option under \ui{Compare with}. The Gantt chart then shows, for the viewed option, which shifts are
+open only in this schedule or only in the compared one, and (with \ui{Show positions in the compared option})
+dashed outlines where each run sits in the other schedule. The legend counts how many runs differ.
+
+\shot{compare_gantt}{Comparing the recommended option with the EDD rule.}{compare_gantt}
+
+Below the chart, a table answers ``Switching from A to B: what you gain and lose'' metric by metric: ranking,
+late orders, total and priority-weighted lateness, shortfall, operating cost, machine shifts, idle time,
+setup, mold maintenance and last lot done, each marked \ui{better}, \ui{worse} or \ui{equal}. It also lists
+the shifts open only in one of the two schedules and how many shared runs moved.
+
+\shotf[0.85\linewidth]{compare_diff}{What changes when switching from the recommended option to the EDD rule.}{compare_diff}
+
+\begin{tip}
+Comparing with the EDD rule is a good sanity check: it shows how much the optimiser actually gained (in the
+example: nine fewer late orders and about 785 fewer hours late).
+\end{tip}
+
+\section{The order view and ``why is this order late?''}\label{sec:why-late}
+
+\ui{By order} draws one row per order: a pale band from release to due date, a thick tick at the due date,
+and coloured bars for the runs that feed it at each stage. Tick \ui{Late orders first} to sort the late ones to
+the top; the right column says ``late 27.5~h'' or ``on time''.
+
+\shot{by_order}{The order view with late orders first.}{by_order}
+
+Click an order to open its explanation:
+
+\shotf[0.9\linewidth]{why_late}{Why order SO-261126-051 is 27.5 hours late.}{why_late}
+
+PlanWise looks for the causes a planner can act on and states them in plain sentences:
+
+\begin{itemize}
+  \item \textbf{Longest wait} at a stage between material ready and start, and why: the machine was busy with
+        other runs (named), part of the wait fell outside open shifts, or shifts of that machine stayed closed
+        during the wait --- in which case opening one or moving the run to another machine may cut the delay.
+  \item \textbf{Bottleneck}: how much of its shift time the stage used while the order was open (``Heat
+        treatment uses 100\% of its shift time \dots\ the bottleneck this order competes for'').
+  \item \textbf{Competition}: runs of orders due later that went first at the last stage.
+  \item \textbf{Physics}: the order was released so late that its supply chain alone takes longer than the time
+        to its due date.
+\end{itemize}
+
+The table \ui{Supply chain of the lot that finished last} lists, stage by stage, the run, machine, start and
+end, and how long the material waited before it (long waits in red). \ui{Edit by hand} opens the editor
+directly from here.
+
+\begin{note}
+In the five-stage model, semi-finished stock is not pegged to orders: each step takes the latest run of the
+needed item that finished before the next step started. The explanation points at where to act; it is not a
+constraint the solver used.
+\end{note}
+
+\section{Machine load}
+
+\ui{Machine load} shows, per machine and day, the share of rostered time the machine is busy (setup and
+maintenance included). Orange cells ($\geq$ 90\%) are nearly full --- bottlenecks. A dash means the machine
+does not work that day.
+
+\shotf[0.9\linewidth]{machine_load}{Machine load by day: both furnaces are full for most of the period.}{machine_load}
+
+\section{Deliveries and closing stock}
+
+Further down the tab, two tables complete the picture:
+
+\shotf[0.85\linewidth]{deliveries}{Deliveries: every order with its delivery time and slack or lateness.}{deliveries}
+
+\ui{Deliveries} lists every order with product, quantity, delivery time, due time and its slack (positive) or
+lateness. Filter \ui{All} or \ui{Late}, sort \ui{Most late first} or \ui{By due date}; click an order to see
+its runs on the Gantt chart and the explanation above.
+
+\shotf[0.85\linewidth]{closing_stock}{Closing finished-goods stock against the safety level.}{closing_stock}
+
+\ui{Closing finished-goods stock} compares opening and closing stock per product with its safety level. Safety
+stock is measured at every end-of-day checkpoint; this table shows the final one, and the tick on each bar
+marks the safety level.

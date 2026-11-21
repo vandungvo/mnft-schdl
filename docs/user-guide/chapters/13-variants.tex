@@ -1,0 +1,51 @@
+\chapter{What-if variants and versions of a period}\label{ch:variants}
+
+A period can have several \term{versions}: the main period, what-if variants and reschedules. They share the
+period's dates and set-up but have their own inputs, options and decisions.
+
+\section{What-if variants}
+
+A variant is a copy of a version's inputs, used to answer ``what if\dots'' without touching the main plan:
+what if we accept this rush order, open on Sunday, keep furnace~2 down for a day, or use another policy?
+
+\begin{steps}[Create and use a variant]
+\begin{enumerate}
+  \item On the period page, open \ui{More} $\rightarrow$ \ui{Create a what-if variant\dots}.
+  \item Give it a name (``Rush order from the export customer'', ``Open Sundays'') and click \ui{Create
+        variant}. The variant opens on its Prepare step.
+  \item Change what you want to test (add a period-only order, add a calendar exception, pick another policy),
+        then \ui{Save \& check}.
+  \item Generate options (\ui{Quick} is usually enough for a what-if) and compare them with the main period's
+        options.
+  \item If the variant is the better plan, commit one of its options. Whichever version is committed becomes
+        the plan.
+\end{enumerate}
+\end{steps}
+
+\shotf[0.5\linewidth]{variant_dialog}{Creating a what-if variant.}{variant_dialog}
+
+\section{The family of versions}\label{sec:family}
+
+All versions of a period appear as chips under the period header: \ui{Main}, then each reschedule (with a
+circular-arrow icon) and each variant (with a branch icon). A tick marks the committed version, and a dot shows
+each version's status. Click a chip to switch.
+
+\shot{reschedule_header}{A reschedule after the CNC\_1 breakdown: its chip is selected, and ``Differs from its parent'' lists the 52 input changes.}{reschedule_header}
+
+A variant or reschedule shows \ui{Differs from its parent: \textit{n} changes}; expand it to see every
+difference in the inputs (orders removed because they were delivered, stock allocations, new exceptions\dots).
+A reschedule also shows ``fixed before'' its cut-off in the header, and its machine calendar greys out the
+days before the cut-off.
+
+\begin{itemize}
+  \item A version can be renamed or deleted from its \ui{More} menu (\ui{Delete this version\dots}); deleting a
+        version also deletes its own variants and reschedules.
+  \item The Today page lists the other versions under the period card, and the Planning periods list shows
+        them under their main period.
+  \item When the period is closed, all its versions become read-only together.
+\end{itemize}
+
+\begin{note}
+Which version counts when the period is closed? The latest committed reschedule, if any; otherwise the
+committed version (main period or variant). Section~\ref{sec:close} explains what closing does.
+\end{note}

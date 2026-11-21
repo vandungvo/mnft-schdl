@@ -1,0 +1,9 @@
+# LaTeX build artefacts (the PDF itself is kept)
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.xdv
+*.synctex.gz

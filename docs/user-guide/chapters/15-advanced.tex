@@ -1,0 +1,106 @@
+\chapter{Advanced: runs, scenarios and aggregate planning}\label{ch:advanced}
+
+The \ui{Advanced} group of the sidebar is for engineers and analysts: it shows every solver run, lets you run a
+single algorithm on any data, and holds the research datasets used to compare algorithms. Day-to-day planning
+does not need it.
+
+\section{Runs}\label{sec:runs}
+
+\shot{runs}{The Runs page: every solver run with status, scenario, algorithm, result and solve time.}{runs}
+
+The list shows every run of every period and scenario: status, the data it ran on (with its short ID), the
+algorithm and seed and budget, the solver result, the data revision, the solve time and when it was created.
+Search by name, ID or input hash, and filter by status, algorithm or scenario. \ui{New single run} starts one
+run (Section~\ref{sec:single-run}); \ui{Scenarios} opens the JSON scenarios. The list shows the most recent runs.
+
+Click a run to open its details:
+
+\shot{run_detail}{Details of the hybrid run: progress, objective, key figures and a validated Gantt chart.}{run_detail}
+
+\begin{itemize}
+  \item \textbf{Run progress}: queued, solver started (and how long it waited for a slot), finished and
+        validated (and how long it solved). A running run refreshes every 1.5 seconds; it is safe to leave
+        the page.
+  \item \textbf{Figures}: objective score, required-lot completion, schedule end (including build-ahead),
+        weighted tardiness, setup time, idle time, safety-stock shortfall and productive utilisation.
+  \item \textbf{Gantt by machine}, with the number of operations that passed the independent validator.
+  \item \textbf{Reproducibility}: the data source (period, scenario, aggregate plan or one-off JSON), the snapshot
+        revision, the input hash, the solver status and time origin, and technical details.
+  \item \ui{Open in scenario} goes to the period or scenario that owns the run; \ui{Retry with the same data}
+        creates a new run from the same snapshot (for example after a failure). Hand edits cannot be retried.
+\end{itemize}
+
+\begin{note}
+A schedule is only stored after it passes the independent validator, which checks every machine, shift,
+setup, mold cycle, stock level and delivery again, regardless of which algorithm built the schedule.
+\end{note}
+
+\section{Creating a single run}\label{sec:single-run}
+
+\shot{run_new}{Create a run: data source, solver settings and a summary.}{run_new}
+
+\begin{enumerate}
+  \item \textbf{Choose a data source}: \ui{Master data} (a factory dataset --- a period or a scenario; the run stores
+        the selected revision), \ui{Aggregate plan} (the snapshot locked in a plan) or \ui{JSON file} (a
+        one-off input up to 5~MB, not saved as master data).
+  \item \textbf{Configure the solver}: algorithm, budget in seconds (up to the backend's limit) and random
+        seed. The same input and seed make the run reproducible.
+  \item Check the summary and click \ui{Start scheduling}.
+\end{enumerate}
+
+To generate several options to compare and commit, use the Generate dialog of a period or scenario instead.
+
+\section{JSON scenarios}
+
+\shot{scenarios}{JSON scenarios: whole datasets imported from files.}{scenarios}
+
+A JSON scenario is a complete dataset (schema~4 or schema~5) imported from a file, used for experiments and
+algorithm comparisons --- for example the benchmark instances in the project's \code{dataset/} folder. Import by
+clicking \ui{Import JSON} or dropping a file on the page; every relation is validated before anything is
+written. For day-to-day production scheduling use planning periods, which only need orders.
+
+\shot{scenario}{A four-stage scenario: overview with hints from the interface's own analysis.}{scenario}
+
+A scenario page has the same decision tabs as a period (\ui{Options}, \ui{Schedule \& compare}, \ui{Commit},
+\ui{Analysis}, \ui{History}) plus \ui{Overview} and \ui{Data}:
+
+\begin{itemize}
+  \item \textbf{Overview} shows the scheduling state and a readiness check with hints (a mold near its cycle limit,
+        products starting below safety stock, a stage needing a large share of shift time). Hints do not block
+        scheduling.
+  \item \textbf{Data} shows products and routes, machines, molds and calendar, orders and lots, and the settings and
+        objective. Four-stage scenarios can be edited field by field (each change creates a new revision);
+        five-stage scenarios are edited by replacing the JSON file (\ui{More} $\rightarrow$ \ui{Replace from
+        JSON file\dots}).
+  \item \textbf{More} also offers downloading the JSON of the current revision, a single run, and deleting the
+        scenario. Runs and snapshots already created are kept.
+\end{itemize}
+
+Scenarios that belong to a planning period (they are created automatically when a period is saved) are not
+listed here; a link to one redirects to its period.
+
+\section{Aggregate planning (four-stage model)}
+
+\shot{planning}{Aggregate planning: plans created and the form to create a new plan.}{planning}
+
+Aggregate planning balances demand against capacity per day or per week before detailed scheduling --- the first
+tier of the two-tier pipeline, available for four-stage scenarios. To create a plan:
+
+\begin{enumerate}
+  \item choose the dataset (the plan is locked to its current revision);
+  \item choose the start and end date (up to the data's horizon) and the bucket size (\ui{Daily} or
+        \ui{Weekly}; demand is grouped by due date);
+  \item click \ui{Create plan}. The result is an immutable snapshot, ready for detailed scheduling.
+\end{enumerate}
+
+\shot{planning_detail}{An aggregate plan: feasibility, demand and inventory by product, capacity load by stage.}{planning_detail}
+
+The plan page states whether the plan is \ui{Feasible at aggregate capacity} or \ui{Needs adjustment before
+release}, and shows demand and inventory per product (demand, opening stock, quantity to produce, lot output,
+projected closing stock, safety stock), the capacity load of each stage (required versus available time), and
+demand versus planned output over time. \ui{Detailed scheduling} starts runs on the plan's snapshot.
+
+\begin{note}
+Aggregate capacity excludes sequence-dependent setups and mold maintenance; the validated detailed schedule
+remains the execution authority.
+\end{note}

@@ -1,0 +1,113 @@
+\chapter{Comparing options and ranking}\label{ch:options}
+
+The \ui{Options} tab shows the schedules worth considering, ranked under the period's policy. Its job is to
+make the decision quick: most of the time, one of the first two cards is the schedule you will commit.
+
+\shot{options}{The Options tab of ``Weeks 48-49'' with two recommended options.}{options}
+
+\begin{callouts}
+  \item[1] \textbf{What matters most this period?} The ranking policy: \ui{Service first}, \ui{Balanced} or
+           \ui{Cost first} (Section~\ref{sec:ranking}).
+  \item[2] \textbf{How this policy scores schedules}: opens the exact scoring rule.
+  \item[3] \textbf{Recommended option cards}, ranked \#1, \#2, \dots\ under the selected policy.
+  \item[4] \textbf{What really differs}: one sentence on where the recommended options are practically equal
+           and where they really differ --- often the fastest way to decide.
+  \item[5] \textbf{Viewing bar}: the option currently selected, its key figures, and \ui{Commit option}. It
+           stays at the bottom of the screen on every tab.
+\end{callouts}
+
+\section{Which schedules are recommended}\label{sec:recommended}
+
+Every schedule is placed on three axes:
+
+\begin{enumerate}
+  \item \textbf{priority-weighted lateness} (minutes late $\times$ priority, summed over orders);
+  \item \textbf{safety-stock shortfall} (units below safety, summed over end-of-day checkpoints);
+  \item \textbf{operating cost} (the weighted sum of all other policy terms: shifts, setups, idle time,
+        maintenance, surplus stock, \dots).
+\end{enumerate}
+
+A schedule is \emph{dominated} when another schedule is at least as good on all three axes and better on one.
+PlanWise recommends only the schedules that are \textbf{not} dominated: every other schedule is beaten by a
+recommended one on all three axes. Dominated schedules are not hidden --- they appear in the Analysis tab and
+in the \ui{Compare with} list --- but there is no reason to commit one.
+
+Recommended options are named after what they are best at:
+
+\begin{center}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{4.2cm}X}
+\toprule
+\rowcolor{white}Name & Meaning \\
+\midrule
+Best on every axis & Only one schedule is recommended: it is at least as good as every other on all axes. \\
+Protects priority orders & Lowest priority-weighted lateness. It may still have more raw hours late, but on low-priority orders. \\
+Least shortfall & Lowest safety-stock shortfall. \\
+Lowest cost & Lowest operating cost. \\
+Middle ground & Recommended without being best on any single axis --- a compromise. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Names combine when an option wins several axes (``Least shortfall · Lowest cost''). Each card shows who built
+it (\ui{Built by: Hybrid: search, then CP-SAT}, \ui{Manual edit}, \ui{Optimised around an edit}), the four
+headline figures (green = best among the recommended options), a one-line comparison with \#1, and badges such
+as \ui{Committed} and \ui{Viewing}. Click a card for a \ui{Quick look} at the schedule, or to make it the
+viewed option.
+
+If you edited schedules by hand and an edit is not recommended, it is listed under \ui{Your versions not
+recommended} with the reason, so your work never disappears.
+
+\section{Ranking policies}\label{sec:ranking}
+
+The recommended options are ordered by a score. The switch at the top picks how the weighted terms of the
+factory policy are combined:
+
+\begin{description}[style=nextline, leftmargin=1.2em, font=\bfseries\color{brand}]
+  \item[Service first] (default) Lateness and safety-stock shortfall are compared first (tier~1); operating
+        cost only breaks ties (tier~2). A score reads ``tier~1 · tier~2''.
+  \item[Balanced] Every weighted term is added into one score: trades a little safety stock or lateness for
+        lower cost when the weights allow it.
+  \item[Cost first] Operating cost is compared first; lateness and shortfall only break ties. Use it in slack
+        weeks when orders can slip.
+\end{description}
+
+Switching re-ranks the same schedules instantly; nothing is recomputed. \ui{How this policy scores
+schedules} shows the formula with the actual weights:
+
+\shotf[0.82\linewidth]{options_scoring}{The scoring rule of ``Service first'' with the weights of the factory policy.}{options_scoring}
+
+\begin{note}
+The weights come from the factory's policy (Section~\ref{sec:policies}). This switch only changes the priority
+order of the terms, not the weights. To change the weights, edit the policy on the Factory page or pick
+another policy under Prepare.
+\end{note}
+
+\section{The trade-off chart}
+
+Below the cards, a scatter plot places every schedule by operating cost (horizontal) and safety-stock
+shortfall (vertical). Closer to the bottom-left corner is better. Named green dots are recommended options,
+grey dots are other schedules, and a dashed line joins the recommended options.
+
+\shotf[0.8\linewidth]{options_tradeoff}{Trade-off between operating cost and safety-stock shortfall.}{options_tradeoff}
+
+\section{Key figures used everywhere}\label{sec:kpis}
+
+The same figures appear on the cards, in the Schedule \& compare tiles, in the viewing bar and in exports:
+
+\begin{longtable}{>{\bfseries}p{4.1cm}p{10.4cm}}
+\toprule
+\rowcolor{white}Figure & Definition \\
+\midrule
+\endhead
+On time & Orders delivered by their due date, out of the orders of the period (for example 40/44). \\
+Total lateness & Hours late summed over all late orders. \\
+Priority-weighted lateness & Minutes late $\times$ order priority, summed (the policy's ``weighted tardiness''). \\
+Safety-stock shortfall & Units below safety stock, summed over the end-of-day checkpoints. \\
+Operating cost & Weighted sum of the non-service terms of the policy: non-productive time, setup, mold maintenance, makespan, surplus stock, pull-ahead, semi-finished left at the end. A relative figure for comparing schedules, not money. \\
+Machine shifts open & Number of machine-shifts the schedule uses. Fewer shifts mean fewer people and less energy. \\
+Idle time & Available minutes left unused inside opened shifts. \\
+Setup & Changeover minutes on machines. \\
+Mold maintenance & Mold service minutes. \\
+Last required lot done & When the last lot needed by an order of the period leaves test and packing. \\
+\bottomrule
+\end{longtable}

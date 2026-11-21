@@ -1,0 +1,63 @@
+\chapter{Troubleshooting and FAQ}\label{ch:faq}
+
+\newcommand{\faq}[1]{\needspace{4\baselineskip}\subsection*{\faQuestionCircle[regular]\ \ #1}}
+
+\faq{``Generate options'' is disabled}
+The period has input errors. Open \ui{Prepare}: the input check lists each error, and a red dot marks the
+section that contains it (orders, opening stock or policy). Fix it and click \ui{Save \& check}. Typical causes
+are opening stock above a store's capacity, a pull-ahead quantity beyond the after-period demand, or a stage whose
+load exceeds its capacity (add calendar time, remove orders, or accept lateness by moving due dates).
+
+\faq{All options have several late orders}
+Look at the stage load: a stage above about 85\% over the period (heat treatment in the example) cannot deliver
+every order on time. Use the order view (Section~\ref{sec:why-late}) to see where late orders wait. Options:
+add capacity for the period (remove a maintenance exception, work a rest day via the calendar), accept pull-ahead
+from the previous period, negotiate due dates, or try a longer search (\ui{Thorough}).
+
+\faq{``No improvement found, EDD schedule kept''}
+A CP-SAT method ran out of time before improving its starting schedule. Generate again with \ui{Balanced} or
+\ui{Thorough}, or use the Hybrid method, which brings late orders down with a fast search before CP-SAT starts.
+
+\faq{The options shown were generated from older inputs}
+You saved changes under Prepare after the options were generated. They are kept for reference but marked as
+based on the old inputs. Click \ui{Generate options for the new inputs}.
+
+\faq{``The order book changed since this period took its orders''}
+Orders were added, changed or cancelled in the book after the period was created. Click \ui{Update the period}
+under Prepare to take the changes in (Section~\ref{sec:sync}).
+
+\faq{A new period takes orders that were already delivered}
+The previous period was committed but not closed, so its delivered orders are still open in the book. Delete the
+new period, open the previous one, go to Execute and use \ui{Close \& start the next period}.
+
+\faq{``The period was changed elsewhere --- saving will conflict''}
+Another user (or another tab) saved the same period while you were editing. Discard your changes and redo them
+on the new version. PlanWise never overwrites somebody else's save silently.
+
+\faq{The edit cannot be saved}
+The independent validator found a problem (warehouse cap, missing semi-finished stock, run beyond the period\dots).
+The message names it; click \ui{Show} to select the run concerned, then undo or move the upstream run earlier
+(Section~\ref{sec:edit-runs}).
+
+\faq{``Every run is kept: unlock some runs or shrink the frozen zone''}
+\ui{Optimise the rest} has nothing it may change. Untick \ui{Keep the runs I edited}, unlock runs, or choose a
+smaller frozen zone.
+
+\faq{I cannot edit or commit anything}
+Either the period is closed (closed periods are read-only), or you are signed in with a reader key. Ask for an
+operator key if you need to make changes.
+
+\faq{``API unreachable'' in the sidebar}
+The web page cannot reach the backend. Check that the backend is running and that the address configured for
+the frontend is correct, then reload the page. Nothing you saved is lost; unsaved drafts of the factory set-up
+are kept in the browser.
+
+\faq{Imported dates are wrong}
+Use day-first dates (\code{dd/mm/yyyy}) or ISO dates (\code{yyyy-mm-dd}). American month-first dates such as
+12/03/2026 are read as 12 March. Check the \ui{Due} column of the import preview before writing.
+
+\faq{Why are the figures different each time I generate?}
+Randomised algorithms (simulated annealing, genetic algorithm, CP-SAT searches) depend on the seed and on how
+much the computer can do within the time budget, so two runs can give different, equally valid schedules. The
+dispatching rules are deterministic. Every run stores its data snapshot and seed, so a committed schedule can
+always be reproduced exactly.

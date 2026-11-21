@@ -1,0 +1,101 @@
+\chapter{Generating schedule options}\label{ch:generate}
+
+Once the inputs are valid, PlanWise can generate schedule options. Each algorithm yields one feasible
+schedule from the same data; the system then keeps the schedules that no other schedule beats on every axis,
+for you to compare (Chapter~\ref{ch:options}).
+
+\shot{options_empty}{A period without options yet (here a what-if variant).}{options_empty}
+
+\section{The Generate dialog}
+
+Click \ui{Generate the first options} (or \ui{Generate options} / \ui{Generate more} in the period header).
+You choose \emph{how long to wait}, not which solver:
+
+\shotf[0.62\linewidth]{generate_dialog}{Choosing the search effort.}{generate_dialog}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{2.2cm}p{3.6cm}X}
+\toprule
+\rowcolor{white}Preset & Runs & When to use \\
+\midrule
+Quick & EDD rule + Hybrid, 60~s & About a minute --- enough to see where things stand and how many orders are late. Good for a first look or a what-if variant. \\
+Balanced & EDD rule + Hybrid, 180~s & Recommended for a two-week period; about three minutes. \\
+Thorough & EDD rule + Hybrid, 600~s & Cuts operating cost further when there is time; about ten minutes. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The earliest-due-date rule (EDD) finishes in well under a second and is always included as a yardstick: an
+optimised schedule must beat it to be worth the wait. The \term{Hybrid} method does the real work within the
+budget, in three steps: dispatching rules give a fallback schedule; simulated annealing runs several seeds in
+parallel to bring late orders down; then CP-SAT starts from the best schedule found to cut operating cost.
+Each step replaces the previous result only when it is better, and it uses every processor core.
+
+The footer shows how many runs will be queued and an upper bound of the waiting time. \ui{Generate
+\textit{n} options} queues them.
+
+\section{Customising algorithms, seeds and budget}
+
+\ui{Customise algorithms, seeds and budget\dots} reveals every algorithm, grouped by family:
+
+\shotf[0.6\linewidth]{generate_custom}{Custom selection of algorithms.}{generate_custom}
+
+\begin{longtable}{>{\bfseries}p{3.5cm}p{2.4cm}p{8.6cm}}
+\toprule
+\rowcolor{white}Algorithm & Family & How it works \\
+\midrule
+\endhead
+FIFO & Dispatching rule & First in, first out: at each step pick the operation that can start earliest; ties follow list order. \\
+EDD & Dispatching rule & Earliest due date: as FIFO, ties favour the order due soonest. \\
+SPT & Dispatching rule & Shortest processing time: as FIFO, ties favour the shortest run. \\
+Simulated Annealing & Metaheuristic & Searches the priority order and machine choice, building schedules with the same decoder as the rules; accepts worse moves under a cooling temperature to escape local optima. \\
+Genetic Algorithm & Metaheuristic & A population of solutions with tournament selection, crossover, mutation and elitism; schedules built with the same decoder. \\
+CP-SAT & Constraint programming & One monolithic constraint model without hints: chooses machines, shifts, sequence and build-ahead options on its own. Needs a long budget on a two-week period. \\
+CP-SAT + EDD hint & Constraint programming & CP-SAT warm-started from the EDD schedule; if it cannot improve, the EDD schedule is kept. \\
+CP-LNS & Constraint programming & Large neighbourhood search: starts from the best rule schedule; each round reopens a time window, a few machines or one stage for CP-SAT to re-sequence. \\
+Hybrid: search, then CP-SAT & Constraint programming & The three-step method described above; recommended for two-week periods. \\
+Rolling-horizon CP-SAT & Constraint programming & Splits the horizon into consecutive windows, solves each with CP-SAT and freezes what is already scheduled. \\
+\bottomrule
+\end{longtable}
+
+\begin{description}[style=nextline, leftmargin=1.2em, font=\bfseries\color{brand}]
+  \item[Seeds for randomised algorithms] 1--3. The metaheuristics and CP-SAT searches are randomised; running
+        two or three seeds gives a better chance and shows how stable the result is. Rules run once.
+  \item[Budget per run (seconds)] The time limit of each non-rule run, up to the maximum published by the
+        backend (900~s by default). A warning appears when CP-SAT gets less than two minutes: that is usually
+        too short to improve a two-week schedule, so it will keep the EDD schedule.
+\end{description}
+
+\begin{note}
+The dialog only offers algorithms the backend supports for the period's model. Hybrid and rolling-horizon
+CP-SAT exist for the five-stage model only; for four-stage JSON scenarios (Advanced) the presets use rules,
+simulated annealing, a genetic algorithm, CP-SAT with hint and CP-LNS instead.
+\end{note}
+
+\section{While the solver works}
+
+Runs are queued and solved in the background on the server. You can keep working, open other pages or
+close the browser. The period status becomes \ui{Solving}, the header shows ``Solving \textit{n} options
+(Hybrid). The page updates when they finish.'', and the Options tab shows a spinner. When a run finishes, its
+schedule is first checked by an \textbf{independent validator}; only valid schedules become options. The
+page then updates on its own.
+
+Each run ends with a solver status:
+
+\begin{center}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{5.6cm}X}
+\toprule
+\rowcolor{white}Status & Meaning \\
+\midrule
+Feasible schedule & A valid schedule; not proven optimal (normal within a time limit). \\
+Optimal & CP-SAT proved no better schedule exists for this model. \\
+No improvement found, EDD schedule kept & A CP-SAT method ran out of time before improving the starting schedule. \\
+No feasible schedule & The algorithm could not place everything; check the inputs (capacity, calendar). \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{tip}
+If the analysis says ``The optimiser found nothing better than the dispatching rules'', it offers
+\ui{Generate with Thorough}: the search and CP-SAT then get about ten minutes.
+\end{tip}

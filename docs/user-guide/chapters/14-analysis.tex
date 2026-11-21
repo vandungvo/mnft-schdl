@@ -1,0 +1,75 @@
+\chapter{Analysis and history}\label{ch:analysis}
+
+The \ui{Analysis} and \ui{History} tabs, on the right of the step tabs, are for looking back: how the
+scheduling of this period went, how the algorithms performed, and what changed in the data. They are
+especially useful to explain a decision afterwards and to judge whether the optimiser is worth its time.
+
+\section{How this period's scheduling went}
+
+\shotf[0.95\linewidth]{analysis_summary}{Three questions on whether the tool helps.}{analysis_summary}
+
+\begin{description}[style=nextline, leftmargin=1.2em, font=\bfseries\color{brand}]
+  \item[First generation to commit] Minutes between the first \ui{Generate options} and the first commit: is
+        the decision quick?
+  \item[Commits] How many times the period was committed (``re-committed'' when more than once).
+  \item[Hand edits / re-optimisations] How many manual edits and ``optimise the rest'' runs were made: does
+        the planner have to edit a lot?
+  \item[Optimiser beat the rules?] Whether an optimised schedule beat the dispatching rules under the policy:
+        is the optimiser's time worth it?
+\end{description}
+
+\section{Run matrix}
+
+\shotf[0.85\linewidth]{analysis_matrix}{Run matrix: one column per ``Generate options'' click, one row per algorithm.}{analysis_matrix}
+
+Each column is one batch (one click on \ui{Generate options}, with its time and input revision); each row is an
+algorithm. A cell's colour gives the run status (succeeded, failed, solving, queued, cancelled); a star marks
+the recommended schedule and a ring the committed one. Click a cell to open that run.
+
+\section{Every schedule ranked under the selected policy}
+
+\shotf[0.95\linewidth]{analysis_ranking}{All schedules of the period, including the dominated EDD schedule.}{analysis_ranking}
+
+Unlike the Options tab, this table lists \emph{every} schedule, with its rank, score (tier~1 · tier~2), late
+orders, shortfall, operating cost, machine shifts, idle time, last lot done, run time and solver status. Each
+row says whether it is recommended or ``dominated by'' which recommended option. Click a row for a quick look.
+
+\section{Score by component}
+
+\shotf[0.95\linewidth]{analysis_components}{Each objective term's contribution to the score.}{analysis_components}
+
+Each cell is a term's contribution = weight $\times$ value (the raw value is shown small below). The cells of a
+tier add up to that tier's score, so you can see exactly why one schedule ranks above another --- in the
+example, EDD loses almost entirely on weighted tardiness.
+
+\section{Algorithm speed and quality}
+
+The summary tiles give the fastest algorithm, which algorithm found the best schedule and after how long, the
+number of failed runs, and the median budget.
+
+\shotf[0.85\linewidth]{analysis_speed}{Best score found over time (log scales).}{analysis_speed}
+
+\ui{Best score found over time} draws, for each algorithm's best run, the best score found up to each moment of
+its run (a step line that only goes down) against run time on a log scale; the dashed line is the budget.
+Dispatching rules build once, so they have no line. A line that is still dropping at the budget suggests a
+longer budget (\ui{Thorough}) would help; a line that flattens early suggests it would not.
+
+\shotf[0.95\linewidth]{analysis_quality}{Time and quality by algorithm.}{analysis_quality}
+
+\ui{Time and quality by algorithm} lists schedules produced per runs, time per run, when the best was found,
+best and median score across seeds, late orders, and the \textbf{optimality gap}: the distance between the
+schedule's score and the bound CP-SAT proved (0\% = optimal). The gap only appears when CP-SAT proved a bound
+for the whole problem; otherwise it shows a dash or ``weak bound''.
+
+\section{History}
+
+\shot{history}{The History tab: change log and runs by data version.}{history}
+
+\begin{description}[style=nextline, leftmargin=1.2em, font=\bfseries\color{brand}]
+  \item[Change log] Every valid save of the period's data creates a new revision; the log records what changed,
+        when and by whom (dataset, products, semi-finished, machines, orders --- filter by kind), and every
+        committed schedule.
+  \item[Runs by data version] Every run keeps its own copy of the data it used. The panel groups runs by data
+        revision (\ui{current} or older) and links to their options, so you can always find the schedules made
+        on earlier inputs.
+\end{description}

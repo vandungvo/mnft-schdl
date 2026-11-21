@@ -1,0 +1,106 @@
+\chapter{Committing and executing}\label{ch:execute}
+
+\section{Committing a schedule}\label{sec:commit}
+
+When you are satisfied with an option, commit it. Committing says ``this is the plan''; work orders are
+issued from the committed schedule, and its projected closing stock becomes the next period's opening stock.
+Open the \ui{Commit} tab, or click \ui{Commit option} in the viewing bar.
+
+\shot{commit}{The Commit tab: the option being committed, the mandatory reason and the decision log.}{commit}
+
+\begin{steps}[Commit an option]
+\begin{enumerate}
+  \item Check \ui{You are committing}: the option's name and builder, on-time count, lateness, shortfall and
+        the ranking policy. \ui{Change option} goes back to pick another one.
+  \item Type the \ui{Reason} (required). It should say why this option and not another, for example ``accept
+        3 extra shifts to keep enough F silver safety stock for long-dated orders''.
+  \item Click \ui{Commit this option}. The status becomes \ui{Committed} and the next-step banner points to
+        Execute.
+\end{enumerate}
+\end{steps}
+
+The \textbf{decision log} below is stored on the server and is append-only: entries are never edited or
+deleted. Each commit keeps the run, the data snapshot, the policy, the figures at that moment (late orders,
+shortfall, machine shifts), the reason and who committed. You may commit another option until the period is
+closed (\ui{Commit again}); the new row supersedes the previous one, and both remain visible.
+
+\begin{note}
+A decision must be explainable: the button refuses an empty reason (``Enter a reason before committing ---
+the decision must be explainable''). If the server cannot be reached, the reason stays in the box so you can
+try again.
+\end{note}
+
+\section{Work orders}\label{sec:work-orders}
+
+The \ui{Execute} tab turns the committed schedule into work orders: what each machine does and when.
+
+\shot{work_orders}{Work orders of Monday 23 November for all machines.}{work_orders}
+
+\begin{itemize}
+  \item Filter by \ui{Day} (or \ui{Whole period}) and by \ui{Machine} (or \ui{All machines}); the number of runs
+        is shown.
+  \item Each row gives the day and shift, the machine and stage, the run time, the run code and item, the
+        quantity, and the preparation (when the changeover starts and how long it takes, the mold used, and a
+        \ui{mold service} badge when maintenance precedes the run).
+  \item \ui{CSV} exports the selection for Excel (with day, shift, machine, prep start, start, end, run, item,
+        quantity, prep minutes and mold).
+  \item \ui{Print} opens a printable sheet for the shift supervisors with a \ui{Done} column to tick and
+        \ui{Prepared by} / \ui{Supervisor} signature lines.
+\end{itemize}
+
+If the period's inputs were changed after the commit, a banner warns that the work orders still follow the
+committed schedule: if the change is real, generate new options and commit again.
+
+\section{Incidents: replanning the rest of the period}\label{sec:incident}
+
+When something goes wrong --- a machine breaks down, a rush order arrives, material is late --- you replan only
+what has not happened yet. The \ui{An incident? Replan the rest} panel sits below the work orders:
+
+\shot{incident_close}{Left: replanning after an incident. Right: finishing the period.}{incident_close}
+
+\begin{steps}[Replan after a breakdown]
+\begin{enumerate}
+  \item Set the \ui{Cut-off}: the moment from which the plan changes (inside the period).
+  \item Optionally choose the \ui{Machine down}, when it is \ui{Expected back} and \ui{What happened}. Leave
+        \ui{None --- just replan} to replan without a breakdown (for example to add a rush order).
+  \item Read the hint, which describes the state at the cut-off, for example ``By 30/11 08:00: 227/297 runs
+        started, 21 orders delivered; still running on HT\_1 (until 16:00), HT\_2 (until 16:00)''.
+  \item Click \ui{Replan from the cut-off}.
+\end{enumerate}
+\end{steps}
+
+PlanWise creates a \term{reschedule} version of the period and opens its Prepare step:
+
+\begin{itemize}
+  \item what ran before the cut-off stays as it was (``fixed before'' the cut-off);
+  \item runs in progress at the cut-off count as done, and their machine stays busy until they end;
+  \item stock, molds and delivered orders are taken as of the cut-off; delivered orders leave the reschedule;
+  \item the breakdown is entered as a calendar exception of the reschedule;
+  \item pull-ahead is switched off (turn it back on under Policy if needed), so nothing is made ahead twice.
+\end{itemize}
+
+You can still adjust the reschedule (add a rush order, another stop), then generate options and commit as
+usual. Section~\ref{sec:family} shows how reschedules appear among the versions of a period.
+
+\section{Finishing the period}\label{sec:close}
+
+The \ui{Finish the period} panel (right in Figure~\ref{fig:incident_close}) shows the projected closing stock
+of each product against its safety level and how many orders the committed schedule delivers.
+
+\begin{description}[style=nextline, leftmargin=1.2em, font=\bfseries\color{brand}]
+  \item[Close only] Closes the period.
+  \item[Close \& start the next period] Closes the period and creates the next one in one step, starting the
+        day after with the projected closing stock as its opening stock. This is the normal end of a cycle.
+\end{description}
+
+Closing makes the period --- with its variants and reschedules --- read-only. The schedule that was executed
+(the latest committed reschedule if there is one, otherwise the committed schedule of the period or variant)
+is treated as what happened: the orders it delivered, including those delivered before each cut-off, are
+marked \ui{Delivered} in the order book. Undelivered orders stay open and are picked up by the next period.
+
+\shot{closed_period}{A closed period remains available for reference: its work orders, schedule, analysis and history.}{closed_period}
+
+\begin{warning}
+Close each period when it ends. A period that ended but is still open is flagged \ui{Overdue to close}, and the
+orders it delivered remain open in the book, so a new period would take them again.
+\end{warning}

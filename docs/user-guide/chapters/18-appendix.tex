@@ -1,0 +1,83 @@
+\chapter{Order import columns}\label{app:import}
+
+Headers are compared after removing accents, case and punctuation, so ``Mã đơn hàng'', ``MA DON HANG'' and
+``ma-don-hang'' are the same header. Columns may be in any order; unknown columns are ignored.
+
+\begin{longtable}{>{\bfseries}p{2.6cm}p{0.9cm}p{10.9cm}}
+\toprule
+\rowcolor{white}Field & Req. & Accepted headers \\
+\midrule
+\endhead
+Order code & yes & order, order id, order no, order code, order number, po, so po, id, code; mã đơn, mã đơn hàng, số đơn, số đơn hàng, đơn hàng, mã \\
+Product & yes & product, product code, sku, item, item code; sản phẩm, mã sản phẩm, mã sp, sp, mã hàng, mặt hàng \\
+Quantity & yes & quantity, qty, amount; số lượng, sl, lượng \\
+Due date & yes & due, due date, deadline, delivery date, ship date; hạn giao, ngày giao, hạn, ngày giao hàng, thời hạn, ngày \\
+Due time & & time, due time, delivery time; giờ giao, giờ \\
+Priority & & priority; ưu tiên, độ ưu tiên, mức ưu tiên \\
+Pickup & & pickup, delivery; cách giao, kiểu giao, giao \\
+Customer & & customer, client; khách hàng, khách, tên khách \\
+Note & & note, notes, comment, remark; ghi chú \\
+\bottomrule
+\end{longtable}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{2.6cm}X}
+\toprule
+\rowcolor{white}Value & Accepted forms \\
+\midrule
+Due date & \code{dd/mm/yyyy}, \code{dd-mm-yy}, \code{dd.mm.yyyy}, \code{yyyy-mm-dd}, optionally followed by a time (\code{16:00}, \code{16h}); Excel date cells. \\
+Due time & \code{HH:MM}, \code{HHh}, \code{HHhMM}; Excel time cells. Missing: the factory's default due time. \\
+Quantity & Whole numbers; \code{1.200} and \code{1,200} mean 1200. Decimals are rejected. \\
+Priority & 1--9, or Low/Thấp = 1, Normal/Medium/Thường/Trung bình = 2, High/Cao = 3, Urgent/Rush/Gấp/Khẩn = 4. \\
+Pickup & at due, on due, đúng hẹn, đúng giờ, theo hẹn $\rightarrow$ at due time; when ready, ASAP, khi xong, sớm, giao ngay $\rightarrow$ when ready. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\chapter{Checklist for each planning period}\label{app:checklist}
+
+\begin{steps}[Every two weeks]
+\begin{enumerate}[label=\textbf{\arabic*.}]
+  \item \textbf{Order book}: import the latest orders (\ui{Add \& update}); check the warnings about overdue orders
+        and orders due within a week without a period.
+  \item \textbf{Close the previous period}: Execute $\rightarrow$ \ui{Close \& start the next period}. The new period
+        opens on Prepare with projected opening stock.
+  \item \textbf{Prepare}: take in order-book changes (\ui{Update the period}); count the finished goods and work in
+        progress and correct what differs; add one-off machine stops; check the policy and pull-ahead;
+        \ui{Save \& check} until the inputs are valid.
+  \item \textbf{Generate}: \ui{Balanced} (about three minutes).
+  \item \textbf{Options}: read ``What really differs''; check the ranking under \ui{Service first} and, if
+        relevant, \ui{Cost first}.
+  \item \textbf{Schedule \& compare}: compare \#1 with the EDD rule and \#2; open the late orders and read why;
+        edit by hand where your knowledge of the floor matters; save edits as new options.
+  \item \textbf{Commit} the chosen option with a reason that a colleague would understand.
+  \item \textbf{Execute}: print or export each day's work orders for the shift supervisors.
+  \item \textbf{During the period}: after a breakdown or a rush order, \ui{Replan from the cut-off}, generate
+        (\ui{Quick}), compare and commit the reschedule.
+  \item \textbf{Look back}: the Analysis tab shows how long the decision took, how much was edited by hand, and
+        whether the optimiser beat the rules.
+\end{enumerate}
+\end{steps}
+
+\chapter{The example plant}\label{app:plant}
+
+The screenshots use a demonstration plant, \textit{Riverside Alloy Wheels -- Plant 1}. Its machine data comes
+from the project's two-week research instance (\code{dataset/wheel-factory-2weeks}); names, customers and
+orders are fictional.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{3.2cm}X}
+\toprule
+\rowcolor{white}Item & Value \\
+\midrule
+Stages and run sizes & Casting 16 · Heat treatment 24 · Machining 20 · Painting 25 · Test \& packing 20 units per run \\
+Machines & 2 gravity die-casting cells (4 and 4.5 min/unit), 2 T6 batch furnaces (480 min per load, 24/7), 2 CNC lathes (+1 from 7 Dec in version 2), 1 paint conveyor line, 1 test \& packing station \\
+Products & Front wheel 17x1.40 and rear wheel 17x1.60, each silver or matte black; safety stock 12--24, stock cap 80--160 \\
+Molds & 2 front and 2 rear molds, cycle limit 48 / 40, 30-minute service \\
+Calendar & Three 8-hour shifts with a 30-minute break, Monday to Saturday; Sunday off; New Year and Lunar New Year holidays; weekly maintenance of CNC lathe 2 (Wednesday 08:00--10:00) and of the paint booth (Saturday 20:00--22:00) \\
+Customers & Two OEM assembly plants (silver wheels), two aftermarket distributors (black wheels), one export customer (container every Thursday) \\
+Orders & Deliveries Tuesday, Thursday and Saturday at 16:00, a rush order every Tuesday at 12:00; 156 orders from 9 November 2026 to 2 January 2027 \\
+Policies & On-time delivery first (default), Balanced, Lowest running cost \\
+\bottomrule
+\end{tabularx}
+\end{center}

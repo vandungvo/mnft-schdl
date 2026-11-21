@@ -1,0 +1,83 @@
+\chapter{The Today page}\label{ch:today}
+
+\ui{Today} is the planner's starting point. It answers three questions at a glance: which period needs my
+attention, is anything going wrong, and how loaded is the plant in the coming weeks.
+
+\shot{today}{The Today page of the example plant on Saturday 21 November 2026.}{today}
+
+\begin{callouts}
+  \item[1] \textbf{Main navigation.} The pages of the daily cycle at the top, plant set-up below, the
+           Advanced group folded at the bottom.
+  \item[2] \textbf{Factory.} The plant being worked on and its current set-up version; click to open the
+           Factory page.
+  \item[3] \textbf{Quick search} (\kbd{Ctrl}\,\kbd{K}).
+  \item[4] \textbf{Period card.} The period that needs attention now (see below).
+  \item[5] \textbf{Needs attention.} Three tiles that turn amber or red when something requires action.
+  \item[6] \textbf{Load, next 6 weeks.} Expected load of each stage per week, computed from the open orders.
+  \item[7] \textbf{Language and theme.}
+  \item[8] \textbf{System status.} Backend reachable, solver queue, database response time, latest schedule.
+\end{callouts}
+
+\section{The period card}
+
+The card picks the most relevant period automatically and labels it:
+
+\begin{center}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{4.2cm}X}
+\toprule
+\rowcolor{white}Label & When it is shown \\
+\midrule
+Period in progress / Current period & Today falls inside the period. \\
+Next period & No period covers today, and this is the next one that starts. \\
+Past period not closed yet & The period has ended but was never closed, so its undelivered orders are stuck in it. Close it (Section~\ref{sec:close}). \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Under the period name you see its dates and four tiles:
+
+\begin{itemize}
+  \item \ui{Orders in period}: orders due inside the period, plus (``+N after'') the orders in the look-ahead
+        window that could be pulled ahead;
+  \item \ui{Input errors}: problems that block scheduling (and the number of warnings, which do not block);
+  \item \ui{Options}: how many feasible schedules exist, and how many are still \ui{solving};
+  \item \ui{Committed}: the name of the committed option and when it was committed, or a dash.
+\end{itemize}
+
+The button on the right always proposes the next step: \ui{Check the inputs}, \ui{Fix the inputs},
+\ui{Generate options}, \ui{Watch the solver}, \ui{Compare \& commit}, \ui{Today's work orders} or
+\ui{Open the period}. If the period has what-if variants or reschedules, they are listed as \ui{Other
+versions} below the tiles.
+
+When no open period exists the card says \ui{No open period} and offers to create one.
+
+\section{Needs attention}
+
+\begin{description}[style=nextline, leftmargin=1.2em, font=\bfseries\color{brand}]
+  \item[Overdue open orders] Orders whose due date has passed but which are still open in the order book.
+        Usually they belong to a period that was not closed, or nobody scheduled them. Schedule them as
+        early as possible and tell the customer.
+  \item[Orders due $\leq$ 7 days, no period] Orders due within a week that no open period contains. Create a
+        period or update an existing one from the order book.
+  \item[Solver at work] Runs that are queued or solving. The tile links to the Runs page filtered on running
+        runs. When a period has input errors, the tile \ui{Periods with input errors} is shown instead.
+\end{description}
+
+Each tile is a link to the page where the problem is fixed.
+
+\section{Load, next 6 weeks}
+
+The table shows, for each stage and each of the next six weeks, the machine time the open orders need as a
+percentage of the machine time the calendar provides (shifts minus breaks, rest days, holidays and weekly
+maintenance; furnaces that run 24/7 count the whole day). The estimate uses the fastest machine and excludes
+changeovers, so it is a lower bound. Green cells are comfortable, blue cells are busy, and amber cells above
+85~percent are tight. In the example, heat treatment at 64--78~percent is clearly the bottleneck stage.
+
+Hover a cell to see the absolute figures (``need / available machine-hours''). The link \ui{Order book}
+opens the same table over eight weeks, together with the orders behind it.
+
+\section{Other open periods and latest runs}
+
+At the bottom, \ui{Other open periods} lists the remaining open periods, and \ui{Latest solver runs} shows
+the most recent algorithm runs with their status (\ui{Succeeded}, \ui{Solving}, \ui{Queued}, \ui{Failed},
+\ui{Cancelled}). \ui{View all} opens the Runs page (Section~\ref{sec:runs}).

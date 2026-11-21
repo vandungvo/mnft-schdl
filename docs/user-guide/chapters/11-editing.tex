@@ -1,0 +1,115 @@
+\chapter{Editing a schedule by hand}\label{ch:editing}
+
+Planners know things the solver does not: a machine that is about to be serviced, a customer who called, a
+team that would rather work one long run than two short ones. PlanWise lets you change any option directly.
+\textbf{You decide the machine and the order of runs; the computer works out the times}, re-checks the whole
+schedule and scores it, after every single change. The original option is never modified: your edit is saved
+as a new option.
+
+\section{Starting the editor}
+
+On \ui{Schedule \& compare}, pick the option to start from and click \ui{Edit this schedule by hand} (or
+\ui{Edit by hand} in an order's explanation, or \ui{Edit} in a quick look). Editing is available for
+five-stage schedules of open periods.
+
+\shot{editor_start}{The editor before any change: the toolbar, the figures ``as original'' and the Gantt chart.}{editor_start}
+
+The editor shows a sticky toolbar, the five headline figures with their difference from the original, the
+Gantt chart and, on the right, how to edit (until you select a run).
+
+\section{Changing runs}\label{sec:edit-runs}
+
+There are two ways to change a run:
+
+\begin{itemize}
+  \item \textbf{Drag} a bar to another machine of the same stage or to another time (in 15-minute steps). If
+        the target machine cannot make that item, the bar turns red and cannot be dropped there.
+  \item \textbf{Select} a bar (click it, or move to it with the arrow keys and press \kbd{Enter}) and use the
+        run panel:
+\end{itemize}
+
+\shotf[0.72\linewidth]{editor_runpanel}{The run panel of a machining run moved from CNC\_1 to CNC\_2.}{editor_runpanel}
+
+\begin{description}[style=nextline, leftmargin=1.2em, font=\bfseries\color{brand}]
+  \item[Lock this run (L)] Keeps the run exactly as it is when you later use \ui{Optimise the rest}.
+  \item[Original] Where the run was in the original option.
+  \item[Machine] Move the run to another eligible machine. If only one machine can make it, the field says so.
+  \item[Order on the machine] \ui{Earlier} / \ui{Later} swap it with the neighbouring run on its machine
+        (``Run 5 of 29 on CNC\_2'').
+  \item[Not before] An earliest start: the run starts at the earliest valid slot from that time. \ui{Not
+        earlier than now} pins it to its current start; \ui{Clear} removes the constraint.
+\end{description}
+
+\section{Seeing the effect immediately}
+
+\shot{editor}{After moving one run: the edit is valid, 60 cost units cheaper but 2.9 hours more late in total.}{editor}
+
+\begin{callouts}
+  \item[1] \textbf{Undo, redo, reset} (\kbd{Ctrl}\,\kbd{Z}, \kbd{Ctrl}\,\kbd{Shift}\,\kbd{Z}). Every change can be
+           undone.
+  \item[2] \textbf{How times are rebuilt}: \ui{Keep other times} (untouched runs keep their time; only runs that
+           get pushed move) or \ui{Pack early} (every run starts as early as the current order allows).
+  \item[3] \textbf{Exit}: leave the editor; unsaved changes are discarded after a confirmation.
+  \item[4] \textbf{Optimise the rest\dots}: let CP-SAT re-sequence everything you did not lock.
+  \item[5] \textbf{Save as new option}.
+  \item[6] \textbf{Impact}: each figure with its change versus the original (green better, amber worse). The
+           toolbar repeats it in one line, for example ``Valid · Late +2.9 h · Cost −60''.
+  \item[7] \textbf{Run panel} of the selected run.
+\end{callouts}
+
+After every change the backend rebuilds the times (respecting shifts, setups, mold cycles and maintenance,
+semi-finished stock and warehouse caps), runs the independent validator and scores the result. Changed runs
+get a dashed outline, and a \ui{Changes} panel lists your edits and every run that moved as a consequence. A
+banner explains shift effects (``The edit closes 1 shift(s): CNC\_1 16:00--00:00 Mon, 11/23. Operating cost
+down 1,446.'').
+
+If the edit breaks a rule, it cannot be saved and the problem is explained:
+
+\begin{center}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{3.4cm}X}
+\toprule
+\rowcolor{white}Problem & Example message \\
+\midrule
+Warehouse full & Finished stock of F silver exceeds the warehouse cap at \dots \\
+Material missing & Semi-finished F\_HEAT runs out at \dots: a run uses it before it is made. \\
+Buffer full & Semi-finished buffer F\_CAST exceeds its capacity at \dots \\
+Cannot ship & Not enough R black to ship at \dots \\
+Beyond the period & Run \dots\ is pushed past the end of the period. \\
+No slot & Cannot place \dots: they wait for semi-finished stock not made before them, or the period is full. Try moving the upstream run earlier. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Click \ui{Show} next to a problem to select the run concerned, then undo or keep editing until the schedule is
+valid again.
+
+\section{Optimise the rest}\label{sec:optimise-rest}
+
+Often you only care about a few runs. Lock them (or simply edit them) and let CP-SAT re-sequence everything else:
+
+\shotf[0.55\linewidth]{optimize_dialog}{Optimise the rest: 1 run kept, 296 runs CP-SAT may change.}{optimize_dialog}
+
+\begin{description}[style=nextline, leftmargin=1.2em, font=\bfseries\color{brand}]
+  \item[Kept / CP-SAT may change] How many runs stay fixed and how many may move.
+  \item[Keep the runs I edited] On by default; locked runs are always kept.
+  \item[Frozen zone] Runs starting before this point stay: \ui{None}, \ui{Until now} (while the period is
+        running), \ui{First 24 h}, \ui{First 48 h} or \ui{Until\dots} a chosen time. Use it to leave the shifts
+        already handed to the floor untouched.
+  \item[Time allowed] 30~s, 2~min or 5~min. Longer usually finds more; you can keep working meanwhile.
+  \item[Short name] Optional name of the resulting option.
+  \item[Also save the current edit as its own option] To compare your hand edit with the optimised result.
+\end{description}
+
+The optimisation runs in the background like any solver run. Its result is a new option that is \emph{never
+worse} than your edit; when it finishes a message says whether something better was found. With spare
+capacity, CP-SAT may add build-ahead runs for long-dated orders to reduce safety-stock shortfall.
+
+\section{Saving the edit}
+
+\shotf[0.5\linewidth]{save_option_dialog}{Save as a new option.}{save_option_dialog}
+
+Give the edit a short name (``Machining run moved to CNC lathe 2'') and, optionally, why you made it. The
+original option is kept. The edit is ranked with the other options under the same policy and can be compared
+and committed as usual; its card says \ui{Manual edit} and from which option it was made. A hand edit that
+turns out to be the best schedule is recommended like any other --- in the example the edit became the
+``Lowest cost'' option and was committed.

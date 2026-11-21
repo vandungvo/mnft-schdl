@@ -1,0 +1,147 @@
+\chapter{The order book}\label{ch:orders}
+
+Orders are entered once, in the order book. Each planning period takes the open orders due in it; orders are
+marked delivered when the period that delivered them is closed. You never type orders into a period by hand,
+except for the rare period-only order (Section~\ref{sec:period-orders}).
+
+\section{Page overview}
+
+\shot{orders}{The order book with the expected load and the list of open orders.}{orders}
+
+\begin{callouts}
+  \item[1] \textbf{Expected load, next 8 weeks}: the open orders' demand per stage and week (below).
+  \item[2] \textbf{Search} by order number, product or customer.
+  \item[3] \textbf{Status filter}: Open (default), Delivered, Cancelled, or all; the \ui{\texttimes} clears it.
+  \item[4] \textbf{Template}: downloads a CSV with the expected columns, in the interface language.
+  \item[5] \textbf{Import from Excel}: imports an .xlsx/.csv file or pasted rows (Section~\ref{sec:import}).
+  \item[6] \textbf{Add order}: enter a single order.
+  \item[7] \textbf{Sortable columns}: click a header to sort, again to reverse.
+\end{callouts}
+
+\section{Expected load}
+
+The panel converts the open orders' demand into machine-hours per stage, per week (using the fastest machine
+and excluding setups), and compares it with the working calendar. A percentage above 85 is tight. Hover a
+cell to see ``need / available machine-hours''. Above the table, two warnings may appear: how many open orders
+are already overdue, and how many orders due within seven days are in no open period. Both are also shown
+on the Today page.
+
+\section{The order list}
+
+Each row shows the order number, the product (with its colour dot), quantity, due date and time, priority,
+customer and status. Overdue open orders are marked \ui{overdue}. The list is paged; the result count is
+shown on the right.
+
+\section{Adding, editing and deleting an order}
+
+Click \ui{Add order}, or click an order number to edit it:
+
+\shotf[0.5\linewidth]{order_dialog}{Editing an order.}{order_dialog}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{3cm}X}
+\toprule
+\rowcolor{white}Field & Meaning \\
+\midrule
+Order code & Unique identifier (for example \code{SO-261124-039} or a customer PO). Fixed after creation. \\
+Product & One of the factory's products. \\
+Quantity & Units ordered (a whole number). \\
+Due & Date and time the customer expects the goods (plant local time). \\
+Priority & \ui{Low} (1), \ui{Normal} (2), \ui{High} (3), \ui{Urgent} (4). Lateness is weighted by priority, so an hour late on an urgent order costs four times an hour on a low one. \\
+Pickup & \ui{At due time}: the customer collects at the due time, so goods finished early wait in the warehouse (and count against the stock cap). \ui{When ready}: the order ships as soon as it is finished. \\
+Customer, Note & Free text, shown in periods and exports. \\
+Status & \ui{Open}, \ui{Delivered} or \ui{Cancelled}. Closing a period sets delivered orders automatically; you rarely change it by hand. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Changes are saved to the book immediately. Open periods that use the order notice the change and offer to
+take it in (Section~\ref{sec:sync}).
+
+\begin{warning}
+\ui{Delete} removes the order from the book completely, and periods using it are prompted to update. To keep
+a record of an order the customer withdrew, set its status to \ui{Cancelled} instead.
+\end{warning}
+
+\section{Importing orders from Excel, CSV or a paste}\label{sec:import}
+
+New orders usually arrive as a spreadsheet. The import reads it, shows a preview of every row with the
+problems it found, and writes nothing until you confirm.
+
+\shotf[0.82\linewidth]{import_start}{Step 1: choose a file or paste rows copied from Excel.}{import_start}
+
+\begin{steps}[Import orders]
+\begin{enumerate}
+  \item Click \ui{Import from Excel} (also in the \ui{New} menu and on the Today page).
+  \item Either \ui{Choose an .xlsx or .csv file} (the first sheet is read; the first row holds the headers),
+        or copy rows from Excel, paste them in the text box and click \ui{Preview the pasted rows}.
+  \item Read the preview (Figure~\ref{fig:import_preview}): the badges summarise what will happen, the
+        \ui{Columns found} line shows how each header was understood, and each row has a result.
+  \item Choose the mode, then click \ui{Write \textit{n} changes}.
+\end{enumerate}
+\end{steps}
+
+\shotf[0.85\linewidth]{import_preview}{Step 2: the preview. Three new orders, one update of an existing order, one row with an unknown product.}{import_preview}
+
+\subsection{How the file is read}
+
+\begin{itemize}
+  \item \textbf{Headers} may be English or Vietnamese, with or without accents, in any order: ``Order no'',
+        ``PO'', ``Mã đơn'' all mean the order code; ``Qty'', ``Số lượng'' the quantity; and so on.
+        Appendix~\ref{app:import} lists every accepted header. Unknown columns are ignored and named in
+        the preview.
+  \item \textbf{Required columns}: order code, product, quantity and due date. If one is missing, the preview
+        says ``Missing required columns'' and nothing can be written.
+  \item \textbf{Dates}: \code{dd/mm/yyyy} (also \code{dd-mm-yy} or \code{dd.mm.yyyy}), ISO
+        \code{yyyy-mm-dd}, or real Excel dates. A time may follow the date or sit in its own column
+        (\code{16:00}, \code{16h}); without a time, the factory's default due time is used.
+  \item \textbf{Quantities} are whole numbers; \code{1.200} or \code{1,200} are read as twelve hundred.
+  \item \textbf{Priority} may be a number 1--9 or a word: Low (Thấp), Normal (Thường), High (Cao), Urgent or
+        Rush (Gấp).
+  \item \textbf{Pickup} words: ``at due'', ``on due'', ``đúng hẹn'' for at due time; ``when ready'',
+        ``ASAP'', ``khi xong'' for when ready.
+  \item \textbf{Product} must be a product code; a close misspelling is suggested in the check notes.
+\end{itemize}
+
+\subsection{Row results}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{2.4cm}X}
+\toprule
+\rowcolor{white}Result & Meaning \\
+\midrule
+Add & A new order code: it will be created. \\
+Update & The code exists and is open; the check notes list what changes (for example ``changes: Quantity, Note''). \\
+Same & The code exists with identical values; nothing to do. \\
+Skip & The order is already delivered or cancelled; it is never changed by an import. \\
+Error & The row cannot be used; the reason is shown in red (unknown product, bad date, missing quantity\dots). \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+If some rows have errors, writing is blocked until you either fix the file or tick \ui{Skip the \textit{n} rows
+with errors and write the rest}.
+
+\subsection{Import modes}
+
+\begin{description}[style=nextline, leftmargin=1.2em, font=\bfseries\color{brand}]
+  \item[Add \& update] (default) Orders in the file are added or updated; all other orders stay as they are.
+        Use it for a file of new or changed orders.
+  \item[Replace all open orders] Open orders missing from the file are \emph{cancelled}. Use it only when the
+        file is the complete list of open orders (for example an export from the sales system). The preview
+        shows how many open orders will be cancelled before you confirm.
+\end{description}
+
+\section{How orders reach planning periods}\label{sec:orders-periods}
+
+\begin{itemize}
+  \item When a period is created, it takes every \textbf{open} order due before its end --- including orders
+        that are already overdue, which are scheduled as early as possible --- plus the open orders due in
+        the look-ahead window after it (shown as ``after the period'').
+  \item Changes made later in the book (new, changed or cancelled orders) are \emph{not} pushed into periods
+        silently. The period's Prepare step shows a banner and you take them in with one click
+        (Section~\ref{sec:sync}).
+  \item An order becomes \ui{Delivered} when the period whose executed schedule delivers it is closed. Until
+        then it stays open --- which is why a committed period should be closed before the next one is
+        created (Section~\ref{sec:new-period}).
+\end{itemize}

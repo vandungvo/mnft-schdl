@@ -1,0 +1,101 @@
+\chapter{Planning periods}\label{ch:periods}
+
+A planning period is a window of days (usually two weeks) that is scheduled as one problem. It takes the
+factory set-up and the open orders; you check its inputs, generate and commit a schedule, run it, and roll
+over to the next period.
+
+\section{The list of periods}
+
+\shot{periods}{Planning periods: one open period (with its variant and reschedule) and one closed period.}{periods}
+
+The page groups periods into \ui{Current \& upcoming} and \ui{Closed}. For each period you see its name and
+dates, its status with the next step as a link, the number of orders inside and after it, the number of
+options (and how many are still solving), the committed option and when it was committed, and the last
+update. What-if variants and reschedules are listed under their main period. Click a period name to open
+it; click the column headers to sort.
+
+\subsection{Period statuses}\label{sec:statuses}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{3.7cm}Xp{4.3cm}}
+\toprule
+\rowcolor{white}Status & Meaning & Next step shown \\
+\midrule
+Draft & Created, inputs not checked yet. & Check orders and opening stock \\
+Inputs need fixing & The last save found errors; schedules cannot be generated. & Fix the errors under Prepare \\
+Ready to schedule & Inputs are valid. & Generate schedule options \\
+Solving & Runs are queued or running. & Wait for the solver \\
+Options ready & At least one feasible schedule exists. & Compare and commit a schedule \\
+Committed & An option has been committed. & Issue work orders, watch for incidents \\
+Closed & The period is finished and read-only. & Period finished \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+A period whose end date has passed while it is still open is flagged \ui{Overdue to close}: its undelivered
+orders are stuck in it until it is closed.
+
+\section{Creating a period}\label{sec:new-period}
+
+Click \ui{Plan a new period} (on this page, on Today, or in the \ui{New} menu). You only pick the dates; plant
+set-up, shifts, rest days and open orders come in automatically.
+
+\shotf[0.55\linewidth]{new_period}{Plan a new period. The warnings explain consequences before the period is created.}{new_period}
+
+\begin{description}[style=nextline, leftmargin=1.2em, font=\bfseries\color{brand}]
+  \item[Starts] Proposed as the day after the last period (``Right after Weeks 48-49''). A date in the past is
+        allowed but flagged: the period would schedule past days.
+  \item[Days] Defaults to the factory's period length. The resulting date range is shown below.
+  \item[Name (optional)] Left empty, the period is named after its dates.
+  \item[Opening stock] \ui{From the previous committed schedule}: finished goods, semi-finished stock and mold
+        counters are projected from the closing state of the previous committed period, and you only correct
+        what differs. \ui{Start from zero and enter counts}: for the very first period or after a stock-take.
+  \item[Take open orders from the order book] Shows how many orders fall in the period and how many in the
+        look-ahead window after it.
+\end{description}
+
+The dialog warns you about situations that usually indicate a mistake:
+
+\begin{itemize}
+  \item orders already due before the start --- they are taken into the period to ship as early as possible;
+        consider telling the customers;
+  \item the previous period is committed but not closed --- the orders it delivers are still open and would
+        be taken again. Prefer opening it, going to Execute and using \ui{Close \& start the next period}
+        (Section~\ref{sec:close}), which closes it and creates the next period in one step;
+  \item the new period overlaps an open period --- allowed, but both may schedule the same orders.
+\end{itemize}
+
+Click \ui{Create period}. The period opens on its Prepare step.
+
+\section{The period page}\label{sec:period-page}
+
+\shot{period_header}{The period page of ``Weeks 48-49'' (here on the Prepare step).}{period_header}
+
+\begin{callouts}
+  \item[1] \textbf{Name and status.} Variants and reschedules add their label after the name and a kind badge
+           (\ui{What-if variant}, \ui{Reschedule}).
+  \item[2] \textbf{Key facts}: dates, length, orders in and after the period, and the factory set-up version
+           the period uses (click it to open the Factory page). A reschedule also shows ``fixed before'' its
+           cut-off.
+  \item[3] \textbf{Versions of the period}: the main period and its reschedules and variants as chips; the
+           committed one has a tick. Click a chip to switch (Chapter~\ref{ch:variants}).
+  \item[4] \textbf{Next-step banner}: what to do now, with a button that goes there --- for example
+           ``2 options are ready. Next: compare them and commit one.'' or, as here, ``Committed \dots\ Next:
+           issue work orders, track incidents, and close the period at the end.''
+  \item[5] \textbf{Step tabs}: Prepare, Options, Schedule \& compare, Commit, Execute. A green tick marks a done
+           step, a number the current or a future step, a red dot a step with errors.
+  \item[6] \textbf{Analysis and History}: how the scheduling went, and the change log (Chapter~\ref{ch:analysis}).
+  \item[7] \textbf{More} and \textbf{Generate options}/\textbf{Generate more}.
+\end{callouts}
+
+\shotf[0.32\linewidth]{more_menu}{The \ui{More} menu of a period.}{more_menu}
+
+The \ui{More} menu offers \ui{Create a what-if variant\dots} (Chapter~\ref{ch:variants}), \ui{Rename\dots}
+and \ui{Delete period\dots} (for a variant or reschedule: \ui{Delete this version\dots}). Deleting removes
+the inputs, options and decisions of that period or version and of its child variants and reschedules; the
+order book is not affected.
+
+\begin{note}
+The tab you are on is part of the address (for example \code{?tab=schedule}), so you can bookmark a step or
+send a colleague a link to it.
+\end{note}

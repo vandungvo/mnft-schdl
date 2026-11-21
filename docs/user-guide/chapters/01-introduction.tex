@@ -1,0 +1,142 @@
+\chapter{Introduction}\label{ch:intro}
+
+\section{What PlanWise does}
+
+PlanWise is a scheduling agent for a make-to-order plant. It takes the orders customers have placed, the
+plant's machines, shifts and rules, and the stock that is already on the floor, and it builds a
+\term{reasonable} production schedule for the next planning period: one that is feasible on every machine,
+delivers as many orders on time as possible, keeps finished goods above their safety level, and does not open
+more shifts or changeovers than necessary.
+
+The planner stays in charge. PlanWise proposes several schedules (\term{options}), explains how each was
+built and why an order is late, lets the planner edit any of them by hand, and records which one was
+committed and why. The committed schedule then becomes printable work orders for the shop floor, and can be
+replanned in minutes when a machine breaks down.
+
+The example used throughout this guide is an alloy wheel plant with five stages:
+
+\begin{center}
+\begin{tikzpicture}[stage/.style={draw=brand, fill=brandsoft, rounded corners=3pt, minimum width=2.45cm, minimum height=1.1cm, align=center, font=\small\bfseries}, arr/.style={-{Stealth[length=2.4mm]}, thick, brand}]
+\node[stage] (c) {Casting\\[-1pt]{\scriptsize\normalfont 2 die-casting cells}};
+\node[stage, right=0.55cm of c] (h) {Heat treatment\\[-1pt]{\scriptsize\normalfont 2 T6 furnaces, 24/7}};
+\node[stage, right=0.55cm of h] (m) {Machining\\[-1pt]{\scriptsize\normalfont 2--3 CNC lathes}};
+\node[stage, right=0.55cm of m] (p) {Painting\\[-1pt]{\scriptsize\normalfont conveyor line}};
+\node[stage, right=0.55cm of p] (q) {Test \& packing\\[-1pt]{\scriptsize\normalfont 1 station}};
+\draw[arr] (c) -- (h); \draw[arr] (h) -- (m); \draw[arr] (m) -- (p); \draw[arr] (p) -- (q);
+\end{tikzpicture}
+\end{center}
+
+Four products (17-inch front and rear wheels, each in silver and matte black) pass through all five stages.
+Each stage works in fixed-size \term{runs} (for example 16 wheels per casting run, 24 per furnace load). Front
+and rear wheels share their semi-finished stock up to machining; the colour is only decided at the paint line.
+Heat treatment takes eight hours per load and is the plant's bottleneck.
+
+\section{Who this guide is for}
+
+\begin{itemize}
+  \item \textbf{Production planners} prepare each period, generate and compare schedules, edit and commit
+        one, and replan after incidents. Chapters~\ref{ch:today}--\ref{ch:variants} are written for them.
+  \item \textbf{Plant or industrial engineers} maintain the factory set-up: stages, products, machines, molds,
+        shifts and the policies that define a good schedule (Chapter~\ref{ch:factory}).
+  \item \textbf{Shift supervisors} mainly use the work orders of the committed schedule
+        (Section~\ref{sec:work-orders}).
+  \item \textbf{Analysts and researchers} use the analysis views and the Advanced section to compare
+        algorithms on the same data (Chapters~\ref{ch:analysis} and~\ref{ch:advanced}).
+\end{itemize}
+
+\section{Conventions used in this guide}
+
+\begin{itemize}
+  \item Labels exactly as they appear on screen are set in bold sans-serif, for example \ui{Generate options}
+        or \ui{Save \& check}.
+  \item Keys are shown as \kbd{Ctrl}\,\kbd{K}.
+  \item Codes and identifiers are set in monospace, for example \code{F\_SILVER} or \code{CNC\_1}.
+  \item Numbered red markers such as \callout{1} \callout{2} \callout{3} on a screenshot are explained in the
+        list directly below that figure.
+  \item Boxes mark tips \faLightbulb[regular], notes \faInfoCircle{} and cautions \faExclamationTriangle.
+\end{itemize}
+
+\section{Key concepts}\label{sec:concepts}
+
+PlanWise separates data by \emph{how often it changes}. Getting this idea right makes every screen easier to
+understand.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{3.1cm}Xp{3.2cm}}
+\toprule
+\rowcolor{white}Layer & What it contains & Changes \\
+\midrule
+Factory set-up & Stages, run sizes, products and routes, machines with rates and changeovers, molds, shifts, rest days, holidays, weekly maintenance, objective policies. Every save creates an immutable \term{version}. & A few times a year (Factory page) \\
+Order book & Every customer order with product, quantity, due date, priority and customer. & Continuously (Order book page) \\
+Period inputs & For one planning period: the orders taken from the book, opening stock, mold counters, calendar exceptions, policy and pull-ahead choice. & Every period, usually two weeks (Prepare step) \\
+Derived data & Lots, runs per stage, allocation of stock to orders, checkpoints, machine availability. & Never typed in: computed when the period is saved \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection*{Glossary of the most important terms}
+
+\begin{description}[style=nextline, leftmargin=1.2em, font=\bfseries\color{brand}]
+  \item[Planning period] A window (by default 14 days) that is scheduled as one problem. It takes the factory
+        set-up version valid on its start date and the open orders due up to its end.
+  \item[Option / schedule] One complete, feasible schedule of a period produced by an algorithm or by a
+        planner's edit. A period usually has several options to compare.
+  \item[Run (solver run)] One execution of one algorithm on one copy of the data. Each option is the result of
+        a run; every run keeps its own data snapshot so it can be reproduced.
+  \item[Run (production run)] The unit of work at a stage: a fixed quantity of one item processed on one
+        machine, for example ``F\_CAST run 07, 16 units on CAST\_1''.
+  \item[Semi-finished code] The identity of goods between stages (for example \code{F\_HEAT}: front wheel,
+        heat-treated). Products that share a code share that stock.
+  \item[Safety stock] The minimum finished-goods level a product should keep. Falling below it at an
+        end-of-day checkpoint counts as \term{safety-stock shortfall}.
+  \item[Stock cap] The maximum finished-goods stock the warehouse can hold for a product.
+  \item[Policy] The rule that says which schedule is better: a weighted score over objective terms (lateness,
+        shortfall, setup time and so on), optionally with ``strictly first'' terms compared before the others.
+  \item[Commit] The planner's decision that one option is the plan. It is logged with a mandatory reason.
+  \item[Variant] A what-if copy of a period's inputs, used to test a change without touching the main plan.
+  \item[Reschedule] A version of a period created after an incident: everything before the \term{cut-off}
+        is frozen, the rest is planned again.
+  \item[Pull-ahead (build-ahead)] Using spare capacity to make part of the orders due after the period early.
+  \item[Look-ahead window] The days after the period whose orders are shown as ``after the period'' and may
+        be pulled ahead (28 days by default).
+\end{description}
+
+\section{The planning cycle}\label{sec:cycle}
+
+A planning period goes through the same steps every time. The period page shows them as tabs, and the
+status badge tells you which step comes next.
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.42cm, box/.style={draw=brand, fill=brandsoft, rounded corners=3pt, minimum height=1.05cm, text width=2.35cm, align=center, font=\small}, arr/.style={-{Stealth[length=2.2mm]}, thick, brand}]
+\node[box, fill=white] (book) {\textbf{Order book}\\{\scriptsize orders entered once}};
+\node[box, right=of book] (create) {\textbf{Create period}\\{\scriptsize dates only}};
+\node[box, right=of create] (prep) {\textbf{1 Prepare}\\{\scriptsize orders, stock, calendar}};
+\node[box, right=of prep] (gen) {\textbf{2 Options}\\{\scriptsize generate \& rank}};
+\node[box, below=0.9cm of gen] (cmp) {\textbf{3 Schedule \& compare}\\{\scriptsize Gantt, why late, edit}};
+\node[box, left=of cmp] (commit) {\textbf{4 Commit}\\{\scriptsize with a reason}};
+\node[box, left=of commit] (exec) {\textbf{5 Execute}\\{\scriptsize work orders, incidents}};
+\node[box, left=of exec, fill=white] (close) {\textbf{Close \& roll over}\\{\scriptsize next period}};
+\draw[arr] (book) -- (create); \draw[arr] (create) -- (prep); \draw[arr] (prep) -- (gen); \draw[arr] (gen) -- (cmp);
+\draw[arr] (cmp) -- (commit); \draw[arr] (commit) -- (exec); \draw[arr] (exec) -- (close);
+\draw[arr, dashed] (close.north) -- (create.south) node[midway, left, font=\scriptsize, text=muted]{closing stock = opening stock};
+\draw[arr, dashed] (exec.north) to[bend left=20] node[midway, right, font=\scriptsize, text=muted, align=left]{incident:\\reschedule} (prep.south);
+\end{tikzpicture}
+\end{center}
+
+\begin{enumerate}
+  \item \textbf{Order book.} Sales or the planner enter orders once, by hand or by importing a spreadsheet
+        (Chapter~\ref{ch:orders}).
+  \item \textbf{Create the period.} Pick a start date. The set-up, shifts, rest days, open orders and the
+        projected opening stock come in automatically (Section~\ref{sec:new-period}).
+  \item \textbf{Prepare.} Review the orders, correct the opening stock to the physical count, add one-off
+        machine stops, pick the policy, and save so the inputs are checked (Chapter~\ref{ch:prepare}).
+  \item \textbf{Generate options.} Choose how long to wait; PlanWise runs suitable algorithms in the
+        background and recommends the schedules worth considering (Chapters~\ref{ch:generate}
+        and~\ref{ch:options}).
+  \item \textbf{Schedule \& compare.} Inspect the Gantt chart, compare two options, see why an order is late,
+        and edit a schedule by hand if needed (Chapters~\ref{ch:schedule} and~\ref{ch:editing}).
+  \item \textbf{Commit.} Choose one option and record why (Section~\ref{sec:commit}).
+  \item \textbf{Execute.} Print work orders, replan after incidents, and finally close the period. Its
+        projected closing stock becomes the opening stock of the next period (Sections~\ref{sec:work-orders}
+        to~\ref{sec:close}).
+\end{enumerate}

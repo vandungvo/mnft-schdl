@@ -1,0 +1,63 @@
+\chapter{Everyday tools}\label{ch:tools}
+
+\section{Quick search}\label{sec:palette}
+
+Press \kbd{Ctrl}\,\kbd{K} (or \kbd{/}, or click \ui{Quick search\dots} in the sidebar) anywhere. Type a few
+letters to find a page, an open planning period, a JSON scenario, a recent run or an action; move with the arrow
+keys and press \kbd{Enter} to open it, \kbd{Esc} to close.
+
+\shotf[0.55\linewidth]{command_palette}{Quick search for ``weeks'': the open period, its reschedule and variant, scenarios and a recent run.}{command_palette}
+
+Results are grouped as Pages, Planning periods, JSON scenarios, Recent runs and Actions. The actions include
+\ui{Plan a new period}, \ui{Import orders from Excel}, \ui{Create a single run}, \ui{Import a JSON dataset},
+switching between light and dark theme, and switching language. Matching ignores accents and case, and every
+word you type must match.
+
+\section{Keyboard shortcuts}
+
+Press \kbd{?} to see the list. Shortcuts are ignored while you are typing in a field.
+
+\begin{center}
+\begin{tabularx}{0.82\linewidth}{Xl}
+\toprule
+\rowcolor{white}Action & Keys \\
+\midrule
+Quick search for pages, periods, runs, actions & \kbd{Ctrl}\,\kbd{K} or \kbd{/} \\
+This list of shortcuts & \kbd{?} \\
+Previous / next run on the Gantt chart & \kbd{\textleftarrow}\,\kbd{\textrightarrow} \\
+Highlight the product line (when editing: select the run) & \kbd{Enter} \\
+Undo an edit & \kbd{Ctrl}\,\kbd{Z} \\
+Redo an edit & \kbd{Ctrl}\,\kbd{Shift}\,\kbd{Z} \\
+Lock / unlock the selected run & \kbd{L} \\
+Deselect the run & \kbd{Esc} \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\shotf[0.45\linewidth]{shortcuts}{The keyboard shortcuts dialog.}{shortcuts}
+
+\section{Language}
+
+\shotf[0.2\linewidth]{language_menu}{The language menu.}{language_menu}
+
+The language button in the top bar switches the entire interface between English and Vietnamese, including
+messages from the server (input errors, import check notes), number and date formats. The choice is kept in a
+cookie for this browser. Data you entered (names, notes) is not translated.
+
+\section{Dark theme}\label{sec:theme}
+
+\shot{dark_mode}{The Today page in the dark theme.}{dark_mode}
+
+The theme menu offers \ui{Light}, \ui{Dark} and \ui{System}. Charts, the Gantt chart and status colours are
+designed for both themes.
+
+\section{Small conveniences}
+
+\begin{itemize}
+  \item Filters, sort orders, the Gantt zoom and colour mode, and the folded state of the Advanced menu are
+        remembered per browser.
+  \item The current tab of a period is part of the page address, so links and bookmarks open the right step.
+  \item Long operations (solving, optimising) run on the server; you can leave the page and come back.
+  \item Messages at the bottom right confirm what happened (``Queued 2 runs. New options will appear when the
+        solver finishes.'') and report errors in plain words.
+\end{itemize}

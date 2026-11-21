@@ -1,0 +1,134 @@
+\chapter{Preparing a period}\label{ch:prepare}
+
+The \ui{Prepare} step gathers everything that changes from one period to the next: the orders, the opening
+stock, one-off machine stops, the policy and the pull-ahead choice. You edit them as one draft and save; the
+backend then recompiles the period (lots, runs, machine availability) and reports in plain words anything
+that is wrong.
+
+\section{Input check and stage load}
+
+\shotf[0.85\linewidth]{prepare_check}{The input check and the estimated stage load of the period.}{prepare_check}
+
+\begin{itemize}
+  \item \textbf{Input check} says ``Inputs are valid --- schedules can be generated'' or lists the errors and
+        warnings. Errors block scheduling; warnings do not. Click an issue to jump to the section it concerns.
+        Notes written by the system (for example ``Opening stock projected from the committed schedule of
+        Weeks 46-47'') appear below.
+  \item \textbf{Stage load} is the same estimate as on the Today page, but for this period only: machine time
+        needed versus machine time available per stage, setups excluded.
+\end{itemize}
+
+Typical errors are a product without an eligible machine, opening stock above a store's capacity, a pull-ahead
+quantity beyond the demand after the period, or a stage whose estimated load exceeds its capacity (``Stage
+heat needs at least \dots\ machine minutes'').
+
+\section{Orders}\label{sec:period-orders}
+
+\shot{prepare_orders}{The Orders section: orders due in the period, with their source and allocation from stock.}{prepare_orders}
+
+The section header summarises the demand per product. Two tables follow:
+
+\begin{itemize}
+  \item \textbf{Orders due in the period}: delivered inside the period. The scheduler tries to meet each due
+        date, weighted by priority.
+  \item \textbf{Orders after the period} (scroll down): due within the look-ahead window after the period.
+        They are not delivered in it; they only matter for pulling work ahead (Section~\ref{sec:pull-ahead}).
+\end{itemize}
+
+The \ui{From stock} column is the quantity shipped straight from finished stock. \ui{auto} means the system
+allocates stock above the safety level to the earliest orders. An order carried over from a reschedule keeps
+what was already made for it (marked \ui{carried}).
+
+Click the pencil of an order to change it for this period only --- for example raise its priority because the
+customer called --- or the bin to remove it from this period:
+
+\shotf[0.5\linewidth]{period_order_dialog}{Editing an order inside the period; the change applies to this period only.}{period_order_dialog}
+
+\ui{Add a period-only order} creates an order that exists only in this period (marked \ui{period only}), for
+example an internal replenishment. To change the original order or import more orders, use the order book.
+
+\section{Taking in changes from the order book}\label{sec:sync}
+
+When the order book changes after the period took its orders, a banner tells you how many orders are new,
+changed or cancelled:
+
+\shotf[0.95\linewidth]{prepare_sync}{The order book changed: one new order can be taken into the period.}{prepare_sync}
+
+\ui{Update the period} takes the changes in: new orders are added, changed ones are refreshed (keeping your
+\ui{From stock} choice), cancelled ones are removed. The button is disabled while you have unsaved edits ---
+save or discard them first.
+
+\begin{note}
+For a reschedule, orders that were already delivered before its cut-off are left out on purpose; they are not
+reported as new even though the order book still lists them as open until the period closes.
+\end{note}
+
+\section{Opening stock}\label{sec:opening}
+
+\shot{prepare_opening}{Opening stock: actual versus projected finished goods, work in progress and mold counters.}{prepare_opening}
+
+When the period was created from a previous committed schedule, every figure is projected from that
+schedule's state at the end of the previous period (``Projected from the committed schedule up to \dots'').
+Count the actual stock on the floor and correct only what differs: edited cells are highlighted and counted
+(``2 corrected''). \ui{Reset to projection} undoes your corrections. If there was no earlier committed schedule,
+enter the counts.
+
+\begin{description}[style=nextline, leftmargin=1.2em, font=\bfseries\color{brand}]
+  \item[Finished goods] Per product: \ui{Actual}, \ui{Projected}, \ui{Safety} and \ui{Cap}. Values below
+        safety are flagged; the scheduler then plans production to catch up, and the shortfall counts at the
+        checkpoints until it does.
+  \item[Semi-finished (WIP)] Per semi-finished code, with its stage and store capacity.
+  \item[Molds] Cycles used since the last maintenance, against the limit. A mold near its limit will be
+        serviced early in the period.
+\end{description}
+
+\section{Machine calendar}\label{sec:period-calendar}
+
+\shot{prepare_calendar}{The machine calendar of the period: one row per machine, one column per day.}{prepare_calendar}
+
+The grid shows each machine for each day of the period. Hatched cells are plant rest days or holidays;
+\textbf{B} marks maintenance (recurring from the factory set-up, or a period exception); \textbf{!} marks a
+breakdown; faded cells lie before a reschedule's cut-off. Hover a cell to see the details. The daily shift
+times are repeated above the grid.
+
+To add a one-off stop, click the machine's cell on that day (or \ui{Add an exception}):
+
+\shotf[0.5\linewidth]{exception_dialog}{A calendar exception: T6 batch furnace 1 stops on 2 December 08:00--16:00.}{exception_dialog}
+
+Choose the \ui{Machine} (or \ui{Whole plant}), the \ui{Kind} (\ui{Maintenance}, \ui{Breakdown}, \ui{Closed},
+\ui{Other}), \ui{From} and \ui{To} (start and end time) and an optional note, then \ui{Apply}. The exception
+appears in the \ui{Period exceptions} table below the grid, where it can be edited or deleted.
+
+\begin{tip}
+Weekly maintenance and yearly holidays belong on the Factory page so that every period applies them
+automatically. Use period exceptions for one-off events: an extra inspection, a planned repair, a Saturday off.
+\end{tip}
+
+\section{Policy and pull-ahead}\label{sec:pull-ahead}
+
+\shot{prepare_policy}{Choosing the objective policy and the pull-ahead options of the period.}{prepare_policy}
+
+\begin{description}[style=nextline, leftmargin=1.2em, font=\bfseries\color{brand}]
+  \item[Objective policy] Pick one of the factory's policies (Section~\ref{sec:policies}). Each card shows
+        which terms are strictly first and the main weights. The default is preselected.
+  \item[Pull ahead for long-term orders] Lets idle capacity make part of the after-period orders early. For
+        each product with demand after the period you may allow a number of finished lots (one run of the last
+        stage each) and/or runs at earlier stages (for example casting runs). Each allowed lot or run is an
+        \emph{option}: the solver only uses it when it pays off under the policy. You can never pull ahead more
+        than the demand after the period; this is checked on save.
+\end{description}
+
+\section{Saving and checking}
+
+As soon as you change anything, a bar appears at the bottom of the page:
+
+\shotf[0.95\linewidth]{prepare_save_bar}{Unsaved changes in the Prepare step.}{prepare_save_bar}
+
+\ui{Save \& check} sends the inputs to the backend, which recomputes lots and runs and checks everything; the
+input check and status update immediately. \ui{Discard} drops your changes. If options already exist, they
+are kept but marked as based on the old inputs, and a banner offers \ui{Generate options for the new inputs}.
+
+\begin{warning}
+If somebody else saved the same period while you were editing, the bar warns that saving will conflict.
+Discard and redo your change on the new version; PlanWise never silently overwrites another person's edit.
+\end{warning}

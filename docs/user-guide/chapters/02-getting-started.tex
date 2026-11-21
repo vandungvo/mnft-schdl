@@ -1,0 +1,86 @@
+\chapter{Getting started}\label{ch:start}
+
+\section{Opening PlanWise}
+
+PlanWise is a web application. It consists of a backend (the scheduling service and its database) and the
+web interface. Ask your administrator for the address. On a local installation it is:
+
+\centerline{\code{http://localhost:3000}}
+
+Any current browser works (Chrome, Edge, Firefox); a screen at least 1280 pixels wide is recommended,
+because the Gantt chart uses the full width.
+
+\begin{note}
+For a local installation, an engineer starts both parts with one command from the project folder:
+\code{powershell -ExecutionPolicy Bypass -File scripts/dev.ps1}. With Docker, \code{docker compose up
+--build} does the same. The API documentation is then available at
+\code{http://localhost:8000/api/v1/docs}.
+\end{note}
+
+\subsection{Access and roles}
+
+In a development installation no sign-in is needed. In production the backend is protected by keys:
+
+\begin{itemize}
+  \item an \textbf{operator} key allows every action (editing data, generating and committing schedules);
+  \item a \textbf{reader} key allows viewing only. A reader sees every page, but actions that change data are
+        refused, and the schedule editor reports ``This account is read-only and cannot edit schedules.''
+\end{itemize}
+
+Every change is recorded with the actor that made it, so committed decisions, set-up versions and imports
+can always be traced back.
+
+\section{The screen layout}\label{sec:layout}
+
+Every page shares the same frame (Figure~\ref{fig:today} in the next chapter shows it with callouts).
+
+\begin{description}[style=nextline, leftmargin=1.2em, font=\bfseries\color{brand}]
+  \item[Sidebar (left)] The main navigation, grouped as \ui{Schedule} (Today, Planning periods, Order
+        book), \ui{Plant set-up} (Factory) and \ui{Advanced} (JSON scenarios, Runs, Aggregate planning).
+        The Advanced group is folded by default because planners rarely need it; click its title to open it.
+        Your choice is remembered in this browser.
+  \item[New button] A shortcut menu for the most common creations (Figure~\ref{fig:new_menu}).
+  \item[Factory name] Opens the Factory page. When several plants exist it lets you switch plant.
+  \item[Quick search] Opens the command palette (\kbd{Ctrl}\,\kbd{K}) to jump to any page, planning
+        period, scenario, recent run or action (Section~\ref{sec:palette}).
+  \item[Status box (bottom left)] \ui{System online} when the backend answers, the number of solver runs in
+        progress (or \ui{Queue is empty}), the database response time and the time of the latest schedule.
+        It turns to \ui{API unreachable} when the backend cannot be reached.
+  \item[Top bar] The breadcrumb of the current page, the environment badge (for example
+        \ui{development}), the language switch (\ui{EN}/\ui{VI}) and the light/dark theme menu.
+\end{description}
+
+\shotf[0.36\linewidth]{new_menu}{The \ui{New} menu: create a planning period, import orders, add one order, or (Advanced) import a JSON scenario, start a single run or create an aggregate plan.}{new_menu}
+
+\section{Language and theme}
+
+The whole interface is bilingual. Click the language button (\ui{EN} or \ui{VI}) in the top bar and pick
+\ui{English} or \ui{Tiếng Việt}. The choice is stored in a browser cookie, so it survives reloads, and it
+also changes date formats and number formatting. Codes entered by users (order numbers, customer names,
+machine names) are shown as they were entered.
+
+The theme menu next to it offers \ui{Light}, \ui{Dark} and \ui{System} (follow the operating system). See
+Section~\ref{sec:theme} for a dark-theme screenshot.
+
+\section{The first time: setting up a plant}\label{sec:first-setup}
+
+When no factory exists yet, Today, Order book and Planning periods all show a short message with a
+\ui{Set up the factory} button. On the Factory page you can create the plant from a \term{schema-5 JSON
+file}, for example the research dataset \code{dataset/wheel-factory-2weeks/raw\_input.json}:
+
+\begin{steps}[Create the factory from a file]
+\begin{enumerate}
+  \item Open \ui{Factory} in the sidebar.
+  \item Click \ui{Choose a schema-5 JSON file} and select the file.
+  \item Check the proposed factory name and click \ui{Create the factory}.
+\end{enumerate}
+\end{steps}
+
+The file is split by how often its parts change: plant data becomes factory set-up version~1, its orders go
+to the order book, and a first planning period is created. From then on, each period only needs orders and
+opening stock; the set-up is edited on the Factory page (Chapter~\ref{ch:factory}).
+
+\begin{tip}
+A file that is not a schema-5 factory document (it needs stages, a shift template, machines and products)
+is rejected with the message ``Not a schema-5 factory file'' and nothing is created.
+\end{tip}
