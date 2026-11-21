@@ -1,7 +1,7 @@
 export type Locale = "vi" | "en";
 
 export const LOCALES: Locale[] = ["vi", "en"];
-export const DEFAULT_LOCALE: Locale = "vi";
+export const DEFAULT_LOCALE: Locale = "en";
 export const LOCALE_COOKIE = "planwise-locale";
 
 export function isLocale(value: unknown): value is Locale {
