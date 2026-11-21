@@ -10,6 +10,7 @@ services:
     runtime: docker
     plan: free
     region: singapore
+    branch: master
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
     healthCheckPath: /api/v1/health
@@ -30,6 +31,10 @@ services:
         value: '["https://mnft-frontend.onrender.com"]'
       - key: MNFT_SOLVER_MAX_CONCURRENT_JOBS
         value: "1"
+      # The container sees all host cores; without a cap Hybrid would start one SA process
+      # per worker (up to 8) and exceed the free plan's 512 MB.
+      - key: MNFT_SOLVER_CP_WORKERS
+        value: "2"
       # Free instances have ~0.1 CPU; keep solver runs short.
       - key: MNFT_SOLVER_DEFAULT_BUDGET_SECONDS
         value: "30"
@@ -43,6 +48,7 @@ services:
     runtime: docker
     plan: free
     region: singapore
+    branch: master
     dockerfilePath: ./frontend/Dockerfile
     dockerContext: .
     envVars:
