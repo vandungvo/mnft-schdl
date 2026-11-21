@@ -40,7 +40,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         session_factory = create_session_factory(engine)
         dispatcher = ScheduleJobDispatcher(
             session_factory,
-            SchedulingEngine(),
+            SchedulingEngine(cp_workers=runtime_settings.solver_cp_workers),
             max_workers=runtime_settings.solver_max_concurrent_jobs,
             inline=runtime_settings.run_jobs_inline,
         )

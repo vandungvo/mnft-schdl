@@ -1,6 +1,6 @@
 # Thử nghiệm nhiều hướng lập lịch trên cùng đầu vào
 
-Thư mục này chứa **hai phiên bản mô hình lập lịch**, mỗi phiên bản chạy được bằng cùng tám phương pháp. Mã dùng chung đảm bảo mọi phương pháp của một phiên bản dùng cùng dữ liệu, cùng cách tính mục tiêu và cùng validator; không sao chép tám bản logic nghiệp vụ dễ lệch nhau.
+Thư mục này chứa **hai phiên bản mô hình lập lịch**, mỗi phiên bản chạy được bằng cùng tám phương pháp; v2 có thêm phương pháp thứ chín `hybrid` ghép các phương pháp đó thành một pipeline. Mã dùng chung đảm bảo mọi phương pháp của một phiên bản dùng cùng dữ liệu, cùng cách tính mục tiêu và cùng validator; không sao chép tám bản logic nghiệp vụ dễ lệch nhau.
 
 ## Hai phiên bản
 
@@ -32,13 +32,14 @@ Thư mục này chứa **hai phiên bản mô hình lập lịch**, mỗi phiên
 | `common/cp_engine.py` | v1 | Mô hình CP-SAT |
 | `common/evaluate.py` | v1 | Validator độc lập và KPI |
 | `common/stage_runs/instance.py` | v2 | Lịch ca, thời lượng lượt, quy tắc khuôn, kiểm input |
-| `common/stage_runs/experiment.py` | v2 | `execute()` của v2: lịch khởi tạo, CP-SAT có hint, CP-LNS |
-| `common/stage_runs/decoder.py` | v2 | Dựng lịch FIFO/EDD/SPT, decoder cho SA/GA |
-| `common/stage_runs/search.py` | v2 | SA và GA (có gen trì hoãn và gen làm trước) |
+| `common/stage_runs/experiment.py` | v2 | `execute()` của v2: lịch khởi tạo, CP-SAT có hint, CP-LNS, và `hybrid()` (luật → SA nhiều seed → CP-SAT) |
+| `common/stage_runs/decoder.py` | v2 | Dựng lịch FIFO/EDD/SPT, decoder cho SA/GA (tính vị trí một lần cho mỗi nhóm lượt hoán đổi được; `prepare()` dựng sẵn phần chỉ phụ thuộc input) |
+| `common/stage_runs/search.py` | v2 | SA và GA (có gen trì hoãn và gen làm trước); `portfolio()` chạy SA nhiều seed song song, mỗi seed một tiến trình |
 | `common/stage_runs/compact.py` | v2 | Dồn ca: dời lượt sang ca đã mở mà không đổi thứ tự trên máy |
 | `common/stage_runs/cp_engine.py` | v2 | Mô hình CP-SAT |
 | `common/stage_runs/evaluate.py` | v2 | Validator độc lập và KPI hai tầng |
 | `common/stage_runs/report.py` | v2 | Vẽ Gantt HTML |
+| `hybrid/` | v2 | `run.py` và `README.md` của pipeline kết hợp — phương pháp sản phẩm dùng cho kỳ 2 tuần |
 | `fifo/`, `edd/`, `spt/`, `simulated_annealing/`, `genetic_algorithm/`, `cp_sat/`, `cp_sat_hint/`, `cp_lns/` | cả hai | Mỗi thư mục một `run.py` (gọi bộ chạy chung) và `README.md` mô tả phương pháp ở từng phiên bản |
 | `run_all.py` | cả hai | Chạy nhiều phương pháp, nhiều seed trên một input, sinh bảng so sánh |
 | `input/` | v1 | Input mặc định và bản CSV để đọc. `backend/` tham chiếu cứng `input/wheel_factory.json`, không di chuyển |
@@ -55,6 +56,7 @@ Vì sao mã v1 vẫn nằm trực tiếp trong `common/`: `backend/` import `mod
 | `tests/test_reserve_capacity.py` | v1 | 17 | Lô dự trữ, lượt bán thành phẩm tuỳ chọn, ca đóng được |
 | `tests/test_stage_runs.py` | v2 | 23 | Engine v2 trên dataset nhỏ |
 | `tests/test_manual_edits.py` | v2 | 8 | Sửa lịch bằng tay và tối ưu phần còn lại (`stage_runs/manual.py`) |
+| `tests/test_stage_runs_speed.py` | v2 | 11 | Các tối ưu tốc độ của decoder / search / `hybrid` không đổi kết quả |
 
 Thử nghiệm độc lập về sản xuất dự trữ (`optional_stock`, 20/09) không dùng `common/` và không nằm trong bảng xếp hạng, nên đã chuyển sang [`research/optional_stock/`](../research/optional_stock/README.md) cùng test của nó. Ý tưởng làm trước sau đó đã được đưa vào cả v1 (lô dự trữ) và v2 (phương án làm trước).
 
@@ -70,6 +72,8 @@ Thử nghiệm độc lập về sản xuất dự trữ (`optional_stock`, 20/0
 | `cp_sat/` | CP-SAT nguyên khối không hint | Assignment, circuit thứ tự, setup, trạng thái khuôn, ca, tồn kho và mục tiêu chung | Thêm chọn khuôn, circuit theo khuôn, reservoir bán thành phẩm, biến bật/tắt làm trước |
 | `cp_sat_hint/` | CP-SAT + hint | Hint là lịch EDD; giữ fallback hợp lệ nếu solver chưa cải thiện | Hint là lịch tốt nhất trong FIFO/EDD/SPT sau dồn ca |
 | `cp_lns/` | Large Neighborhood Search + CP repair | Bắt đầu EDD; mở khoảng 20% lô, CP giải bài con tối đa 10 giây/lượt | Luân phiên 4 kiểu vùng lân cận: thời gian, máy, công đoạn, ngẫu nhiên |
+
+Thêm vào đó, chỉ ở v2: `cp_rolling/` (CP-SAT cuốn chiếu theo cửa sổ) và `hybrid/` (luật điều độ → SA nhiều seed song song → CP-SAT xuất phát từ lịch tốt nhất, dùng mọi nhân của máy; xem [hybrid/README.md](hybrid/README.md)).
 
 Đây là tám cấu hình thuộc các nhóm dispatching, metaheuristic, CP và hybrid. Chưa triển khai MILP/RL/GNN; không gán tên những phương pháp này cho một wrapper gọi CP-SAT.
 
@@ -89,7 +93,8 @@ python -m models.run_all --methods fifo edd spt cp_lns --seconds 30 --seeds 11
 python dataset/wheel-factory-small/prepare.py
 python -m models.run_all --input dataset/wheel-factory-small/model_input.json --seconds 30 --seeds 11 29 47
 python -m models.cp_sat_hint.run --input dataset/wheel-factory-small/model_input.json --seconds 60
-$env:MNFT_CP_WORKERS = 8   # tuỳ chọn, chỉ v2: CP-SAT nhiều luồng (mặc định 1)
+$env:MNFT_CP_WORKERS = 8   # tuỳ chọn, chỉ v2: CP-SAT nhiều luồng (mặc định 1; riêng hybrid mặc định một nửa số luồng của máy)
+python -m models.hybrid.run --input dataset/wheel-factory-2weeks/model_input.json --seconds 180
 
 # kiểm thử
 python -m unittest discover -s models/tests -v

@@ -15,10 +15,11 @@ export interface AlgorithmInfo {
 type Text = [string, string];
 
 /** Bilingual entry; description/note resolve to the active locale on every read. */
-function algorithm(value: Algorithm, label: Text | string, short: string, family: AlgorithmFamily, description: Text, note: Text): AlgorithmInfo {
+function algorithm(value: Algorithm, label: Text | string, short: Text | string, family: AlgorithmFamily, description: Text, note: Text): AlgorithmInfo {
   return {
-    value, short, family,
+    value, family,
     get label() { return typeof label === "string" ? label : tr(...label); },
+    get short() { return typeof short === "string" ? short : tr(...short); },
     get description() { return tr(...description); },
     get note() { return tr(...note); },
   };
@@ -41,16 +42,18 @@ export const ALGORITHMS: AlgorithmInfo[] = [
     ["CP-SAT với lịch EDD làm gợi ý khởi đầu; nếu không cải thiện được thì giữ lịch EDD.", "CP-SAT warm-started from the EDD schedule; if it cannot improve, the EDD schedule is kept."]),
   algorithm("cp_lns", "CP-LNS", "CP-LNS", "cp", ["Tìm kiếm lân cận lớn cho lịch lớn", "Large neighbourhood search for large schedules"],
     ["Bắt đầu từ lịch luật tốt nhất, mỗi vòng mở lại một khung giờ / vài máy / một công đoạn cho CP-SAT xếp lại.", "Starts from the best rule schedule; each round reopens a time window, a few machines or one stage for CP-SAT to re-sequence."]),
+  algorithm("hybrid", ["Kết hợp: tìm kiếm rồi CP-SAT", "Hybrid: search, then CP-SAT"], ["Kết hợp", "Hybrid"], "cp", ["Khuyến nghị cho kỳ 2 tuần · dùng mọi nhân của máy", "Recommended for a 2-week period · uses every core"],
+    ["Ba bước nối nhau: luật điều độ cho lịch dự phòng, Simulated Annealing chạy song song nhiều seed để kéo số đơn trễ xuống, rồi CP-SAT xuất phát từ lịch tốt nhất để giảm chi phí vận hành. Mỗi bước chỉ thay kết quả trước khi tốt hơn.", "Three steps in a row: dispatching rules give a fallback schedule, Simulated Annealing runs several seeds in parallel to bring late orders down, then CP-SAT starts from the best schedule to cut operating cost. Each step replaces the previous result only when it is better."]),
   algorithm("cp_rolling", ["CP-SAT cuốn chiếu", "Rolling-horizon CP-SAT"], "CP-Roll", "cp", ["Chia horizon thành cửa sổ nhỏ", "Splits the horizon into small windows"],
     ["Chia horizon thành các cửa sổ liên tiếp, giải CP-SAT từng cửa sổ và cố định phần đã xếp.", "Splits the horizon into consecutive windows, solves each with CP-SAT and freezes what is already scheduled."]),
 ];
 
 /** A planner's edit of another option (not a solver: never offered in the generate dialog). */
-export const MANUAL = algorithm("manual" as Algorithm, ["Chỉnh tay", "Manual edit"], tr("Chỉnh tay", "Manual"), "manual", ["Người lập lịch sửa từ một phương án", "A planner's edit of an option"],
+export const MANUAL = algorithm("manual" as Algorithm, ["Chỉnh tay", "Manual edit"], ["Chỉnh tay", "Manual"], "manual", ["Người lập lịch sửa từ một phương án", "A planner's edit of an option"],
   ["Người lập lịch đổi máy, thứ tự hoặc giờ sớm nhất của vài lượt trên một phương án; hệ thống xếp lại giờ, kiểm bằng bộ kiểm độc lập và chấm điểm như mọi phương án khác.", "A planner changed the machine, order or earliest start of some runs of an option; the system re-timed it, checked it with the independent validator and scored it like any other option."]);
 
 /** CP-SAT neighbourhood search around a planner's edit, keeping the runs they locked. */
-export const CP_REPAIR = algorithm("cp_repair" as Algorithm, ["Tối ưu quanh bản sửa", "Optimised around an edit"], tr("Tối ưu+", "Re-opt"), "cp", ["CP-SAT xếp lại phần không khoá", "CP-SAT re-sequences what is not locked"],
+export const CP_REPAIR = algorithm("cp_repair" as Algorithm, ["Tối ưu quanh bản sửa", "Optimised around an edit"], ["Tối ưu+", "Re-opt"], "cp", ["CP-SAT xếp lại phần không khoá", "CP-SAT re-sequences what is not locked"],
   ["Bắt đầu từ bản sửa của người lập lịch: các lượt đã khoá (và vùng giữ nguyên) không đổi; phần còn lại được dồn ca rồi CP-SAT xếp lại theo từng vùng lân cận. Không bao giờ tệ hơn bản sửa.", "Starts from the planner's edit: locked runs (and the frozen zone) stay as they are; the rest is shift-consolidated, then re-sequenced by CP-SAT neighbourhood by neighbourhood. Never worse than the edit."]);
 
 export function familyLabel(family: AlgorithmFamily): string {
@@ -99,7 +102,7 @@ export function algorithmInfo(value: string): AlgorithmInfo {
 }
 
 /** Methods that exist for one production model only (mirrors models.common.experiment.methods_for). */
-const SCHEMA5_ONLY: Algorithm[] = ["cp_rolling"];
+const SCHEMA5_ONLY: Algorithm[] = ["cp_rolling", "hybrid"];
 
 export function availableFor(value: Algorithm, schemaVersion: number | undefined): boolean {
   return schemaVersion === 5 || !SCHEMA5_ONLY.includes(value);

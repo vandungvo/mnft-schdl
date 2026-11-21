@@ -27,6 +27,7 @@ def client(tmp_path: Path):
         solver_default_budget_seconds=1,
         solver_max_budget_seconds=10,
         log_level="WARNING",
+        solver_cp_workers=1,  # one CP-SAT worker and one in-process SA seed: small and repeatable
         bootstrap_factory=False,
     )
     with TestClient(create_app(settings)) as test_client:
@@ -44,6 +45,7 @@ def factory_client(tmp_path: Path):
         solver_default_budget_seconds=1,
         solver_max_budget_seconds=10,
         log_level="WARNING",
+        solver_cp_workers=1,  # one CP-SAT worker and one in-process SA seed: small and repeatable
         bootstrap_standard_data=False,
         bootstrap_factory=True,
     )

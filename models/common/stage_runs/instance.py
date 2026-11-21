@@ -76,14 +76,31 @@ def _cut(spans, holes):
     return spans
 
 
+_CALENDARS = {}
+
+
 def calendar(data, machine):
     """(windows, shifts) of one machine.
 
     windows: [{"id", "shift", "start", "end"}], shifts: [{"id", "start", "end", "available_minutes"}].
     A continuous machine has windows with shift None and no shifts (it never
     enters the idle-minutes KPI: nobody is rostered to it).
+
+    The validator, the evaluator and every decode ask for the same calendars thousands of
+    times during a search, so they are memoised on what they are computed from; callers get
+    their own copies.
     """
     spec = data["machines"][machine]
+    key = (data["horizon"], spec.get("calendar"), repr(spec.get("downtime")), repr(data.get("shift_template")))
+    cached = _CALENDARS.get(key)
+    if cached is None:
+        if len(_CALENDARS) > 512:
+            _CALENDARS.clear()
+        cached = _CALENDARS[key] = _calendar(data, spec)
+    return [dict(w) for w in cached[0]], [dict(s) for s in cached[1]]
+
+
+def _calendar(data, spec):
     downtime = [tuple(d) for d in spec.get("downtime", [])]
     windows, shifts = [], []
     if spec.get("calendar") == "continuous":

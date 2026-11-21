@@ -176,7 +176,7 @@ export function gapText(gap: number | null): string {
 }
 
 const RULES = new Set(["fifo", "edd", "spt"]);
-const SOLVERS = new Set(["cp_sat", "cp_sat_hint", "cp_lns", "cp_rolling"]);
+const SOLVERS = new Set(["cp_sat", "cp_sat_hint", "cp_lns", "cp_rolling", "hybrid"]);
 
 /** Did any optimiser run beat the best dispatching rule? null when one of the two kinds is missing. */
 export function optimiserVerdict(alts: Alternative[], weights: Record<string, number>, policy: PolicyKey): { improved: boolean; budget: number; fallback: boolean } | null {

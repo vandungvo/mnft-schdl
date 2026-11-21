@@ -12,6 +12,7 @@ from models.common import evaluate as evaluate_v4
 from models.common.experiment import execute
 from models.common.instance import upgrade_input
 from models.common.stage_runs import evaluate as evaluate_v5
+from models.common.stage_runs.experiment import auto_workers
 from models.common.stage_runs.manual import repair
 
 # Re-optimisation around a planner's edit (see backend/app/manual_edits.py): not a
@@ -69,6 +70,10 @@ class NoScheduleError(RuntimeError):
 class SchedulingEngine:
     """Pure adapter around the research engine with mandatory independent validation."""
 
+    def __init__(self, cp_workers: int = 0) -> None:
+        # 0 = chosen from the host's cores (see Settings.solver_cp_workers)
+        self.cp_workers = cp_workers or auto_workers()
+
     def run(
         self,
         input_data: dict[str, Any],
@@ -87,11 +92,11 @@ class SchedulingEngine:
                 raise ValueError("cp_repair needs the edited schedule and its pins (solver_metadata.repair)")
             operations, metadata = repair(
                 copy.deepcopy(input_data), copy.deepcopy(options["rows"]), set(options.get("fixed", [])),
-                seconds=time_budget_seconds, seed=seed,
+                seconds=time_budget_seconds, seed=seed, workers=self.cp_workers,
             )
         else:
             operations, metadata = execute(
-                copy.deepcopy(input_data), algorithm, time_budget_seconds, seed
+                copy.deepcopy(input_data), algorithm, time_budget_seconds, seed, workers=self.cp_workers
             )
         elapsed = time.perf_counter() - started
         solver_status = str(metadata.get("status", "UNKNOWN"))
@@ -103,7 +108,8 @@ class SchedulingEngine:
                 "ortools": ortools.__version__,
                 "platform": platform.platform(),
                 "processor": platform.processor(),
-                "workers": 1,
+                # what the method actually used: rules and SA/GA run on one core
+                "workers": metadata.get("workers", 1),
             },
         }
         if not operations:

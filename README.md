@@ -33,7 +33,7 @@ Explanation sẽ được bổ sung theo [implementation plan](docs/_product/imp
 |---|---|
 | `backend/` | FastAPI, engine OR-Tools, Alembic migrations |
 | `frontend/` | Giao diện Next.js |
-| `models/` | Tám phương pháp lập lịch dùng để đánh giá, input chuẩn (`models/input/`) và kết quả chạy (`models/runs/`) — xem [models/README.md](models/README.md) |
+| `models/` | Các phương pháp lập lịch dùng để đánh giá (tám phương pháp đơn lẻ và pipeline kết hợp `hybrid`), input chuẩn (`models/input/`) và kết quả chạy (`models/runs/`) — xem [models/README.md](models/README.md) |
 | `research/` | Mã nghiên cứu ngoài sản phẩm: `notebooks/` (Colab/Kaggle chạy CP-SAT ngân sách dài), `demo_page/` (dựng trang demo HTML nộp GVHD), `optional_stock/` (thử nghiệm sản xuất dự trữ, không phát triển tiếp), `legacy/` (POC và thí nghiệm cũ, chỉ tham khảo) — xem [research/README.md](research/README.md) |
 | `dataset/` | Dữ liệu benchmark và bộ wheel-factory, mỗi nguồn có `SOURCE.md` |
 | `references/` | Ghi chú trích dẫn và PDF bài báo (`references/pdfs/`) |

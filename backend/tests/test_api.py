@@ -842,6 +842,41 @@ def test_schema5_guards_planning_record_edits_and_model_specific_algorithms(
     )
     assert rolling_v4.status_code == 422
     assert rolling_v4.json()["error"]["code"] == "ALGORITHM_NOT_AVAILABLE"
+    hybrid_v4 = client.post(
+        "/api/v1/schedule-runs",
+        json={"dataset_id": v4["id"], "algorithm": "hybrid", "time_budget_seconds": 1},
+    )
+    assert hybrid_v4.status_code == 422
+    assert hybrid_v4.json()["error"]["code"] == "ALGORITHM_NOT_AVAILABLE"
+
+
+def test_hybrid_run_chains_rules_search_and_cp_sat(client) -> None:
+    dataset = client.post(
+        "/api/v1/master-data/datasets/import", json={"input": _schema5_input()}
+    ).json()
+    runs = {}
+    for algorithm, budget in (("edd", 1), ("hybrid", 10)):
+        created = client.post(
+            "/api/v1/schedule-runs",
+            json={
+                "dataset_id": dataset["id"],
+                "algorithm": algorithm,
+                "seed": 11,
+                "time_budget_seconds": budget,
+            },
+        ).json()
+        assert created["status"] == "SUCCEEDED", created
+        runs[algorithm] = client.get(f"/api/v1/schedule-runs/{created['id']}").json()
+    hybrid = runs["hybrid"]
+    assert hybrid["validation"]["valid"] is True
+    metadata = hybrid["solver_metadata"]
+    assert [phase["phase"] for phase in metadata["phases"]] == ["rules", "search", "cp_sat"]
+    assert metadata["environment"]["workers"] == 1
+    assert metadata["sa_processes"] == 1
+    # never worse than the dispatching rule it starts from
+    assert hybrid["metrics"]["objective"] <= runs["edd"]["metrics"]["objective"]
+    assert metadata["phases"][-1]["objective"] == hybrid["metrics"]["objective"]
+    assert "hybrid" in client.get("/api/v1/health").json()["supported_algorithms"]
 
 
 def test_scenario_can_be_replaced_across_production_models(client, scheduling_input) -> None:

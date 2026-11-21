@@ -17,8 +17,9 @@ from .instance import ROOT, DEFAULT_INPUT, load, digest, save_json
 from .decoder import decode
 from .evaluate import evaluate, validate
 
-METHODS = ["fifo", "edd", "spt", "simulated_annealing", "genetic_algorithm", "cp_sat", "cp_sat_hint", "cp_lns", "cp_rolling"]
-V2_ONLY = {"cp_rolling"}  # rolling-horizon CP-SAT exists for the schema-5 engine only
+METHODS = ["fifo", "edd", "spt", "simulated_annealing", "genetic_algorithm", "cp_sat", "cp_sat_hint", "cp_lns", "cp_rolling",
+           "hybrid"]
+V2_ONLY = {"cp_rolling", "hybrid"}  # rolling-horizon CP-SAT and the SA -> CP-SAT pipeline exist for the schema-5 engine only
 
 
 def methods_for(data):
@@ -43,10 +44,11 @@ def _engine(data):
     return validate, evaluate, gantt
 
 
-def execute(data, method, seconds, seed):
+def execute(data, method, seconds, seed, workers=None):
+    """workers: CP-SAT workers for the schema-5 engine (None = that engine's default)."""
     if _schema5(data):
         from .stage_runs.experiment import execute as execute5
-        return execute5(data, method, seconds, seed)
+        return execute5(data, method, seconds, seed, workers)
     if method in V2_ONLY:
         raise ValueError(f"{method} needs a schema-5 input")
     started = time.perf_counter()
@@ -159,7 +161,7 @@ def run_one(method, input_path=DEFAULT_INPUT, seconds=30, seed=11, run_id=None):
     result = {"method":method,"seed":seed,"run_id":run_id,"input_sha256":digest(data),"code_sha256":code_hash,
               "budget_seconds":seconds,"algorithm_seconds":algorithm_seconds,
               "environment":{"python":sys.version,"ortools":ortools.__version__,"platform":platform.platform(),
-                             "processor":platform.processor(),"workers":1},**meta}
+                             "processor":platform.processor(),"workers":meta.get("workers",1)},**meta}
     check, score_of, draw = _engine(data)
     result["validation"] = check(data,rows) if rows else {"valid":False,"errors":["No schedule returned"]}
     if rows:

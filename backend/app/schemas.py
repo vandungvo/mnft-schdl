@@ -312,6 +312,7 @@ Algorithm = Literal[
     "cp_sat_hint",
     "cp_lns",
     "cp_rolling",
+    "hybrid",
 ]
 
 

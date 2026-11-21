@@ -129,22 +129,25 @@ def validate(data, rows):
         if cap is not None and level[code] > cap:
             errors.append(f"BTP {code} above capacity at t={t}")
     deliveries = _deliveries(data, rows)
+    finished = _finished_events(data, rows, deliveries)
     inv = {p: s["initial_stock"] for p, s in data["products"].items()}
-    for t, _, p, q, src in _finished_events(data, rows, deliveries):
+    for t, _, p, q, src in finished:
         inv[p] += q
         if inv[p] < 0:
             errors.append(f"{p}: negative finished stock at t={t} ({src})")
     for c in data["checkpoints"]:
-        for p, v in _stock_at(data, rows, deliveries, c).items():
+        for p, v in _stock_at(data, rows, deliveries, c, finished).items():
             if v > data["products"][p]["stock_cap"]:
                 errors.append(f"{p}: above stock_cap at checkpoint {c}")
     return {"valid": not errors, "errors": errors, "operations_checked": len(rows),
             "scope": "schema 5: fixed runs per stage, shared mold pool, one window per block"}
 
 
-def _stock_at(data, rows, deliveries, checkpoint):
+def _stock_at(data, rows, deliveries, checkpoint, events=None):
+    """events: _finished_events(...) when the caller already has them (one sort instead of
+    one per checkpoint)."""
     values = {p: s["initial_stock"] for p, s in data["products"].items()}
-    for t, _, p, q, _src in _finished_events(data, rows, deliveries):
+    for t, _, p, q, _src in (_finished_events(data, rows, deliveries) if events is None else events):
         if t <= checkpoint:
             values[p] += q
     return values
@@ -153,10 +156,14 @@ def _stock_at(data, rows, deliveries, checkpoint):
 def evaluate(data, rows):
     runs = {r["id"]: r for r in data["runs"]}
     deliveries = _deliveries(data, rows)
+    finished = _finished_events(data, rows, deliveries)
+    by_shift = {}
+    for r in rows:
+        by_shift.setdefault((r["machine"], r["shift"]), []).append(r)
     shifts = []
     for mid in data["machines"]:
         for sh in calendar(data, mid)[1]:
-            mine = [r for r in rows if r["machine"] == mid and r["shift"] == sh["id"]]
+            mine = by_shift.get((mid, sh["id"]))
             if not mine:
                 continue
             processing = sum(r["end"] - r["start"] for r in mine)
@@ -168,7 +175,7 @@ def evaluate(data, rows):
                            "utilization": processing / sh["available_minutes"]})
     daily = []
     for c in data["checkpoints"]:
-        for p, v in _stock_at(data, rows, deliveries, c).items():
+        for p, v in _stock_at(data, rows, deliveries, c, finished).items():
             safe = data["products"][p]["safety_stock"]
             daily.append({"time": c, "product": p, "inventory": v, "shortfall": max(0, safe - v), "surplus": max(0, v - safe)})
     options = chosen_options(data, rows)
@@ -178,7 +185,7 @@ def evaluate(data, rows):
     processing = sum(s["processing"] for s in shifts)
     ledger = []
     inv = {p: s["initial_stock"] for p, s in data["products"].items()}
-    for t, k, p, q, src in _finished_events(data, rows, deliveries):
+    for t, k, p, q, src in finished:
         inv[p] += q
         ledger.append({"time": t, "kind": "QC" if k == 0 else "SHIP", "source": src, "product": p, "delta": q, "inventory": inv[p]})
     up = upstream(data)

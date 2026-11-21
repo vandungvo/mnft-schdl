@@ -118,7 +118,7 @@ export function OptimiserNotice({ ctx, onThorough }: { ctx: WorkspaceCtx; onThor
         <span className="min-w-0 flex-1">
           <b>{t(`Bộ tối ưu chưa tìm được lịch tốt hơn luật điều độ (ngân sách ${verdict.budget} giây).`, `The optimiser found nothing better than the dispatching rules (budget ${verdict.budget} s).`)}</b>{" "}
           {verdict.fallback ? t("CP-SAT hết giờ trước khi cải thiện nên giữ lịch EDD. ", "CP-SAT ran out of time before improving, so the EDD schedule was kept. ") : ""}
-          {t("Với kỳ 2 tuần, CP-SAT thường cần từ 2 phút mỗi lần chạy; mức “Kỹ” cho nó 5 phút và thêm thuật toán tìm kiếm.", "For a 2-week period CP-SAT usually needs 2 minutes or more per run; “Thorough” gives it 5 minutes and adds search methods.")}
+          {t("Mức “Kỹ” cho bước tìm kiếm và CP-SAT nhiều thời gian hơn (khoảng 10 phút).", "“Thorough” gives the search and CP-SAT more time (about 10 minutes).")}
         </span>
         {onThorough && <Button size="sm" variant="outline" className="bg-card/60" onClick={onThorough}><Sparkles />{t("Sinh với mức Kỹ", "Generate with Thorough")}</Button>}
       </AlertDescription>

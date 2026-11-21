@@ -33,6 +33,16 @@ Input `dataset/wheel-factory-small/model_input.json` (schema 5).
 | `20260930T084648619393Z` | 30 giây × seed 11/29/47 | 18/18 | Công thức mục tiêu **một tầng** (cũ). Giữ để đối chiếu trước/sau khi đổi công thức; không so điểm trực tiếp với đợt dưới |
 | `20260930T094223177417Z` | 30 giây × seed 11/29/47 | 18/18 | Công thức **hai tầng** hiện hành. Tốt nhất: CP-LNS 40 · 10.564. Đây là đợt được trích trong `dataset/wheel-factory-small/SOURCE.md` |
 
+### Bộ 2 tuần — phương pháp `hybrid`
+
+Input `dataset/wheel-factory-2weeks/model_input.json` (schema 5; 269 lượt, 24 đơn, 8 máy). Chạy lẻ bằng `python -m models.hybrid.run`, không có thư mục `comparison/`; kết quả ở `v2/hybrid/results/<run>/seed_11/`.
+
+| Run | Ngân sách | Kết quả | Ghi chú |
+|---|---|---|---|
+| `20261113T175303106302Z` | 180 giây × seed 11 | 160 · 53.534 · 0 đơn trễ · 59 ca máy · hiệu suất 58,4% | Luật (EDD 323.465 · 104.894, 5 đơn trễ) → SA 8 tiến trình 72 giây (160 · 96.122) → CP-SAT 8 worker 107 giây. Cận ≥ 160.004.109, tức tầng 1 đã tối ưu. Máy 8 nhân / 16 luồng, đo khi còn khoảng 0,7 GB RAM trống |
+
+`hybrid` dùng nhiều nhân nên không so điểm trực tiếp với các đợt 1 luồng ở trên như một phép so thuật toán; xem [hybrid/README.md](../hybrid/README.md).
+
 ## Lưu trữ (`archive/`)
 
 | Run | Phiên bản | Vì sao không dùng |

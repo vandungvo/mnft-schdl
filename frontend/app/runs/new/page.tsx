@@ -20,7 +20,7 @@ import { formatDateTime, formatInputName } from "@/lib/format";
 import type { Algorithm } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const RECOMMENDED: Algorithm[] = ["cp_sat_hint", "cp_lns", "cp_sat", "cp_rolling", "simulated_annealing", "genetic_algorithm", "edd", "spt", "fifo"];
+const RECOMMENDED: Algorithm[] = ["hybrid", "cp_sat_hint", "cp_lns", "cp_sat", "cp_rolling", "simulated_annealing", "genetic_algorithm", "edd", "spt", "fifo"];
 const algorithmOptions = RECOMMENDED.map((value) => algorithmInfo(value));
 const SOURCES = [
   { value: "dataset", title: ["Master data", "Master data"], text: ["Dữ liệu nhà máy đã chuẩn hóa", "Normalised factory data"] },

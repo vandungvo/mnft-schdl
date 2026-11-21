@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     solver_max_concurrent_jobs: int = Field(default=1, ge=1, le=8)
     solver_default_budget_seconds: float = Field(default=30, gt=0, le=900)
     solver_max_budget_seconds: float = Field(default=900, gt=0, le=3600)
+    # CP-SAT search workers per solve (schema-5 engine). 0 = half the host's logical cores, at
+    # least 2 (measured best on the 2-week instance); with one worker CP-SAT has no LNS workers
+    # and cannot improve a 2-week schedule in minutes.
+    solver_cp_workers: int = Field(default=0, ge=0, le=64)
     run_jobs_inline: bool = False
     log_level: str = "INFO"
     operator_api_key: str | None = Field(default=None, min_length=24)

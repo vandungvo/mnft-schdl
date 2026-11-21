@@ -17,4 +17,8 @@ Bộ gen có thêm hai khối so với v1:
 
 Nhiệt độ tính trên thang tầng 2 của mục tiêu, nên bước làm xấu tầng 1 (trễ, thiếu tồn an toàn) không bao giờ được chấp nhận. 15% ngân sách cuối dành cho bước dồn ca trên lịch tốt nhất.
 
+Vì tầng 1 được tìm theo kiểu tham lam, hoán đổi ngẫu nhiên hiếm khi chạm đúng vài lượt quyết định đơn trễ cuối cùng. Từ 13/11/2026, 25% số bước là **bước đi định hướng** (`PULL_LATE`): lấy một lượt cấp hàng cho một đơn đang trễ trong lịch hiện tại, đổi ưu tiên với một lượt cùng công đoạn đang xếp trước nó và xoá trì hoãn của lượt đó. Trên bộ 2 tuần, SA 1 seed 60 giây đi từ 2 đơn trễ xuống 0 (cùng với decoder nhanh hơn khoảng 3 lần). Các đợt SA v2 lưu trước ngày này chạy bằng bản chưa có bước đi này.
+
+`portfolio()` chạy nhiều seed song song, mỗi seed một tiến trình, và cho nửa số seed kém hơn xuất phát lại từ lịch dẫn đầu một lần giữa chừng; phương pháp [`hybrid`](../hybrid/README.md) dùng nó làm bước 2.
+
 Cài đặt: [stage_runs/search.py](../common/stage_runs/search.py), nhánh `sa`, dùng [stage_runs/decoder.py](../common/stage_runs/decoder.py) và [stage_runs/compact.py](../common/stage_runs/compact.py).

@@ -1,0 +1,939 @@
+{
+  "method": "hybrid",
+  "seed": 11,
+  "run_id": "20261113T175303106302Z",
+  "input_sha256": "ff97168ecb584636c3b40cb31047b7e5c84dc5e91a754ce3b430052a8adc6a6a",
+  "code_sha256": "7814572a9a62b81ee9763421195ccb5aaea9ff74201010b724e7efc6ac01286f",
+  "budget_seconds": 180.0,
+  "algorithm_seconds": 187.71227489999995,
+  "environment": {
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+    "ortools": "9.15.6755",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "processor": "AMD64 Family 23 Model 104 Stepping 1, AuthenticAMD",
+    "workers": 8
+  },
+  "status": "FEASIBLE",
+  "build_seconds": 6.30707510000002,
+  "solve_seconds": 100.93321130000001,
+  "workers": 8,
+  "bound": 160004109.0,
+  "bound_scope": "full_static_model",
+  "response_stats": "CpSolverResponse summary:\nstatus: FEASIBLE\nobjective: 160053534\nbest_bound: 160004109\nintegers: 0\nbooleans: 0\nconflicts: 0\nbranches: 0\npropagations: 0\ninteger_propagations: 0\nrestarts: 0\nlp_iterations: 0\nwalltime: 100.933\nusertime: 100.933\ndeterministic_time: 85.207\ngap_integral: 928.955\nsolution_fingerprint: 0xd32a35cf2db37944\n",
+  "solver_objective": 160053534,
+  "solver_reported_objective": 160053534.0,
+  "solver_terms": {
+    "makespan": 14435,
+    "weighted_tardiness": 0,
+    "setup_minutes": 1684,
+    "maintenance_minutes": 660,
+    "nonproductive_minutes": 11425,
+    "safety_shortfall": 8,
+    "reserve_units": 0,
+    "surplus_holding": 2360,
+    "btp_end_units": 120
+  },
+  "solver_order_completion": {
+    "O001": 2160,
+    "O002": 2400,
+    "O003": 2400,
+    "O004": 2400,
+    "O005": 5280,
+    "O006": 5280,
+    "O007": 5280,
+    "O008": 5280,
+    "O009": 8160,
+    "O010": 8160,
+    "O011": 8160,
+    "O012": 8160,
+    "O013": 12480,
+    "O014": 12480,
+    "O015": 12240,
+    "O016": 12480,
+    "O017": 15360,
+    "O018": 15360,
+    "O019": 15360,
+    "O020": 15360,
+    "O021": 18240,
+    "O022": 18240,
+    "O023": 18240,
+    "O024": 18240
+  },
+  "reserve_options_chosen": [],
+  "solver_status": "FEASIBLE",
+  "history": [
+    {
+      "seconds": 0.08294639999996889,
+      "objective": 323465104894,
+      "source": "EDD"
+    },
+    {
+      "seconds": 0.16453159999997524,
+      "objective": 322925103610,
+      "evaluations": 3,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 0.18319989999997688,
+      "objective": 322925101728,
+      "evaluations": 4,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 0.31026830000001837,
+      "objective": 282590105336,
+      "evaluations": 10,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 0.3291298999999981,
+      "objective": 281840109566,
+      "evaluations": 11,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 0.3973267000000078,
+      "objective": 223760109222,
+      "evaluations": 14,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 0.4604003000000034,
+      "objective": 223160107964,
+      "evaluations": 17,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 0.5699240999999802,
+      "objective": 222795109512,
+      "evaluations": 21,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 0.8077860000000214,
+      "objective": 222795108104,
+      "evaluations": 30,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 0.8359270000000265,
+      "objective": 210885111142,
+      "evaluations": 31,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 0.943669199999988,
+      "objective": 194265114062,
+      "evaluations": 35,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 0.9872450999999955,
+      "objective": 154650116984,
+      "evaluations": 36,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 1.1118821000000025,
+      "objective": 154590116980,
+      "evaluations": 39,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 1.3502192000000264,
+      "objective": 154590115424,
+      "evaluations": 45,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 1.6353624000000195,
+      "objective": 146850115424,
+      "evaluations": 52,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 1.68324530000001,
+      "objective": 146850115286,
+      "evaluations": 53,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 1.8773345999999833,
+      "objective": 129705112270,
+      "evaluations": 57,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 2.094522999999981,
+      "objective": 129705112266,
+      "evaluations": 62,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 2.269634100000019,
+      "objective": 128685112262,
+      "evaluations": 66,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 2.307657500000005,
+      "objective": 128605112262,
+      "evaluations": 67,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 2.5294165999999905,
+      "objective": 128605112202,
+      "evaluations": 73,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 2.8504034000000047,
+      "objective": 128605112166,
+      "evaluations": 81,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 2.9283862999999997,
+      "objective": 127405110782,
+      "evaluations": 83,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 3.199769300000014,
+      "objective": 127405109622,
+      "evaluations": 89,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 3.3872215999999753,
+      "objective": 114085111316,
+      "evaluations": 93,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 3.5550254999999993,
+      "objective": 99520112536,
+      "evaluations": 98,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 5.800793899999974,
+      "objective": 86060115204,
+      "evaluations": 155,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 5.990138399999978,
+      "objective": 86060115128,
+      "evaluations": 159,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 7.141664300000002,
+      "objective": 80960118398,
+      "evaluations": 183,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 7.187166100000013,
+      "objective": 80960118390,
+      "evaluations": 184,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 7.222753300000022,
+      "objective": 80960118366,
+      "evaluations": 185,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 7.377850200000012,
+      "objective": 73670119806,
+      "evaluations": 189,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 7.58026319999999,
+      "objective": 73670118362,
+      "evaluations": 193,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 8.045930899999973,
+      "objective": 73670116022,
+      "evaluations": 202,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 8.08538950000002,
+      "objective": 73670115998,
+      "evaluations": 203,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 8.271034199999974,
+      "objective": 73670114522,
+      "evaluations": 207,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 8.92958950000002,
+      "objective": 73670113046,
+      "evaluations": 219,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 9.085821500000009,
+      "objective": 73520110224,
+      "evaluations": 222,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 9.43734360000002,
+      "objective": 73520108792,
+      "evaluations": 229,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 9.568883099999994,
+      "objective": 73520107474,
+      "evaluations": 232,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 10.392262599999981,
+      "objective": 62450107548,
+      "evaluations": 248,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 10.931890599999974,
+      "objective": 51740107448,
+      "evaluations": 259,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 11.275819899999988,
+      "objective": 43400107448,
+      "evaluations": 267,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 11.385621399999991,
+      "objective": 43400106098,
+      "evaluations": 269,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 11.916917699999999,
+      "objective": 43040108948,
+      "evaluations": 281,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 12.127006499999993,
+      "objective": 39560111630,
+      "evaluations": 285,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 12.357063600000004,
+      "objective": 36245115754,
+      "evaluations": 289,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 12.416719300000011,
+      "objective": 36065112838,
+      "evaluations": 290,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 12.726314399999978,
+      "objective": 33080113004,
+      "evaluations": 295,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 13.088653799999975,
+      "objective": 24125116054,
+      "evaluations": 302,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 13.475316200000009,
+      "objective": 24125113088,
+      "evaluations": 309,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 14.882559300000025,
+      "objective": 24125112904,
+      "evaluations": 333,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 15.961514399999999,
+      "objective": 24125112868,
+      "evaluations": 352,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 16.47761969999999,
+      "objective": 24125112808,
+      "evaluations": 360,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 18.51766429999998,
+      "objective": 15995117464,
+      "evaluations": 392,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 18.56938489999999,
+      "objective": 15995117266,
+      "evaluations": 393,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 18.678203699999983,
+      "objective": 15245119862,
+      "evaluations": 395,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 18.760633400000017,
+      "objective": 15245118406,
+      "evaluations": 396,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 18.827906400000018,
+      "objective": 15175115678,
+      "evaluations": 397,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 19.13259549999998,
+      "objective": 15175114348,
+      "evaluations": 402,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 19.256347300000016,
+      "objective": 15175112788,
+      "evaluations": 404,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 19.4847527,
+      "objective": 14845112796,
+      "evaluations": 407,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 20.453328,
+      "objective": 13975112796,
+      "evaluations": 422,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 20.501638200000002,
+      "objective": 13975111510,
+      "evaluations": 423,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 23.148326300000008,
+      "objective": 13975109958,
+      "evaluations": 461,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 29.49424959999999,
+      "objective": 13975109898,
+      "evaluations": 550,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 31.0622027,
+      "objective": 13975107168,
+      "evaluations": 570,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 34.93139669999999,
+      "objective": 13975107164,
+      "evaluations": 623,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 36.157401100000016,
+      "objective": 160108638,
+      "evaluations": 1,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 36.45652469999999,
+      "objective": 160108626,
+      "evaluations": 6,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 53.2105239,
+      "objective": 160107555,
+      "evaluations": 208,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 53.37741199999999,
+      "objective": 160105078,
+      "evaluations": 210,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 54.19746049999998,
+      "objective": 160105046,
+      "evaluations": 219,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 54.32446829999998,
+      "objective": 160105042,
+      "evaluations": 221,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 61.57237679999997,
+      "objective": 160105006,
+      "evaluations": 297,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 64.5141324,
+      "objective": 160104950,
+      "evaluations": 318,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 72.09146420000002,
+      "objective": 160096122,
+      "source": "SA seed 2011"
+    },
+    {
+      "seconds": 90.73913929999998,
+      "objective": 160090542.0,
+      "bound": 79944031.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 90.94605489999998,
+      "objective": 160089082.0,
+      "bound": 79944031.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 116.10989309999997,
+      "objective": 160083142.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 117.04822089999999,
+      "objective": 160081846.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 119.50211299999995,
+      "objective": 160080054.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 122.64594859999994,
+      "objective": 160077106.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 126.87563489999997,
+      "objective": 160077098.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 129.29475789999998,
+      "objective": 160075638.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 130.49196109999997,
+      "objective": 160074288.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 131.64377059999998,
+      "objective": 160074228.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 133.3324288999999,
+      "objective": 160072858.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 134.50506430000002,
+      "objective": 160071488.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 135.2899918,
+      "objective": 160068373.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 135.4353524,
+      "objective": 160068372.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 135.4510444999999,
+      "objective": 160068283.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 135.473455,
+      "objective": 160068282.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 136.56149839999995,
+      "objective": 160067168.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 138.8669537,
+      "objective": 160066920.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 140.45335369999992,
+      "objective": 160065720.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 141.3290672,
+      "objective": 160064236.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 142.40640189999993,
+      "objective": 160064116.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 143.99655779999995,
+      "objective": 160064026.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 144.7070410999999,
+      "objective": 160063924.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 144.7344959,
+      "objective": 160063834.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 145.07325169999996,
+      "objective": 160062676.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 146.59470659999994,
+      "objective": 160062496.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 147.60634969999995,
+      "objective": 160062436.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 147.84998960000001,
+      "objective": 160062256.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 149.94868879999996,
+      "objective": 160062248.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 150.42189029999992,
+      "objective": 160060642.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 153.6814251,
+      "objective": 160059056.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 159.67958199999993,
+      "objective": 160058354.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 160.42443179999992,
+      "objective": 160058350.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 163.1401558999999,
+      "objective": 160058314.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 164.8321616,
+      "objective": 160058274.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 165.7974256999999,
+      "objective": 160058184.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 166.13858039999997,
+      "objective": 160058124.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 167.3090095999999,
+      "objective": 160058058.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 168.26293979999997,
+      "objective": 160058034.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 168.3192540999999,
+      "objective": 160056758.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 170.50378369999993,
+      "objective": 160056684.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 171.55293089999992,
+      "objective": 160055404.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 173.81478839999994,
+      "objective": 160055400.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 175.74982329999995,
+      "objective": 160055284.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 175.77391829999993,
+      "objective": 160055280.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 175.97976019999993,
+      "objective": 160055186.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 177.66027459999992,
+      "objective": 160053690.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    },
+    {
+      "seconds": 179.64845499999996,
+      "objective": 160053534.0,
+      "bound": 160004109.0,
+      "source": "CP-SAT"
+    }
+  ],
+  "phases": [
+    {
+      "phase": "rules",
+      "until_seconds": 0.0829410999999709,
+      "objective": 323465104894,
+      "source": "EDD"
+    },
+    {
+      "phase": "search",
+      "until_seconds": 73.38298470000001,
+      "objective": 160096122,
+      "budget_seconds": 72.0,
+      "processes": 8,
+      "seeds": [
+        {
+          "seed": 11,
+          "objective": 160099868,
+          "evaluations": 950
+        },
+        {
+          "seed": 1011,
+          "objective": 160096136,
+          "evaluations": 987
+        },
+        {
+          "seed": 2011,
+          "objective": 160096122,
+          "evaluations": 971
+        },
+        {
+          "seed": 3011,
+          "objective": 160099930,
+          "evaluations": 901
+        },
+        {
+          "seed": 4011,
+          "objective": 160104538,
+          "evaluations": 845
+        },
+        {
+          "seed": 5011,
+          "objective": 160108631,
+          "evaluations": 881
+        },
+        {
+          "seed": 6011,
+          "objective": 160099918,
+          "evaluations": 872
+        },
+        {
+          "seed": 7011,
+          "objective": 160099918,
+          "evaluations": 877
+        }
+      ]
+    },
+    {
+      "phase": "cp_sat",
+      "until_seconds": 181.13680869999996,
+      "objective": 160053534,
+      "budget_seconds": 106.61690680000004,
+      "workers": 8,
+      "solver_status": "FEASIBLE"
+    }
+  ],
+  "sa_processes": 8,
+  "hint_source": "SA seed 2011",
+  "initial_hint_objective": 160096122,
+  "validation": {
+    "valid": true,
+    "errors": [],
+    "operations_checked": 240,
+    "scope": "schema 5: fixed runs per stage, shared mold pool, one window per block"
+  },
+  "metrics": {
+    "makespan": 14435,
+    "mandatory_makespan": 14435,
+    "schedule_end": 14435,
+    "weighted_tardiness": 0,
+    "total_tardiness": 0,
+    "late_orders": 0,
+    "max_tardiness": 0,
+    "setup_minutes": 1684,
+    "maintenance_minutes": 660,
+    "maintenance_count": 22,
+    "idle_minutes": 9081,
+    "safety_shortfall": 8,
+    "activated_shifts": 59,
+    "productive_utilization": 0.5837887067395264,
+    "processing_minutes": 16025,
+    "available_minutes": 27450,
+    "produced_quantity": 980,
+    "shipped_quantity": 980,
+    "end_inventory": {
+      "F_SILVER": 26,
+      "F_BLACK": 12,
+      "R_SILVER": 30,
+      "R_BLACK": 8
+    },
+    "btp_end": {
+      "F_CAST": 8,
+      "R_CAST": 4,
+      "F_HEAT": 12,
+      "R_HEAT": 16,
+      "F_MACH": 2,
+      "R_MACH": 15,
+      "F_SILVER_PAINT": 1,
+      "F_BLACK_PAINT": 19,
+      "R_SILVER_PAINT": 20,
+      "R_BLACK_PAINT": 23
+    },
+    "reserve_production": 0,
+    "reserve_quantity": 0,
+    "surplus_holding": 2360,
+    "shift_opening": 0,
+    "reserve_options_chosen": [],
+    "nonproductive_minutes": 11425,
+    "reserve_units": 0,
+    "btp_end_units": 120,
+    "objective_tier1": 160,
+    "objective_tier2": 53534,
+    "objective": 160053534
+  },
+  "gap": 0.0003088029284001939,
+  "total_seconds": 189.02113920000005
+}

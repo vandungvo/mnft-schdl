@@ -1,5 +1,5 @@
 export type RunStatus = "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED" | "CANCELLED";
-export type Algorithm = "fifo" | "edd" | "spt" | "simulated_annealing" | "genetic_algorithm" | "cp_sat" | "cp_sat_hint" | "cp_lns" | "cp_rolling";
+export type Algorithm = "fifo" | "edd" | "spt" | "simulated_annealing" | "genetic_algorithm" | "cp_sat" | "cp_sat_hint" | "cp_lns" | "cp_rolling" | "hybrid";
 
 export interface HealthResponse {
   status: "ok";

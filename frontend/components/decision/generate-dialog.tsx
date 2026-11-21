@@ -16,19 +16,27 @@ import { apiErrorMessage, createScheduleRun, getHealth } from "@/lib/api";
 import type { Algorithm } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const DEFAULT: Algorithm[] = ["edd", "simulated_annealing", "cp_sat_hint", "cp_lns"];
+const DEFAULT: Algorithm[] = ["edd", "hybrid", "simulated_annealing", "cp_sat_hint"];
 const SEED_POOL = [11, 47, 83];
 const deterministic = (value: Algorithm) => ["fifo", "edd", "spt"].includes(value);
 
-/* A planner picks how long to wait, not which solver: each preset is a mix of fast rules
-   (always a schedule within seconds) and search/CP methods given a time budget. */
+/* A planner picks how long to wait, not which solver: each preset is the fast rule everyone knows (EDD, a
+   schedule within a second, kept as the yardstick) plus the method that does the work within a time budget. */
 export type Preset = "quick" | "balanced" | "thorough";
-/* CP-SAT needs minutes on a 2-week period (model building alone takes several seconds): with a 30-second budget it
-   ends where its EDD hint started. "Quick" therefore runs the rules and one short search, and leaves CP-SAT to the others. */
-const PRESETS: Record<Preset, { algorithms: Algorithm[]; budget: number; seeds: number; label: [string, string]; hint: [string, string] }> = {
-  quick: { algorithms: ["edd", "spt", "simulated_annealing"], budget: 30, seeds: 1, label: ["Nhanh", "Quick"], hint: ["Luật điều độ + một lần tìm kiếm ngắn, khoảng 1 phút — đủ để xem tình hình (chưa có CP-SAT)", "Dispatching rules + one short search, about a minute — enough to see where things stand (no CP-SAT)"] },
-  balanced: { algorithms: ["edd", "simulated_annealing", "cp_sat_hint", "cp_lns"], budget: 120, seeds: 1, label: ["Cân bằng", "Balanced"], hint: ["Khuyến nghị cho lịch 2 tuần · khoảng 5–8 phút", "Recommended for a 2-week period · about 5–8 minutes"] },
-  thorough: { algorithms: ["edd", "simulated_annealing", "genetic_algorithm", "cp_sat_hint", "cp_lns", "cp_rolling"], budget: 300, seeds: 2, label: ["Kỹ", "Thorough"], hint: ["Tìm lịch tốt hơn khi còn thời gian · có thể tới 30–60 phút", "Searches harder when there is time · can take 30–60 minutes"] },
+interface Plan { algorithms: Algorithm[]; budget: number; seeds: number; hint: [string, string] }
+const LABELS: Record<Preset, [string, string]> = { quick: ["Nhanh", "Quick"], balanced: ["Cân bằng", "Balanced"], thorough: ["Kỹ", "Thorough"] };
+/* 5-stage model: "hybrid" (rules → SA on several seeds → CP-SAT from the best schedule, every core). Its budget is the
+   whole wait: about 40% goes to the search that brings late orders down, the rest to CP-SAT cutting operating cost. */
+const PRESETS: Record<Preset, Plan> = {
+  quick: { algorithms: ["edd", "hybrid"], budget: 60, seeds: 1, hint: ["Khoảng 1 phút — đủ để xem tình hình và số đơn trễ", "About a minute — enough to see where things stand and how many orders are late"] },
+  balanced: { algorithms: ["edd", "hybrid"], budget: 180, seeds: 1, hint: ["Khuyến nghị cho kỳ 2 tuần · khoảng 3 phút", "Recommended for a 2-week period · about 3 minutes"] },
+  thorough: { algorithms: ["edd", "hybrid"], budget: 600, seeds: 1, hint: ["Giảm thêm chi phí vận hành khi còn thời gian · khoảng 10 phút", "Cuts operating cost further when there is time · about 10 minutes"] },
+};
+/* 4-stage model (no hybrid): CP-SAT needs minutes, so "Quick" runs the rules and one short search only. */
+const PRESETS_V4: Record<Preset, Plan> = {
+  quick: { algorithms: ["edd", "spt", "simulated_annealing"], budget: 30, seeds: 1, hint: ["Luật điều độ + một lần tìm kiếm ngắn, khoảng 1 phút (chưa có CP-SAT)", "Dispatching rules + one short search, about a minute (no CP-SAT)"] },
+  balanced: { algorithms: ["edd", "simulated_annealing", "cp_sat_hint", "cp_lns"], budget: 120, seeds: 1, hint: ["Khoảng 5–8 phút", "About 5–8 minutes"] },
+  thorough: { algorithms: ["edd", "simulated_annealing", "genetic_algorithm", "cp_sat_hint", "cp_lns"], budget: 300, seeds: 2, hint: ["Tìm lịch tốt hơn khi còn thời gian · có thể tới 30–60 phút", "Searches harder when there is time · can take 30–60 minutes"] },
 };
 
 export function GenerateDialog({ datasetId, schemaVersion, open, preset: initial, onClose }: { datasetId: string; schemaVersion?: number; open: boolean; preset?: Preset; onClose: () => void }) {
@@ -46,7 +54,8 @@ export function GenerateDialog({ datasetId, schemaVersion, open, preset: initial
   const [customPicked, setPicked] = useState<Algorithm[]>(DEFAULT);
   const [customSeeds, setSeeds] = useState(1);
   const [budget, setBudget] = useState<number | null>(null);
-  const preset = mode === "custom" ? null : PRESETS[mode];
+  const presets = schemaVersion === 5 ? PRESETS : PRESETS_V4;
+  const preset = mode === "custom" ? null : presets[mode];
   const picked = preset ? preset.algorithms : customPicked;
   const seeds = preset ? preset.seeds : customSeeds;
   const supported = ALGORITHMS.filter((item) => (!health.data || health.data.supported_algorithms.includes(item.value)) && availableFor(item.value, schemaVersion));
@@ -98,11 +107,11 @@ export function GenerateDialog({ datasetId, schemaVersion, open, preset: initial
         </DialogHeader>
         <form id="generate-form" className="grid gap-4" onSubmit={(event) => { event.preventDefault(); if (!invalid) mutation.mutate(); }}>
           <div role="radiogroup" aria-label={t("Mức tìm kiếm", "Search effort")} className="grid gap-2 sm:grid-cols-3">
-            {(Object.keys(PRESETS) as Preset[]).map((key) => (
+            {(Object.keys(presets) as Preset[]).map((key) => (
               <button key={key} type="button" role="radio" aria-checked={mode === key} onClick={() => setMode(key)}
                 className={cn("grid gap-0.5 rounded-lg border p-3 text-left transition-colors hover:border-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none", mode === key && "border-primary bg-accent")}>
-                <strong className="text-sm font-semibold">{t(...PRESETS[key].label)}</strong>
-                <small className="text-xs text-muted-foreground">{t(...PRESETS[key].hint)}</small>
+                <strong className="text-sm font-semibold">{t(...LABELS[key])}</strong>
+                <small className="text-xs text-muted-foreground">{t(...presets[key].hint)}</small>
               </button>
             ))}
           </div>
